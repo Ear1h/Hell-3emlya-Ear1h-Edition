@@ -238,16 +238,16 @@ void S_Start(void)
         int spmus[]=
         {
             // Song - Who? - Where?
-
-            mus_e3m4,        // American     e4m1
-            mus_e3m2,        // Romero       e4m2
-            mus_e3m3,        // Shawn        e4m3
-            mus_e1m5,        // American     e4m4
-            mus_e2m7,        // Tim          e4m5
-            mus_e2m4,        // Romero       e4m6
-            mus_e2m6,        // J.Anderson   e4m7 CHIRON.WAD
-            mus_e2m5,        // Shawn        e4m8
-            mus_e1m9,        // Tim          e4m9
+        
+            mus_e4m1,        // Ear1h     e4m1
+            mus_e4m2,        // Broy       e4m2
+            mus_e4m3,        // Kras        e4m3
+            mus_e4m4,        // MADE BY DRONE     e4m4
+            mus_e4m5,        // Track Federal          e4m5
+            mus_e4m6,        // Volter Voltage       e4m6
+            mus_e4m7,        // Endoomer  e4m7 CHIRON.WAD
+            mus_e4m8,        // Ad 3emlya        e4m8
+            mus_e4m9,        // Demontaznik          e4m9
         };
 
         if (gameepisode < 4)
