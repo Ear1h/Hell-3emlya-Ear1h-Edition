@@ -4,7 +4,7 @@ A Chocolate Doom fork specifically designed for megawad. Currently under develop
 
 # Main port features:
 
-* Add `MAPINFO`: Full support for `levelname` and `partime` fields.
+* Add `MAPINFO`: Full support for `levelname`, `skytexture` and `partime` fields.
 * `Altfire` support.
 * Multiple custom codepointers added.
 * `A_SpawnCubeEx` implemented via JSON.
