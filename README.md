@@ -10,6 +10,7 @@ A Chocolate Doom fork specifically designed for megawad. Currently under develop
 * `A_SpawnCubeEx` implemented via JSON.
 * New mouse button for alt-fire.
 * Disable Random damage
+* Damage scaling based on skill level
 
 # Minor features:
 * New health and armor pickups: `Medikit` restores *50 HP* per use, `armor` adds *10%* per pickup.
