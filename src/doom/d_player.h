@@ -96,13 +96,17 @@ typedef struct player_s
     // mo->health is used during levels.
     int			health;	
     int			armorpoints;
-    // Armor type is 0-2.
+    // Armor type is 0-3.
     int			armortype;	
+
+    //Temp health for use a vitality serum
+    int         VitaHealth;
 
     // Power ups. invinc and invis are tic counters.
     int			powers[NUMPOWERS];
     boolean		cards[NUMCARDS];
     boolean		backpack;
+    boolean     vitally;
     
     // Frags, kills of other players.
     int			frags[MAXPLAYERS];
