@@ -236,7 +236,7 @@ R_FindPlane
 	return check;
 		
     if (lastvisplane - visplanes == MAXVISPLANES)
-	I_Error ("R_FindPlane: no more visplanes");
+	I_Error ("R_FindPlane: MAPPER - GANDON");
 		
     lastvisplane++;
 
@@ -308,7 +308,7 @@ R_CheckPlane
     lastvisplane->lightlevel = pl->lightlevel;
     
     if (lastvisplane - visplanes == MAXVISPLANES)
-	I_Error ("R_CheckPlane: no more visplanes");
+	I_Error ("R_CheckPlane: MAPPER - GANDON");
 
     pl = lastvisplane++;
     pl->minx = start;
