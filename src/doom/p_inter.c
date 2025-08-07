@@ -222,12 +222,12 @@ P_GiveBody
 ( player_t*	player,
   int		num )
 {
-    if (player->health >= MAXHEALTH)
+    if (player->health >= player->VitaHealth)
 	return false;
 		
     player->health += num;
-    if (player->health > MAXHEALTH)
-	player->health = MAXHEALTH;
+    if (player->health > player->VitaHealth)
+    player->health = player->VitaHealth;
     player->mo->health = player->health;
 	
     return true;
@@ -408,7 +408,7 @@ P_TouchSpecialThing
 	player->mo->health = player->health;
         // We always give armor type 2 for the megasphere; dehacked only 
         // affects the MegaArmor.
-	P_GiveArmor (player, 2);
+	P_GiveArmor (player, 3);
 	player->message = DEH_String(GOTMSPHERE);
 	if (gameversion > exe_doom_1_2)
 	    sound = sfx_getpow;
@@ -475,13 +475,47 @@ P_TouchSpecialThing
 	if (!P_GiveBody (player, 25))
 	    return;
 
-	if (player->health < 25)
+	if (player->health < 50)
 	    player->message = DEH_String(GOTMEDINEED);
 	else
 	    player->message = DEH_String(GOTMEDIKIT);
 	break;
 
-	
+	  case SPR_MDPK:
+    if (!P_GiveBody(player, 50))
+       return;
+    if (player->health < 70)
+        player->message = "You really need this medipack.";
+    else
+        player->message = "You got a medipack.";
+    break;
+
+	  case SPR_HEVA:
+    if (!P_GiveArmor(player, 3))
+		return;
+	player->message = "You got a heavy armor ";
+    break;
+
+	case SPR_VSRM:
+     if (!player->vitally)
+	{
+		player->vitally = true;
+		player->VitaHealth = 150;
+	}
+	player->message = "Your health has increased to 150.";
+    player->health = 150;
+    player->mo->health = player->health;
+	break;
+	  case SPR_ARSD:
+	player->armorpoints += 10;		// can go over 100%
+	if (player->armorpoints > deh_max_armor && gameversion > exe_doom_1_2)
+	    player->armorpoints = deh_max_armor;
+        // deh_green_armor_class only applies to the green armor shirt;
+        // for the armor helmets, armortype 1 is always used.
+	if (!player->armortype)
+	    player->armortype = 1;
+	player->message = "You got an armor shard.";
+	break;
 	// power ups
       case SPR_PINV:
 	if (!P_GivePower (player, pw_invulnerability))
@@ -866,11 +900,20 @@ P_DamageMobj
 	
 	if (player->armortype)
 	{
-	    if (player->armortype == 1)
-		saved = damage/3;
-	    else
-		saved = damage/2;
-	    
+		if (player->armortype == 1)
+		{
+			saved = damage / 3;
+		}
+		
+		else if (player->armortype == 2)
+        {
+            saved = damage / 2;
+        }
+        else
+        {
+            saved = damage * 4 / 5;
+        }
+		
 	    if (player->armorpoints <= saved)
 	    {
 		// armor is used up
