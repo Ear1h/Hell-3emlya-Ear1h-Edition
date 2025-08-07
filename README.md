@@ -13,6 +13,6 @@ A Chocolate Doom fork specifically designed for megawad. Currently under develop
 * Damage scaling based on skill level
 
 # Minor features:
-* New health and armor pickups: `Medikit` restores *50 HP* per use, `armor` adds *10%* per pickup.
+* ✅ New health and armor pickups: `Medikit` restores *50 HP* per use, `armor` adds *10%* per pickup.
 * ✅ Music distributed for **Episode 4** (E4M1–E4M9)
 * Removed *“Commercial”* things related to the **Icon of Sin** and moved them to a safe block.
