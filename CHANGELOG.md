@@ -8,7 +8,7 @@
 # Bugfixes and internal improvements:
 * Fixed *medkit behavior*: When player HP is low, a message now appears indicating the medkit is urgently needed. Medipack shares the same behavior.
 * Reworked `P_GiveBody` in `p_inter.c`: Now uses `VitaHealth` instead of hardcoded `MAXHEALTH` (*#define MAXHEALTH 100*).
-* Added new variables in d_player.h:
+* Added new variables in `d_player.h`:
   * `int VitaHealth`
   * `bool Vitally`
 * Visplane overflow handler updated: Now throws I_Error("R_FindPlane: MAPPER - GANDON"); in `R_Plane.c`.
