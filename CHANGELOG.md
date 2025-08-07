@@ -3,7 +3,7 @@
 * **Armor Shard**: Grants `10% armor`. Functionally identical to the vanilla *Armor Bonus*.
 * **Medipack**: Restores `50% health`.
 * **Heavy Armor**: Absorbs `80% damage`. Grants `300% armor` upon pickup.
-* **Vitality Serum**: Increases max health by `50%` when used. Effect resets on `New Game` or `idclev##`.
+* **Vitality Serum**: Increases `max health` by `50%` when used. Effect resets on `New Game` or `idclev##`.
 
 # Bugfixes and internal improvements:
 * Fixed *medkit behavior*: When player HP is low, a message now appears indicating the medkit is urgently needed. Medipack shares the same behavior.
