@@ -164,6 +164,10 @@ typedef enum
     SPR_BRS1,
     SPR_TLMP,
     SPR_TLP2,
+    SPR_MDPK,
+    SPR_HEVA,
+    SPR_VSRM,
+    SPR_ARSD,
     NUMSPRITES
 
 } spritenum_t;
@@ -1137,6 +1141,16 @@ typedef enum
     S_TECH2LAMP2,
     S_TECH2LAMP3,
     S_TECH2LAMP4,
+    S_MEDIPACK,
+    S_HEAVYARMOR,
+    S_HEAVYARMOR2,
+    S_VITALLY,
+    S_VITALLY2,
+    S_VITALLY3,
+    S_ARMORSHARD,
+    S_ARMORSHARD2,
+    S_ARMORSHARD3,
+    S_ARMORSHARD4,
     NUMSTATES
 } statenum_t;
 
@@ -1294,6 +1308,10 @@ typedef enum {
     MT_MISC84,
     MT_MISC85,
     MT_MISC86,
+    MT_MEDIPACK,
+    MT_HEAVYARMOR,
+    MT_VITALLYSERUM,
+    MT_ARMORSHARD,
     NUMMOBJTYPES
 
 } mobjtype_t;
