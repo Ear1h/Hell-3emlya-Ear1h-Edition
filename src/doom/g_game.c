@@ -1156,7 +1156,7 @@ void G_PlayerReborn (int player)
 	 
     for (i=0 ; i<NUMAMMO ; i++) 
 	p->maxammo[i] = maxammo[i]; 
-		 
+    p->VitaHealth = 100; //Restore Player Health
 }
 
 //
