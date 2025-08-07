@@ -43,7 +43,8 @@ const char *sprnames[] = {
     "POL3","POL1","POL6","GOR2","GOR3","GOR4","GOR5","SMIT","COL1","COL2",
     "COL3","COL4","CAND","CBRA","COL6","TRE1","TRE2","ELEC","CEYE","FSKU",
     "COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
-    "HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2", NULL
+    "HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2","MDPK","HEVA",
+	"VSRM","ARSD", NULL
 };
 
 
@@ -1091,8 +1092,18 @@ state_t	states[NUMSTATES] = {
     {SPR_TLP2,32768,4,{NULL},S_TECH2LAMP2,0,0},	// S_TECH2LAMP
     {SPR_TLP2,32769,4,{NULL},S_TECH2LAMP3,0,0},	// S_TECH2LAMP2
     {SPR_TLP2,32770,4,{NULL},S_TECH2LAMP4,0,0},	// S_TECH2LAMP3
-    {SPR_TLP2,32771,4,{NULL},S_TECH2LAMP,0,0}	// S_TECH2LAMP4
-};
+    {SPR_TLP2,32771,4,{NULL},S_TECH2LAMP,0,0},	// S_TECH2LAMP4
+    {SPR_MDPK, 0, -1, {NULL},S_NULL,0,0}, //S_MEDIPACK
+    {SPR_HEVA, 32768, 6, {NULL}, S_HEAVYARMOR2, 0, 0},     //S_HEAVYARMOR
+	{SPR_HEVA, 1, 6, {NULL},S_HEAVYARMOR,0,0}, //S_HEAVYARMOR2
+    {SPR_VSRM, 32768, 6, {NULL}, S_VITALLY2, 0, 0}, //S_VITALLY
+    {SPR_VSRM, 32769, 6, {NULL}, S_VITALLY3, 0, 0}, //S_VITALLY2
+    {SPR_VSRM, 32769, 6, {NULL}, S_VITALLY, 0, 0},   //S_VITALLY3
+    {SPR_ARSD, 0, 4, {NULL},S_ARMORSHARD2,0,0}, //S_ARMORSHARD
+    {SPR_ARSD, 0, 4, {NULL}, S_ARMORSHARD3, 0, 0}, //S_ARMORSHARD2
+    {SPR_ARSD, 0, 4, {NULL}, S_ARMORSHARD4, 0, 0}, //S_ARMORSHARD3
+    {SPR_ARSD, 0, 4, {NULL}, S_ARMORSHARD, 0, 0}  //S_ARMORSHARD4
+}; 
 
 
 mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
@@ -1174,7 +1185,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
 	S_SPOS_RAISE1		// raisestate
     },
-
+	
     {		// MT_VILE
 	64,		// doomednum
 	S_VILE_STND,		// spawnstate
@@ -4657,6 +4668,110 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	sfx_None,		// activesound
 	MF_NOBLOCKMAP,		// flags
 	S_NULL		// raisestate
+    },
+
+	{			// MT_MEDIPACK
+    4000,		// doomednum	
+	S_MEDIPACK, // spawnstate
+    1000,		// spawnhealth
+    S_NULL,        // seestate
+    sfx_None,      // seesound
+    8,             // reactiontime
+    sfx_None,      // attacksound
+    S_NULL,        // painstate
+    0,             // painchance
+    sfx_None,      // painsound
+    S_NULL,        // meleestate
+    S_NULL,        // missilestate
+    S_NULL,        // deathstate
+    S_NULL,        // xdeathstate
+    sfx_None,      // deathsound
+    0,             // speed
+    20 * FRACUNIT, // radius
+    16 * FRACUNIT, // height
+    100,           // mass
+    0,             // damage
+    sfx_None,      // activesound
+    MF_SPECIAL,    // flags
+    S_NULL         // raisestate
+	},
+
+	{	// MT_HEAVYARMOR
+    4001,          // doomednum
+    S_HEAVYARMOR,    // spawnstate
+    1000,          // spawnhealth
+    S_NULL,        // seestate
+    sfx_None,      // seesound
+    8,             // reactiontime
+    sfx_None,      // attacksound
+    S_NULL,        // painstate
+    0,             // painchance
+    sfx_None,      // painsound
+    S_NULL,        // meleestate
+    S_NULL,        // missilestate
+    S_NULL,        // deathstate
+    S_NULL,        // xdeathstate
+    sfx_None,      // deathsound
+    0,             // speed
+    20 * FRACUNIT, // radius
+    16 * FRACUNIT, // height
+    100,           // mass
+    0,             // damage
+    sfx_None,      // activesound
+    MF_SPECIAL,    // flags
+    S_NULL         // raisestate
+    },
+	{
+    // MT_VITALLYSERUM
+    4002,          // doomednum
+    S_VITALLY,     // spawnstate
+    1000,          // spawnhealth
+    S_NULL,        // seestate
+    sfx_None,      // seesound
+    8,             // reactiontime
+    sfx_None,      // attacksound
+    S_NULL,        // painstate
+    0,             // painchance
+    sfx_None,      // painsound
+    S_NULL,        // meleestate
+    S_NULL,        // missilestate
+    S_NULL,        // deathstate
+    S_NULL,        // xdeathstate
+    sfx_None,      // deathsound
+    0,             // speed
+    20 * FRACUNIT, // radius
+    16 * FRACUNIT, // height
+    100,           // mass
+    0,             // damage
+    sfx_None,      // activesound
+    MF_SPECIAL,    // flags
+    S_NULL         // raisestate
+    },
+	{
+    // MT_ARMORSHARD
+    4003,          // doomednum
+    S_ARMORSHARD,     // spawnstate
+    1000,          // spawnhealth
+    S_NULL,        // seestate
+    sfx_None,      // seesound
+    8,             // reactiontime
+    sfx_None,      // attacksound
+    S_NULL,        // painstate
+    0,             // painchance
+    sfx_None,      // painsound
+    S_NULL,        // meleestate
+    S_NULL,        // missilestate
+    S_NULL,        // deathstate
+    S_NULL,        // xdeathstate
+    sfx_None,      // deathsound
+    0,             // speed
+    20 * FRACUNIT, // radius
+    16 * FRACUNIT, // height
+    100,           // mass
+    0,             // damage
+    sfx_None,      // activesound
+    MF_SPECIAL,    // flags
+    S_NULL         // raisestate
     }
 };
 
