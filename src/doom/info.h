@@ -168,6 +168,7 @@ typedef enum
     SPR_HEVA,
     SPR_VSRM,
     SPR_ARSD,
+    SPR_REGN,
     NUMSPRITES
 
 } spritenum_t;
@@ -1151,6 +1152,10 @@ typedef enum
     S_ARMORSHARD2,
     S_ARMORSHARD3,
     S_ARMORSHARD4,
+    S_REGENERATION,
+    S_REGENERATION2,
+    S_REGENERATION3,
+    S_REGENERATION4,
     NUMSTATES
 } statenum_t;
 
@@ -1312,6 +1317,7 @@ typedef enum {
     MT_HEAVYARMOR,
     MT_VITALLYSERUM,
     MT_ARMORSHARD,
+    MT_REGENERATION,
     NUMMOBJTYPES
 
 } mobjtype_t;
