@@ -23,6 +23,8 @@
 
 #include "doomdef.h"
 #include "d_event.h"
+#include "deh_main.h"
+#include "deh_misc.h"
 
 #include "p_local.h"
 
@@ -344,6 +346,10 @@ void P_PlayerThink (player_t* player)
 		
     if (player->powers[pw_ironfeet])
 	player->powers[pw_ironfeet]--;
+
+	//Add new counter for Regeneration Item
+	if (player->powers[pw_regeneration])
+	player->powers[pw_regeneration]--;
 		
     if (player->damagecount)
 	player->damagecount--;
@@ -351,7 +357,18 @@ void P_PlayerThink (player_t* player)
     if (player->bonuscount)
 	player->bonuscount--;
 
-    
+    // Handling Regeneration
+	if (player->powers[pw_regeneration])
+	{
+		if (!(leveltime & 0x1f))
+		{
+			player->health += 4;
+        if (player->health > deh_max_health)
+            player->health = deh_max_health;
+        player->mo->health = player->health;
+		}
+	}
+
     // Handling colormaps.
     if (player->powers[pw_invulnerability])
     {
