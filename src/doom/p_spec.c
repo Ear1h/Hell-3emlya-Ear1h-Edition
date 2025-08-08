@@ -1081,7 +1081,30 @@ void P_PlayerInSpecialSector (player_t* player)
 	if (player->health <= 10)
 	    G_ExitLevel();
 	break;
-			
+      case 18:
+	//Instakill floor
+
+	player->cheats &= ~CF_GODMODE;
+	P_DamageMobj (player->mo, NULL, NULL, 10000);
+
+	break;
+
+      case 19:
+	//Instakill floor & Exit Level
+	player->cheats &= ~CF_GODMODE;
+	
+	P_DamageMobj (player->mo, NULL, NULL, 10000);
+    G_ExitLevel();
+	break;
+      case 20:
+	//Instakill floor & Secret Exit Level
+	player->cheats &= ~CF_GODMODE;
+	
+	P_DamageMobj (player->mo, NULL, NULL, 10000);
+    G_SecretExitLevel();
+
+	break;
+
       default:
 	I_Error ("P_PlayerInSpecialSector: "
 		 "unknown special %i",
