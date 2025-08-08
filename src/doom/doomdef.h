@@ -145,6 +145,7 @@ typedef enum
     pw_ironfeet,
     pw_allmap,
     pw_infrared,
+    pw_regeneration, //New Powerup
     NUMPOWERS
     
 } powertype_t;
@@ -161,8 +162,8 @@ typedef enum
     INVULNTICS	= (30*TICRATE),
     INVISTICS	= (60*TICRATE),
     INFRATICS	= (120*TICRATE),
-    IRONTICS	= (60*TICRATE)
-    
+    IRONTICS	= (60*TICRATE),
+    REGENTICS   = (25*TICRATE) //The power-up grants 4 HP per second, up to a total of 100 HP when the effect ends.
 } powerduration_t;
 
 #endif          // __DOOMDEF__
