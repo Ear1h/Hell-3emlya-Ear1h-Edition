@@ -73,6 +73,9 @@
 // Radiation suit, green shift.
 #define RADIATIONPAL		13
 
+// Regeneration
+#define REGENPAL            1
+
 // Location of status bar
 #define ST_X				0
 #define ST_X2				104
@@ -921,6 +924,11 @@ void ST_doPaletteStuff(void)
     else if ( plyr->powers[pw_ironfeet] > 4*32
 	      || plyr->powers[pw_ironfeet]&8)
 	palette = RADIATIONPAL;
+
+    //Add palette for Regeneration
+    else if (plyr->powers[pw_regeneration]>4*32
+          || plyr->powers[pw_regeneration]&8)
+    palette = REGENPAL;
     else
 	palette = 0;
 
