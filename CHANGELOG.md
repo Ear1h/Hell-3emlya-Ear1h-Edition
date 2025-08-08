@@ -14,3 +14,12 @@
 * Visplane overflow handler updated: Now throws I_Error("R_FindPlane: MAPPER - GANDON"); in `R_Plane.c`.
 * New states and actors added to `info.c` and `info.h`: Implemented as additions rather than replacements.
 * Fixed Vitality Serum bug: Player can now heal normally without needing to re-pick up the stimpack, medkit, medpack.
+
+# 08.08.2025
+
+* Implemented new powerup: `REGENERATION`. Upon pickup, the player gains `4 HP per second` for the duration of the effect. The effect lasts exactly `25 seconds`.
+* New sector special types added:
+  * `Kill player` (type 18)
+  * `Kill player and Exit Level` (type 19)
+  * `Kill player and Secret Exit Level` (type 20)
+* Added `MF_COUNTITEM` flag to `Armor Shard` and `Vitality Serum`.
