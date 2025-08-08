@@ -1,10 +1,11 @@
 {
-  "dependencies": [
-    "sdl2",
-    "sdl2-mixer",
-    "sdl2-net",
-    "libpng",
-    "libsamplerate",
-    "fluidsynth"
-  ]
+    "builtin-baseline": "f993fc42532591aeb07328bbe0add868b0629d0f",
+    "dependencies": [
+        "sdl2",
+        "sdl2-mixer",
+        "sdl2-net",
+        "libpng",
+        "libsamplerate",
+        "fluidsynth"
+    ]
 }
