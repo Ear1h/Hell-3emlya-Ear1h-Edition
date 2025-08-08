@@ -314,6 +314,11 @@ P_GivePower
 	player->powers[power] = 1;
 	return true;
     }
+	if (power == pw_regeneration)
+	{
+	player->powers[power] = REGENTICS;
+	return true;
+	}
 	
     if (player->powers[power])
 	return false;	// already got it
@@ -566,6 +571,14 @@ P_TouchSpecialThing
 	if (gameversion > exe_doom_1_2)
 	    sound = sfx_getpow;
 	break;
+
+	//Regeneration
+	  case SPR_REGN:
+	if(!P_GivePower(player,pw_regeneration))
+		return;
+    player->message = "You got Regeneration";
+    sound = sfx_getpow;
+    break;
 	
 	// ammo
       case SPR_CLIP:
