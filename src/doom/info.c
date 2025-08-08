@@ -44,7 +44,7 @@ const char *sprnames[] = {
     "COL3","COL4","CAND","CBRA","COL6","TRE1","TRE2","ELEC","CEYE","FSKU",
     "COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
     "HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2","MDPK","HEVA",
-	"VSRM","ARSD", NULL
+	"VSRM","ARSD","REGN", NULL
 };
 
 
@@ -1100,9 +1100,13 @@ state_t	states[NUMSTATES] = {
     {SPR_VSRM, 32769, 6, {NULL}, S_VITALLY3, 0, 0}, //S_VITALLY2
     {SPR_VSRM, 32769, 6, {NULL}, S_VITALLY, 0, 0},   //S_VITALLY3
     {SPR_ARSD, 0, 4, {NULL},S_ARMORSHARD2,0,0}, //S_ARMORSHARD
-    {SPR_ARSD, 0, 4, {NULL}, S_ARMORSHARD3, 0, 0}, //S_ARMORSHARD2
-    {SPR_ARSD, 0, 4, {NULL}, S_ARMORSHARD4, 0, 0}, //S_ARMORSHARD3
-    {SPR_ARSD, 0, 4, {NULL}, S_ARMORSHARD, 0, 0}  //S_ARMORSHARD4
+    {SPR_ARSD, 1, 4, {NULL}, S_ARMORSHARD3, 0, 0}, //S_ARMORSHARD2
+    {SPR_ARSD, 2, 4, {NULL}, S_ARMORSHARD4, 0, 0}, //S_ARMORSHARD3
+    {SPR_ARSD, 3, 4, {NULL}, S_ARMORSHARD, 0, 0},  //S_ARMORSHARD4
+    {SPR_REGN, 32768, 6, {NULL}, S_REGENERATION2, 0, 0},    //S_REGENERATION
+    {SPR_REGN, 32769, 6, {NULL}, S_REGENERATION3, 0, 0},  //S_REGENERATION2
+    {SPR_REGN, 32770, 6, {NULL}, S_REGENERATION4, 0, 0},  //S_REGENERATION3
+    {SPR_REGN, 32771, 6, {NULL}, S_REGENERATION, 0, 0}   //S_REGENERATION4
 }; 
 
 
@@ -4744,7 +4748,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
     100,           // mass
     0,             // damage
     sfx_None,      // activesound
-    MF_SPECIAL,    // flags
+    MF_SPECIAL & MF_COUNTITEM, // flags
     S_NULL         // raisestate
     },
 	{
@@ -4770,7 +4774,33 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
     100,           // mass
     0,             // damage
     sfx_None,      // activesound
-    MF_SPECIAL,    // flags
+    MF_SPECIAL & MF_COUNTITEM, // flags
+    S_NULL         // raisestate
+    },
+	{
+    // MT_REGENERATION
+    4004,          // doomednum
+    S_REGENERATION,// spawnstate
+    1000,          // spawnhealth
+    S_NULL,        // seestate
+    sfx_None,      // seesound
+    8,             // reactiontime
+    sfx_None,      // attacksound
+    S_NULL,        // painstate
+    0,             // painchance
+    sfx_None,      // painsound
+    S_NULL,        // meleestate
+    S_NULL,        // missilestate
+    S_NULL,        // deathstate
+    S_NULL,        // xdeathstate
+    sfx_None,      // deathsound
+    0,             // speed
+    20 * FRACUNIT, // radius
+    16 * FRACUNIT, // height
+    100,           // mass
+    0,             // damage
+    sfx_None,      // activesound
+    MF_SPECIAL & MF_COUNTITEM,    // flags
     S_NULL         // raisestate
     }
 };
