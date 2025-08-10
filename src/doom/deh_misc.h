@@ -35,6 +35,17 @@
 #define DEH_DEFAULT_BFG_CELLS_PER_SHOT 40
 #define DEH_DEFAULT_SPECIES_INFIGHTING 0
 
+//New dehacked misc parameter
+#define DEH_DEFAULT_VITALITY_HEALTH 150
+#define DEH_DEFAULT_HEAVY_ARMOR_CLASS 3
+#define DEH_DEFAULT_REGENERATION_PER_HEALTH 5
+#define DEH_DEFAULT_ARMOR_PER_POINT 1
+#define DEH_DEFAULT_HEALTH_PER_POINT 1
+#define DEH_DEFAULT_STIMPACK_HEALTH  10
+#define DEH_DEFAULT_MEDKIT_HEALTH 25
+#define DEH_DEFAULT_MEDPACK_HEALTH 50
+
+
 extern int deh_initial_health;
 extern int deh_initial_bullets;
 extern int deh_max_health;
@@ -51,6 +62,17 @@ extern int deh_idkfa_armor;
 extern int deh_idkfa_armor_class;
 extern int deh_bfg_cells_per_shot;
 extern int deh_species_infighting;
+
+//New dehacked misc parameter
+
+extern int deh_vitality_health;
+extern int deh_heavy_armor_class;
+extern int deh_regeneration_per_health;
+extern int deh_armor_per_point;
+extern int deh_health_per_point;
+extern int deh_stimpack_health;
+extern int deh_medkit_health;
+extern int deh_medpack_health;			
 
 #if 0
 
@@ -72,7 +94,13 @@ extern int deh_species_infighting;
 #define deh_idkfa_armor_class   DEH_DEFAULT_IDKFA_ARMOR_CLASS
 #define deh_bfg_cells_per_shot  DEH_DEFAULT_BFG_CELLS_PER_SHOT
 #define deh_species_infighting  DEH_DEFAULT_SPECIES_INFIGHTING
-
+#define deh_stimpack_health     DEH_DEFAULT_STIMPACK_HEALTH
+#define deh_medkit_health		DEH_DEFAULT_MEDKIT_HEALTH
+#define deh_medpack_health      DEH_DEFAULT_MEDPACK_HEALTH
+#define deh_health_per_point    DEH_DEFAULT_HEALTH_PER_POINT
+#define deh_armor_per_point     DEH_DEFAULT_ARMOR_PER_POINT
+#define deh_regeneration_per_health     DEH_DEFAULT_REGENERATION_PER_HEALTH
+#define deh_heavy_armor_class DEH_DEFAULT_HEAVY_ARMOR_CLASS
 #endif
 
 #endif /* #ifndef DEH_MISC_H */
