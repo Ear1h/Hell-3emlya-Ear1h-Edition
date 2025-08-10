@@ -331,6 +331,13 @@ static const bex_string_t bex_stringtable[] = {
     {"BGFLAT15", "RROCK13"},
     {"BGFLAT31", "RROCK19"},
     {"BGCASTCALL", "BOSSBACK"},
+    // part 10 - New Content
+    {"GOTHEAVY", GOTHEAVY},
+    {"GOTSHARD", GOTSHARD},
+    {"GOTREGEN", GOTREGEN},
+    {"GOTVITA",GOTVITA},
+    {"GOTMEDPACK", GOTMEDPACK},
+    {"GOTMEDPACKNEED", GOTMEDPACKNEED},
 };
 
 static void *DEH_BEXStrStart(deh_context_t *context, char *line)
