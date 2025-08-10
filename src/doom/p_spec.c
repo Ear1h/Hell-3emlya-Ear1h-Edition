@@ -1082,6 +1082,8 @@ void P_PlayerInSpecialSector (player_t* player)
 	    G_ExitLevel();
 	break;
       case 18:
+	if(gameversion < exe_doom_2_0)
+		break;
 	//Instakill floor
 
 	player->cheats &= ~CF_GODMODE;
@@ -1091,12 +1093,16 @@ void P_PlayerInSpecialSector (player_t* player)
 
       case 19:
 	//Instakill floor & Exit Level
+	if(gameversion < exe_doom_2_0)
+		break;
 	player->cheats &= ~CF_GODMODE;
 	
 	P_DamageMobj (player->mo, NULL, NULL, 10000);
     G_ExitLevel();
 	break;
       case 20:
+	if(gameversion < exe_doom_2_0)
+		break;
 	//Instakill floor & Secret Exit Level
 	player->cheats &= ~CF_GODMODE;
 	

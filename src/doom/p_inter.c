@@ -222,15 +222,28 @@ P_GiveBody
 ( player_t*	player,
   int		num )
 {
-    if (player->health >= player->VitaHealth)
-	return false;
+	if (gameversion > exe_doom_2_0)
+	{
+		if (player->health >= player->VitaHealth)
+			return false;
 		
-    player->health += num;
-    if (player->health > player->VitaHealth)
-    player->health = player->VitaHealth;
-    player->mo->health = player->health;
+		player->health += num;
+		if (player->health > player->VitaHealth)
+			player->health = player->VitaHealth;
+			player->mo->health = player->health;
 	
-    return true;
+		return true;
+	}
+
+	if (player->health >= MAXHEALTH)
+			return false;
+		
+	player->health += num;
+    if (player->health > MAXHEALTH)
+		player->health = MAXHEALTH;
+		player->mo->health = player->health;
+	
+	return true;
 }
 
 
@@ -378,7 +391,15 @@ P_TouchSpecialThing
 	
 	// bonus items
       case SPR_BON1:
-	player->health++;		// can go over 100%
+	if(gameversion < exe_doom_2_0)
+	{
+		player->health++;
+	}
+	else
+	{
+		player->health += deh_health_per_point; // can go over 100%
+	}
+
 	if (player->health > deh_max_health)
 	    player->health = deh_max_health;
 	player->mo->health = player->health;
@@ -386,7 +407,14 @@ P_TouchSpecialThing
 	break;
 	
       case SPR_BON2:
-	player->armorpoints++;		// can go over 100%
+    if (gameversion < exe_doom_2_0)
+	{
+        player->armorpoints++;
+	}
+	else
+	{
+		player->armorpoints += deh_armor_per_point; // can go over 100%
+	}
 	if (player->armorpoints > deh_max_armor && gameversion > exe_doom_1_2)
 	    player->armorpoints = deh_max_armor;
         // deh_green_armor_class only applies to the green armor shirt;
@@ -413,7 +441,10 @@ P_TouchSpecialThing
 	player->mo->health = player->health;
         // We always give armor type 2 for the megasphere; dehacked only 
         // affects the MegaArmor.
-	P_GiveArmor (player, 3);
+	if(gameversion > exe_doom_2_0)
+		P_GiveArmor (player, 3);
+	else
+		P_GiveArmor (player, 2);
 	player->message = DEH_String(GOTMSPHERE);
 	if (gameversion > exe_doom_1_2)
 	    sound = sfx_getpow;
@@ -471,47 +502,72 @@ P_TouchSpecialThing
 	
 	// medikits, heals
       case SPR_STIM:
-	if (!P_GiveBody (player, 10))
-	    return;
+	if(gameversion < exe_doom_2_0)
+	{
+		if (!P_GiveBody (player, 10))
+			return;
+	}
+
+	else
+	{
+		if(!P_GiveBody(player, deh_stimpack_health))
+			return;
+	}
+
 	player->message = DEH_String(GOTSTIM);
 	break;
 	
       case SPR_MEDI:
-	if (!P_GiveBody (player, 25))
-	    return;
-
-	if (player->health < 50)
+	if(gameversion < exe_doom_2_0)
+	{
+		if (!P_GiveBody (player, 25))
+			return;
+	}
+	else
+	{
+		 if (!P_GiveBody (player, deh_medkit_health))
+			return;
+	}
+       
+	if (player->health < deh_medkit_health * 2)
 	    player->message = DEH_String(GOTMEDINEED);
 	else
 	    player->message = DEH_String(GOTMEDIKIT);
 	break;
 
 	  case SPR_MDPK:
-    if (!P_GiveBody(player, 50))
+	if(gameversion < exe_doom_2_0)
+		return;
+    if (!P_GiveBody(player, deh_medpack_health))
        return;
-    if (player->health < 70)
-        player->message = "You really need this medipack.";
+    if (player->health < deh_medpack_health)
+        player->message = DEH_String(GOTMEDPACKNEED);
     else
-        player->message = "You got a medipack.";
+        player->message = DEH_String(GOTMEDPACK);
     break;
 
 	  case SPR_HEVA:
-    if (!P_GiveArmor(player, 3))
+	if(gameversion < exe_doom_2_0)
+		break;
+    if (!P_GiveArmor(player, deh_heavy_armor_class))
 		return;
-	player->message = "You got a heavy armor ";
+    player->message = DEH_String(GOTHEAVY);
     break;
 
 	case SPR_VSRM:
-     if (!player->vitally)
-	{
+	if(gameversion < exe_doom_2_0)
+		break;
+    if (!player->vitally)
 		player->vitally = true;
-		player->VitaHealth = 150;
-	}
-	player->message = "Your health has increased to 150.";
-    player->health = 150;
+        player->VitaHealth = deh_vitality_health;
+    player->message = DEH_String(GOTVITA);
+    player->health = deh_vitality_health;
     player->mo->health = player->health;
+
 	break;
 	  case SPR_ARSD:
+	if (gameversion < exe_doom_2_0)
+		break;
 	player->armorpoints += 10;		// can go over 100%
 	if (player->armorpoints > deh_max_armor && gameversion > exe_doom_1_2)
 	    player->armorpoints = deh_max_armor;
@@ -519,7 +575,7 @@ P_TouchSpecialThing
         // for the armor helmets, armortype 1 is always used.
 	if (!player->armortype)
 	    player->armortype = 1;
-	player->message = "You got an armor shard.";
+	player->message = DEH_String(GOTSHARD);
 	break;
 	// power ups
       case SPR_PINV:
@@ -574,10 +630,12 @@ P_TouchSpecialThing
 
 	//Regeneration
 	  case SPR_REGN:
+	if(gameversion < exe_doom_2_0)
+		break;
 	if(!P_GivePower(player,pw_regeneration))
 		return;
-    player->message = "You got Regeneration";
-    sound = sfx_getpow;
+		player->message = DEH_String(GOTREGEN);
+		sound = sfx_getpow;
     break;
 	
 	// ammo
@@ -924,6 +982,8 @@ P_DamageMobj
         }
         else
         {
+            if (gameversion < exe_doom_2_0)
+				return;
             saved = damage * 4 / 5;
         }
 		
