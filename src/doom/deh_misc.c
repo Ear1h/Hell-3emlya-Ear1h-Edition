@@ -156,6 +156,8 @@ int deh_medkit_health = DEH_DEFAULT_MEDKIT_HEALTH;
 
 int deh_medpack_health = DEH_DEFAULT_MEDPACK_HEALTH;
 
+int deh_armor_shard_count = DEH_DEFAULT_ARMOR_SHARD;
+
 static struct
 {
     const char *deh_name;
@@ -184,6 +186,7 @@ static struct
     {"Regeneration Health", &deh_regeneration_per_health},
     {"Vitality Health",     &deh_vitality_health},
     {"Heavy Armor Class",   &deh_heavy_armor_class},
+    {"Armor Shard Count",   &deh_armor_shard_count}
 };
 
 static void *DEH_MiscStart(deh_context_t *context, char *line)

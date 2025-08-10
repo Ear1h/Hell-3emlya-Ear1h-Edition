@@ -44,6 +44,7 @@
 #define DEH_DEFAULT_STIMPACK_HEALTH  10
 #define DEH_DEFAULT_MEDKIT_HEALTH 25
 #define DEH_DEFAULT_MEDPACK_HEALTH 50
+#define DEH_DEFAULT_ARMOR_SHARD 10
 
 
 extern int deh_initial_health;
@@ -72,7 +73,8 @@ extern int deh_armor_per_point;
 extern int deh_health_per_point;
 extern int deh_stimpack_health;
 extern int deh_medkit_health;
-extern int deh_medpack_health;			
+extern int deh_medpack_health;		
+extern int deh_armor_shard_count;
 
 #if 0
 

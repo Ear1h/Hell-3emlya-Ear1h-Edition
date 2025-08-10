@@ -568,7 +568,7 @@ P_TouchSpecialThing
 	  case SPR_ARSD:
 	if (gameversion < exe_doom_2_0)
 		break;
-	player->armorpoints += 10;		// can go over 100%
+	player->armorpoints += deh_armor_shard_count;		// can go over 100%
 	if (player->armorpoints > deh_max_armor && gameversion > exe_doom_1_2)
 	    player->armorpoints = deh_max_armor;
         // deh_green_armor_class only applies to the green armor shirt;
