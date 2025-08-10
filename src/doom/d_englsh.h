@@ -76,6 +76,10 @@
 //
 #define GOTARMOR	"Picked up the armor."
 #define GOTMEGA	"Picked up the MegaArmor!"
+#define GOTHEAVY "Picked up the Heavy Armor"
+#define GOTSHARD "Picked up the Armor Shard"
+#define GOTMEDPACK "Picked up a medipack"
+#define GOTMEDPACKNEED "Picked up a medipack that you REALLY need!"
 #define GOTHTHBONUS	"Picked up a health bonus."
 #define GOTARMBONUS	"Picked up an armor bonus."
 #define GOTSTIM	"Picked up a stimpack."
@@ -97,6 +101,8 @@
 #define GOTMAP	"Computer Area Map"
 #define GOTVISOR	"Light Amplification Visor"
 #define GOTMSPHERE	"MegaSphere!"
+#define GOTREGEN "Regeneration!"
+#define GOTVITA "Your health has increased!"
 
 #define GOTCLIP	"Picked up a clip."
 #define GOTCLIPBOX	"Picked up a box of bullets."
