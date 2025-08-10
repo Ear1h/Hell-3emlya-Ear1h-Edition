@@ -1156,7 +1156,11 @@ void G_PlayerReborn (int player)
 	 
     for (i=0 ; i<NUMAMMO ; i++) 
 	p->maxammo[i] = maxammo[i]; 
-    p->VitaHealth = 100; //Restore Player Health
+
+    if (gameversion > exe_doom_2_0)
+    {
+        p->VitaHealth = deh_vitality_health; //Restore Player Health
+    }
 }
 
 //
@@ -2126,8 +2130,10 @@ int G_VanillaVersionCode(void)
         case exe_doom_1_8:
             return 108;
         case exe_doom_1_9:
-        default:  // All other versions are variants on v1.9:
             return 109;
+        case exe_doom_2_0:
+        default:  // All other versions are variants on v2.0:
+            return 120;
     }
 }
 
@@ -2209,6 +2215,8 @@ static const char *DemoVersionDescription(int version)
             return "v1.9";
         case 111:
             return "v1.91 hack demo?";
+        case 120:
+            return "2.0 Ad 3emlya?";
         default:
             break;
     }

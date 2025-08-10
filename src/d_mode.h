@@ -74,7 +74,9 @@ typedef enum
     exe_hexen_1_1,   // Hexen 1.1
     exe_hexen_1_1r2, // Hexen 1.1 (alternate exe)
     exe_strife_1_2,  // Strife v1.2
-    exe_strife_1_31  // Strife v1.31
+    exe_strife_1_31, // Strife v1.31
+
+    exe_doom_2_0     // Doom 2.0  "
 } GameVersion_t;
 
 // What IWAD variant are we using?

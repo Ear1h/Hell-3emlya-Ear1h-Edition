@@ -984,6 +984,7 @@ static const struct
     {"Doom 1.7/1.7a",        "1.7",        exe_doom_1_7},
     {"Doom 1.8",             "1.8",        exe_doom_1_8},
     {"Doom 1.9",             "1.9",        exe_doom_1_9},
+    {"Doom 2.0",             "2.0",        exe_doom_2_0}, 
     {"Hacx",                 "hacx",       exe_hacx},
     {"Ultimate Doom",        "ultimate",   exe_ultimate},
     {"Final Doom",           "final",      exe_final},
@@ -1090,6 +1091,9 @@ static void InitGameVersion(void)
                             break;
                         case 109:
                             gameversion = exe_doom_1_9;
+                            break;
+                        case 120:
+                            gameversion = exe_doom_2_0;
                             break;
                         default:
                             status = false;

@@ -356,6 +356,7 @@ static boolean FileIsDemoLump(const char *filename)
             case 108: // v1.8
             case 109: // v1.9
             case 111: // v1.91 hack
+            case 120: // 2.0
                 break;
             default:
                 return false;
