@@ -130,6 +130,32 @@ int deh_bfg_cells_per_shot = DEH_DEFAULT_BFG_CELLS_PER_SHOT;
 
 int deh_species_infighting = DEH_DEFAULT_SPECIES_INFIGHTING;
 
+// New Dehacked parameter!
+// Dehacked: "Vitality Health"
+// Increases the player's maximum health up to a specified value.
+int deh_vitality_health = DEH_DEFAULT_VITALITY_HEALTH;
+
+// Dehacked: "Heavy Armor Class"
+
+int deh_heavy_armor_class = DEH_DEFAULT_HEAVY_ARMOR_CLASS;
+
+// Dehacked: "Regeneration Health"
+// Increases the player's health by a specified amount per second (default: 5 HP).
+int deh_regeneration_per_health = DEH_DEFAULT_REGENERATION_PER_HEALTH;
+
+// Dehacked: "Armor per point"
+int deh_armor_per_point = DEH_DEFAULT_ARMOR_PER_POINT;
+
+// Dehacked: "Health per point"
+int deh_health_per_point = DEH_DEFAULT_HEALTH_PER_POINT;
+
+//Dehacked: "Stimpack Health"
+int deh_stimpack_health = DEH_DEFAULT_STIMPACK_HEALTH;
+
+int deh_medkit_health = DEH_DEFAULT_MEDKIT_HEALTH;
+
+int deh_medpack_health = DEH_DEFAULT_MEDPACK_HEALTH;
+
 static struct
 {
     const char *deh_name;
@@ -150,6 +176,14 @@ static struct
     {"IDKFA Armor",         &deh_idkfa_armor},
     {"IDKFA Armor Class",   &deh_idkfa_armor_class},
     {"BFG Cells/Shot",      &deh_bfg_cells_per_shot},
+    {"Stimpack Health",     &deh_stimpack_health},
+    {"Medkit Health",       &deh_medkit_health},
+    {"Medpack Health",      &deh_medpack_health},
+    {"Health Bonus Count",  &deh_health_per_point},
+    {"Armor Bonus Count",   &deh_armor_per_point},
+    {"Regeneration Health", &deh_regeneration_per_health},
+    {"Vitality Health",     &deh_vitality_health},
+    {"Heavy Armor Class",   &deh_heavy_armor_class},
 };
 
 static void *DEH_MiscStart(deh_context_t *context, char *line)
