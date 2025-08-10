@@ -23,3 +23,25 @@
   * `Kill player and Exit Level` (type 19)
   * `Kill player and Secret Exit Level` (type 20)
 * Added `MF_COUNTITEM` flag to `Armor Shard` and `Vitality Serum`.
+
+# 10.08.2025
+* Added new `gameversion 2.0` to maintain demo compatibility with previous versions:
+  * New items now function only in this version; otherwise, nothing happens.
+  * New special actions do not work in older versions.
+  * New Dehacked parameters are only available in version `2.0` (details below).
+
+* `Dehacked` improvements:
+  * Added **string mnemonics** for `pickup messages` of new items.
+  * You can now edit the following properties:
+    * `Stimpack Health` – Amount of `health` restored by a *Stimpack* (default: `10`).
+    * `Medikit Health` – Amount of `health` restored by a *Medikit* (default: `25`).
+    * `Medipack Health` – Amount of `health` restored by a *Medipack* (default: `50`).
+    * `Health Bonus Count` – Amount of `health` restored by a *Health Bonus* (default: `1`).
+    * `Armor Bonus Count` – Amount of `armor` granted by an *Armor Bonus* (default: `1`).
+    * `Armor Shard Count` – Amount of `armor` granted by an *Armor Shard* (default: `10`).
+    * `Heavy Armor Class` – `Armor class` value granted by *Heavy Armor* (default: `3`).
+    * `Regeneration Health` – Amount of `health` restored per second during *Regeneration* (default: `5`).
+    * `Vitality Health` – Maximum player `health` after picking up *Vitality Serum* (default: `150`).
+
+* Bugfix:
+  * Fixed an issue where regeneration could heal a dead player. Regeneration now works only if the player’s `HP` is above `0%`.
