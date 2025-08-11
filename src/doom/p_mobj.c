@@ -404,6 +404,10 @@ P_NightmareRespawn (mobj_t* mobj)
     x = mobj->spawnpoint.x << FRACBITS; 
     y = mobj->spawnpoint.y << FRACBITS; 
 
+    //Don't respawn with MF2_NORESPAWN flag
+    if (gameversion == exe_doom_2_0 && mobj->info->flags2 & MF2_NORESPAWN)
+        return;
+
     // somthing is occupying it's position?
     if (!P_CheckPosition (mobj, x, y) ) 
 	return;	// no respwan
@@ -822,7 +826,14 @@ void P_SpawnMapThing (mapthing_t* mthing)
 	I_Error ("P_SpawnMapThing: Unknown type %i at (%i, %i)",
 		 mthing->type,
 		 mthing->x, mthing->y);
-		
+	
+    // Do not spawn actors intended exclusively for NIGHTMARE skill or -respawn!
+    if  (gameskill != sk_nightmare &&
+        !respawnparm &&
+        gameversion == exe_doom_2_0 && 
+        (mobjinfo[i].flags2 & MF2_SPAWNONLYNIGHTMARE))
+        return;
+
     // don't spawn keycards and players in deathmatch
     if (deathmatch && mobjinfo[i].flags & MF_NOTDMATCH)
 	return;
