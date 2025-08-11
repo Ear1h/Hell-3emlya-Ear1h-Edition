@@ -1347,6 +1347,7 @@ typedef struct
     int	activesound;
     int	flags;
     int	raisestate;
+    int flags2;
 
 } mobjinfo_t;
 
