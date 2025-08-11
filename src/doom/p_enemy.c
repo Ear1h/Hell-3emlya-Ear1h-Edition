@@ -642,16 +642,26 @@ void A_Look (mobj_t* actor)
 	    break;
 	}
 
-	if (actor->type==MT_SPIDER
-	    || actor->type == MT_CYBORG)
-	{
-	    // full volume
-	    S_StartSound (NULL, sound);
-	}
-	else
-	    S_StartSound (actor, sound);
-    }
+    //Depending on the version, the actor may play a sound across the entire map.
+    if (gameversion == exe_doom_2_0)
+        if (actor->info->flags2 & MF2_FULLVOLSOUNDS){
+            S_StartSound(NULL, sound);
+        }
+        else
+            S_StartSound(actor, sound);
 
+    else if (gameversion < exe_doom_2_0)
+    {
+        if (actor->type == MT_SPIDER || actor->type == MT_CYBORG)
+        {
+            // full volume
+            S_StartSound(NULL, sound);
+        }
+        else
+            S_StartSound(actor, sound);
+    }
+    }
+    
     P_SetMobjState (actor, actor->info->seestate);
 }
 
@@ -1568,15 +1578,25 @@ void A_Scream (mobj_t* actor)
 	break;
     }
 
-    // Check for bosses.
-    if (actor->type==MT_SPIDER
-	|| actor->type == MT_CYBORG)
+    //Depending on the version, the actor may play a sound across the entire map.
+    if (gameversion == exe_doom_2_0)
+        if (actor->info->flags2 & MF2_FULLVOLSOUNDS)
+        {
+            S_StartSound(NULL, sound);
+        }
+        else
+            S_StartSound(actor, sound);
+
+    else if (gameversion < exe_doom_2_0)
     {
-	// full volume
-	S_StartSound (NULL, sound);
+        if (actor->type == MT_SPIDER || actor->type == MT_CYBORG)
+        {
+            // full volume
+            S_StartSound(NULL, sound);
+        }
+        else
+            S_StartSound(actor, sound);
     }
-    else
-	S_StartSound (actor, sound);
 }
 
 
