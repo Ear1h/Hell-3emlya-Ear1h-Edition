@@ -117,7 +117,15 @@ boolean PIT_StompThing (mobj_t* thing)
     // monsters don't stomp things except on boss level
     if ( !tmthing->player && gamemap != 30)
 	return false;	
-		
+
+    //YOU SHOULD TELEFRAG YOURSELF! NOW
+    if (thing->info->flags2 & MF2_ANTITELEFRAG
+        && gameversion == exe_doom_2_0)
+    {
+        P_DamageMobj(tmthing, thing, thing, 10000);
+        return true;
+    }
+
     P_DamageMobj (thing, tmthing, tmthing, 10000);
 	
     return true;
@@ -233,8 +241,20 @@ boolean PIT_CheckLine (line_t* ld)
 	if ( ld->flags & ML_BLOCKING )
 	    return false;	// explicitly blocking everything
 
-	if ( !tmthing->player && ld->flags & ML_BLOCKMONSTERS )
-	    return false;	// block monsters only
+	if (!tmthing->player && gameversion < exe_doom_2_0 &&
+            (ld->flags & ML_BLOCKMONSTERS))
+        {
+            return false;
+        } // block monsters only
+    
+    if (!tmthing->player &&
+        gameversion == exe_doom_2_0 &
+        (!tmthing->info->flags2 & MF2_MONSTERPASS) &&
+        ld->flags & ML_BLOCKMONSTERS)
+        {
+            return false; //block monsters without MF2_MONSTERPASS
+        }
+           
     }
 
     // set openrange, opentop, openbottom
@@ -1215,9 +1235,15 @@ boolean PIT_RadiusAttack (mobj_t* thing)
 
     // Boss spider and cyborg
     // take no damage from concussion.
-    if (thing->type == MT_CYBORG
-	|| thing->type == MT_SPIDER)
+    if ((thing->type == MT_CYBORG
+	|| thing->type == MT_SPIDER) && 
+        gameversion < exe_doom_2_0)
 	return true;	
+
+    // Any actor with MF2_NORADIUSDMG 
+    // take no damage from concussion.
+    if ((thing->info->flags2 & MF2_NORADIUSDMG) && gameversion == exe_doom_2_0)
+        return true;
 		
     dx = abs(thing->x - bombspot->x);
     dy = abs(thing->y - bombspot->y);
@@ -1307,7 +1333,7 @@ boolean PIT_ChangeSector (mobj_t*	thing)
 	return true;
     }
     
-
+    
     // crunch bodies to giblets
     if (thing->health <= 0)
     {
@@ -1315,13 +1341,13 @@ boolean PIT_ChangeSector (mobj_t*	thing)
             !(thing->info->flags2 & MF2_NOCRUSH))
             P_SetMobjState(thing, S_GIBS);
 
-    if (gameversion > exe_doom_1_2)
-	    thing->flags &= ~MF_SOLID;
-	thing->height = 0;
-	thing->radius = 0;
+        if (gameversion > exe_doom_1_2)
+            thing->flags &= ~MF_SOLID;
+        thing->height = 0;
+        thing->radius = 0;
 
-	// keep checking
-	return true;		
+        // keep checking
+        return true;
     }
 
     // crunch dropped items
