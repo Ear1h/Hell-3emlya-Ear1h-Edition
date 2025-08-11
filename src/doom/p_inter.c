@@ -908,6 +908,9 @@ P_DamageMobj
     if (target->health <= 0)
 	return;
 
+	if (target->info->flags2 & MF2_NODAMAGE && gameversion == exe_doom_2_0)
+        damage = 0;
+
     if ( target->flags & MF_SKULLFLY )
     {
 	target->momx = target->momy = target->momz = 0;
