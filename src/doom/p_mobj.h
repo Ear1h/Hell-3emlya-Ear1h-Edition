@@ -196,6 +196,49 @@ typedef enum
 
 } mobjflag_t;
 
+//New flags to exe_doom 2.0
+typedef enum
+{ 
+    // Actor cannot respawn in NIGHTMARE mode 
+    // or with the -respawn parameter enabled.
+    // ID24 flag
+    MF2_NORESPAWN       = 1, 
+
+    // Plays a sound at 100% volume across the entire map.
+    // MBF21 flag
+    MF2_FULLVOLSOUNDS   = 2,
+
+    // Immune to splash damage, similar
+    // to the Cyberdemon and Spider Mastermind.
+    // MBF21 flag
+    MF2_NORADIUSDMG     = 4,
+
+    // Actor can trigger special actions just 
+    // like a player or a voodoo doll. MBF2y flag
+    MF2_ACTIVATOR       = 8,
+
+    // Thing does not lose health when taking damage. MBF2y flag
+    MF2_NODAMAGE        = 16,
+
+    // If Thing is a , it does not turn into gibs when crushed. 
+    // If Thing is , it does not disappear when crushed. 
+    // (Thing will still take damage from crushers.) 
+    // CORPSE | DROPPED. MBF2y flag
+    MF2_NOCRUSH         = 32,
+
+    // Thing passes through monster-blocking lines, 
+    // without being a friend, projectile or a player.
+    // Eternity flag
+    MF2_MONSTERPASS     = 64,
+
+    // This actor only spawns in NIGHTMARE mode 
+    // or when `-respawn` is enabled.
+    MF2_SPAWNONLYNIGHTMARE = 128,
+
+    //Things that would telefrag this thing are telefragged instead.
+    MF2_ANTITELEFRAG = 256,
+
+}mobjflag2_t;
 
 // Map Object definition.
 typedef struct mobj_s
@@ -246,6 +289,7 @@ typedef struct mobj_s
     int			tics;	// state tic counter
     state_t*		state;
     int			flags;
+    int         flags2; //New flags2 to GAMEVERSION 2.0
     int			health;
 
     // Movement direction, movement generation (zig-zagging).
