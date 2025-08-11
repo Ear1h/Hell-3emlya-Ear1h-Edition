@@ -827,9 +827,8 @@ void P_SpawnMapThing (mapthing_t* mthing)
 		 mthing->type,
 		 mthing->x, mthing->y);
 	
-    // Do not spawn actors intended exclusively for NIGHTMARE skill or -respawn!
+    // Do not spawn actors intended exclusively for NIGHTMARE skill
     if  (gameskill != sk_nightmare &&
-        !respawnparm &&
         gameversion == exe_doom_2_0 && 
         (mobjinfo[i].flags2 & MF2_SPAWNONLYNIGHTMARE))
         return;
