@@ -1339,7 +1339,7 @@ boolean PIT_ChangeSector (mobj_t*	thing)
     {
         if (gameversion != exe_doom_2_0 || 
             !(thing->info->flags2 & MF2_NOCRUSH))
-            P_SetMobjState(thing, S_GIBS);
+            P_SetMobjState(thing, S_GIBS)
 
         if (gameversion > exe_doom_1_2)
             thing->flags &= ~MF_SOLID;
@@ -1353,8 +1353,8 @@ boolean PIT_ChangeSector (mobj_t*	thing)
     // crunch dropped items
     if (thing->flags & MF_DROPPED)
     {
-	P_RemoveMobj (thing);
-	
+        if (gameversion != exe_doom_2_0 || !(thing->info->flags2 & MF2_NOCRUSH))
+            P_RemoveMobj(thing); //Don't remove a dropped items
 	// keep checking
 	return true;		
     }
