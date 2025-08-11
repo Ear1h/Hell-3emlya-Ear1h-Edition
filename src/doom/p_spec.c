@@ -535,7 +535,9 @@ P_CrossSpecialLine
         }
     }
 
-    if (!thing->player)
+    if (!thing->player && 
+		(gameversion != exe_doom_2_0 || 
+		!(thing->info->flags2 & MF2_ACTIVATOR)))
     {
 	ok = 0;
 	switch(line->special)
