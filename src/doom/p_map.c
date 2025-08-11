@@ -1339,7 +1339,7 @@ boolean PIT_ChangeSector (mobj_t*	thing)
     {
         if (gameversion != exe_doom_2_0 || 
             !(thing->info->flags2 & MF2_NOCRUSH))
-            P_SetMobjState(thing, S_GIBS)
+            P_SetMobjState(thing, S_GIBS);
 
         if (gameversion > exe_doom_1_2)
             thing->flags &= ~MF_SOLID;
