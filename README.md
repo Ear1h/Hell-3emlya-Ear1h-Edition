@@ -11,6 +11,9 @@ A Chocolate Doom fork specifically designed for megawad. Currently under develop
 * New mouse button for alt-fire.
 * Disable Random damage
 * Damage scaling based on skill level
+* New flags from `MBF21`, `ID24` and `MBF2y`
+* New properities from `MBF21`, `ID24` and `MBF2y`
+* Demo compatibility with `Doom 1.9`
 
 # Minor features:
 * ✅ New health and armor pickups: `Medikit` restores *50 HP* per use, `armor` adds *10%* per pickup.
