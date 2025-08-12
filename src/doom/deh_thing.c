@@ -50,7 +50,7 @@ DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
   DEH_MAPPING("Action sound",        activesound)
   DEH_MAPPING("Bits",                flags)
   DEH_MAPPING("Respawn frame",       raisestate)
-  DEH_MAPPING("Ear1h27 Bits",             flags2)
+  DEH_MAPPING("Ear1h27 Bits",        flags2)
 DEH_END_MAPPING
 
 static void *DEH_ThingStart(deh_context_t *context, char *line)
