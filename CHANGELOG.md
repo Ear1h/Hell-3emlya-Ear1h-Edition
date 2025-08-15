@@ -64,3 +64,40 @@
 |MF2_MONSTERPASS | Thing passes through monster-blocking lines, without being a friend, projectile or a player. (from Eternity). | 64
 |MF2_SPAWNONLYNIGHTMARE | Enemies spawn only on Nightmare difficulty. | 128
 |MF2_ANTITELEFRAG | Things that would telefrag this thing are telefragged instead. (from MBF2y). | 256
+
+# 15.08.2025
+# New THINGS Flag
+* Added a new difficulty filter: `Nightmare` (`MTF_NIGHTMARE = 32`). You can now configure monsters to be excluded from **Nightmare** mode, or to appear only in it.
+
+# New LINEDEFS Flag
+* New Linedef flags include both `MBF21` features and new mechanics such as hitscan blocking, projectile blocking, and monster sight blocking.
+* All flags can be combined to create an impassable line that blocks everything (except sound — for that, you’ll still need additional lines).
+
+| Flag | Description           | Value
+|-------|-----------------------|------
+|ML_BLOCKPLAYERS | Block players (MBF21 flag). | 512
+|ML_BLOCKLANDMONSTERS | Block Land Monsters (without MT_FLOAT, like cacos, pain elemental). (from MBF21). | 0x400
+|ML_BLOCKSCAN | Block hitscan and BFG9000 tracers (from ZDoom). | 0x800
+|ML_BLOCKPROJECTILE | Block projectiles (from ZDoom). | 0x1000
+|ML_BLOCKSIGHT | Block thing sight	 (from ZDoom). | 0x2000
+
+# Sector Special changes
+
+* Introduced Boom sector specials along with new flags.
+* Both features were presumably reserved by *Team TNT* for future development but never made it into a release. `MBF2y` will implement this feature in the near future.
+
+| Value | Description          
+|-------|--------------
+| 32 | Damage Player (5 hp) (from Boom).
+| 64 | Damage Player (10 hp) (from Boom).
+| 96 | Damage Player (20 hp) (from Boom).
+| 128  | Secret (Boom)
+| 256  | Silent Monsters (Silences any sound emitted by an actor inside the sector) (Boom-Eternity)
+| 512  | Silences doors, ceilings, and other level geometry movements (Boom (Reserve))
+| 4096 | Kill Player (from MBF21).
+| 4128 | Kill Player and go to Exit (from MBF21).
+| 4160 | Kill Player and go to Secret Exit (from MBF21).
+
+* Bugfixes:
+  * **Vitality Serum** now works correctly (previously non-functional due to `gameversion > exe_doom_2_0`).
+  * Fixed an issue where picking up **Vitality Serum** with more than `150 HP` would reset health to the default value (150).
