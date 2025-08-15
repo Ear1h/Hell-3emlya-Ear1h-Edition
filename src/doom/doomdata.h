@@ -131,7 +131,60 @@ typedef PACKED_STRUCT (
 // Set if already seen, thus drawn in automap.
 #define ML_MAPPED		256
 
+// Block Players Only (MBF21 flag)
+#define ML_BLOCKPLAYERS 512
 
+// Block Float Monsters Only (MBF21 flag)
+#define ML_BLOCKLANDMONSTERS 0x400
+
+// Block hitscan (ZDoom flag)
+#define ML_BLOCKSCAN        0x800
+
+// Block projectile (ZDoom flag)
+#define ML_BLOCKPROJECTILE  0x1000
+
+// Block monster see (ZDoom flag)
+#define ML_BLOCKSIGHT       0x2000
+
+// Sector Attributes
+
+// Damage player
+
+/*
+//Damage 5 hp
+#define SPEC_DAMAGE_5           32
+
+//Damage 10 hp
+#define SPEC_DAMAGE_10          64
+
+//Damage player like Action 16
+#define SPEC_DAMAGE_20          96
+
+//Kill player
+#define SPEC_KILL_PLAYER        4096
+
+//Kill player and go to next level
+#define SPEC_KILL_PLAYER_EXIT   4128
+
+//Kill player and send him to Secret Level
+#define SPEC_KILL_PLAYER_SECRET 4160
+
+//Secret has revealed!
+#define SPEC_SECRET             128
+
+//Any actors in silent sector Does not play sounds.
+#define SPEC_SILENT_MOBJ        256
+
+//Any floors/doors/ceiling/crusher doen not play sounds
+#define SPEC_SILENT_LEVEL       512
+
+//Kill fuckin' monsters
+#define SPEC_KILL_MONSTER       1024
+
+//Damaging floor effects also apply to objects without , 
+//not just players. This includes voodoo dolls.
+#define SPEC_DAMAGE_MOBJ        2048
+*/
 
 
 // Sector definition, from editing.
