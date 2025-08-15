@@ -211,7 +211,9 @@ void T_MoveFloor(floormove_t* floor)
 		      floor->crush,0,floor->direction);
     
     if (!(leveltime&7))
-	S_StartSound(&floor->sector->soundorg, sfx_stnmov);
+        if (!(floor->sector->special & SILENT_SEC_MASK) ||
+            gameversion < exe_doom_2_0)
+			S_StartSound(&floor->sector->soundorg, sfx_stnmov);
     
     if (res == pastdest)
     {
@@ -241,7 +243,9 @@ void T_MoveFloor(floormove_t* floor)
 	}
 	P_RemoveThinker(&floor->thinker);
 
-	S_StartSound(&floor->sector->soundorg, sfx_pstop);
+	if (!(floor->sector->special & SILENT_SEC_MASK) ||
+            gameversion < exe_doom_2_0)
+		S_StartSound(&floor->sector->soundorg, sfx_pstop);
     }
 
 }
