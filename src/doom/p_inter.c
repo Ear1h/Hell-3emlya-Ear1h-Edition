@@ -222,7 +222,7 @@ P_GiveBody
 ( player_t*	player,
   int		num )
 {
-	if (gameversion > exe_doom_2_0)
+	if (gameversion == exe_doom_2_0)
 	{
 		if (player->health >= player->VitaHealth)
 			return false;
@@ -560,9 +560,22 @@ P_TouchSpecialThing
     if (!player->vitally)
 		player->vitally = true;
         player->VitaHealth = deh_vitality_health;
+	
+	//If the player’s health is significantly higher than DEH_VITALITY_HEALTH,
+	//it would be unfair to the player. Health is restored like Berserk, 
+	//but only if current health is below the specified parameter.
+	if (player->health < deh_vitality_health)
+	{
+		player->health = deh_vitality_health;
+		player->mo->health = player->health;
+	}
+
+	else
+	{
+       P_GiveBody(player, deh_vitality_health);
+	}
     player->message = DEH_String(GOTVITA);
-    player->health = deh_vitality_health;
-    player->mo->health = player->health;
+    
 
 	break;
 	  case SPR_ARSD:
