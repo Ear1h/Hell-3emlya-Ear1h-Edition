@@ -236,6 +236,11 @@ boolean P_CrossSubsector (int num)
 	// might do this after updating validcount?
 	if ( !(line->flags & ML_TWOSIDED) )
 	    return false;
+
+    //Block monster sight. 
+    if (line->flags & ML_BLOCKSIGHT &&
+        gameversion == exe_doom_2_0)
+        return false;
 	
 	// crosses a two sided line
 	front = seg->frontsector;

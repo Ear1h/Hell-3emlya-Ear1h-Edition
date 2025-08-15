@@ -1031,94 +1031,136 @@ P_ShootSpecialLine
 void P_PlayerInSpecialSector (player_t* player)
 {
     sector_t*	sector;
-	
+   
     sector = player->mo->subsector->sector;
-
     // Falling, not all the way down yet?
     if (player->mo->z != sector->floorheight)
 	return;	
 
-    // Has hitten ground.
-    switch (sector->special)
+    
+    
+	
+	if (sector->special < 32)
+	{	
+
+		if (sector->special == 9)
+		{
+			player->secretcount++;
+            sector->special = 0;
+		}
+          
+		    switch (sector->special)
+            {
+                case 5:
+                    // HELLSLIME DAMAGE
+                    if (!player->powers[pw_ironfeet])
+                        if (!(leveltime & 0x1f))
+                            P_DamageMobj(player->mo, NULL, NULL, 10);
+                    break;
+
+                case 7:
+                    // NUKAGE DAMAGE
+                    if (!player->powers[pw_ironfeet])
+                        if (!(leveltime & 0x1f))
+                            P_DamageMobj(player->mo, NULL, NULL, 5);
+                    break;
+
+                case 16:
+                    // SUPER HELLSLIME DAMAGE
+                case 4:
+                    // STROBE HURT
+                    if (!player->powers[pw_ironfeet] || (P_Random() < 5))
+                    {
+                        if (!(leveltime & 0x1f))
+                            P_DamageMobj(player->mo, NULL, NULL, 20);
+                    }
+                    break;
+
+                case 11:
+                    // EXIT SUPER DAMAGE! (for E1M8 finale)
+                    player->cheats &= ~CF_GODMODE;
+
+                    if (!(leveltime & 0x1f))
+                        P_DamageMobj(player->mo, NULL, NULL, 20);
+
+                    if (player->health <= 10)
+                        G_ExitLevel();
+                    break;
+
+                default:
+                    break;
+			}
+
+    }
+
+
+    //Generalized Effects. Takes from Boom
+	if (sector->special >= 32 && gameversion == exe_doom_2_0)
     {
-      case 5:
-	// HELLSLIME DAMAGE
-	if (!player->powers[pw_ironfeet])
-	    if (!(leveltime&0x1f))
-		P_DamageMobj (player->mo, NULL, NULL, 10);
-	break;
-	
-      case 7:
-	// NUKAGE DAMAGE
-	if (!player->powers[pw_ironfeet])
-	    if (!(leveltime&0x1f))
-		P_DamageMobj (player->mo, NULL, NULL, 5);
-	break;
-	
-      case 16:
-	// SUPER HELLSLIME DAMAGE
-      case 4:
-	// STROBE HURT
-	if (!player->powers[pw_ironfeet]
-	    || (P_Random()<5) )
-	{
-	    if (!(leveltime&0x1f))
-		P_DamageMobj (player->mo, NULL, NULL, 20);
+            int i;
+            if (sector->special & KILL_MASK)
+            {
+                switch ((sector->special & DAMAGE_MASK) >> DAMAGE_SHIFT)
+                {
+                    case 0: //Kill Player
+                        player->cheats &= ~CF_GODMODE;
+                        P_DamageMobj(player->mo, NULL, NULL, 10000);
+                        break;
+                    case 1: //Kill Player and Exit (Normal)
+                        player->cheats &= ~CF_GODMODE;
+                        for (i = 0; i < MAXPLAYERS; i++)
+                            if (playeringame[i])
+                                P_DamageMobj(players[i].mo, NULL, NULL, 10000);
+                        G_ExitLevel();
+                    case 2: //Kill Player and Secret Exit 
+                        player->cheats &= ~CF_GODMODE;
+                        for (i = 0; i < MAXPLAYERS; i++)
+                            if (playeringame[i])
+                                P_DamageMobj(players[i].mo, NULL, NULL, 10000);
+                        G_ExitLevel();
+                        break;
+                }
+            }
+
+            switch ((sector->special&DAMAGE_MASK) >> DAMAGE_SHIFT)
+            {
+                case 0:
+                    break;
+                case 1:
+                    if (!player->powers[pw_ironfeet])
+                        if (!(leveltime & 0x1f))
+                            P_DamageMobj(player->mo, NULL, NULL, 5);
+                    break;
+                case 2:
+                    // HELLSLIME DAMAGE
+                    if (!player->powers[pw_ironfeet])
+                        if (!(leveltime & 0x1f))
+                            P_DamageMobj(player->mo, NULL, NULL, 10);
+                    break;
+                case 3:
+                    if (!player->powers[pw_ironfeet] || (P_Random() < 5))
+                    {
+                        if (!(leveltime & 0x1f))
+                            P_DamageMobj(player->mo, NULL, NULL, 20);
+                    }
+                    break;
+            }
+
+            
+            
+
+            if (sector->special&SECRET_MASK)
+            {
+                player->secretcount++;
+                sector->special &= ~SECRET_MASK;
+                if (sector->special < 32) // if all extended bits clear,
+                    sector->special = 0;  // sector is not special anymore
+            }
+
 	}
-	break;
-			
-      case 9:
-	// SECRET SECTOR
-	player->secretcount++;
-	sector->special = 0;
-	break;
-			
-      case 11:
-	// EXIT SUPER DAMAGE! (for E1M8 finale)
-	player->cheats &= ~CF_GODMODE;
-
-	if (!(leveltime&0x1f))
-	    P_DamageMobj (player->mo, NULL, NULL, 20);
-
-	if (player->health <= 10)
-	    G_ExitLevel();
-	break;
-      case 18:
-	if(gameversion < exe_doom_2_0)
-		break;
-	//Instakill floor
-
-	player->cheats &= ~CF_GODMODE;
-	P_DamageMobj (player->mo, NULL, NULL, 10000);
-
-	break;
-
-      case 19:
-	//Instakill floor & Exit Level
-	if(gameversion < exe_doom_2_0)
-		break;
-	player->cheats &= ~CF_GODMODE;
-	
-	P_DamageMobj (player->mo, NULL, NULL, 10000);
-    G_ExitLevel();
-	break;
-      case 20:
-	if(gameversion < exe_doom_2_0)
-		break;
-	//Instakill floor & Secret Exit Level
-	player->cheats &= ~CF_GODMODE;
-	
-	P_DamageMobj (player->mo, NULL, NULL, 10000);
-    G_SecretExitLevel();
-
-	break;
-
-      default:
-	I_Error ("P_PlayerInSpecialSector: "
-		 "unknown special %i",
-		 sector->special);
-	break;
-    };
+    
+   
+    
 }
 
 
@@ -1438,74 +1480,77 @@ void P_SpawnSpecials (void)
 	levelTimer = false;
     }
 
-    //	Init special SECTORs.
-    sector = sectors;
-    for (i=0 ; i<numsectors ; i++, sector++)
+     sector = sectors;
+    for (i = 0; i < numsectors; i++, sector++)
     {
-	if (!sector->special)
-	    continue;
-	
-	switch (sector->special)
-	{
-	  case 1:
-	    // FLICKERING LIGHTS
-	    P_SpawnLightFlash (sector);
-	    break;
+        if (!sector->special)
+            continue;
 
-	  case 2:
-	    // STROBE FAST
-	    P_SpawnStrobeFlash(sector,FASTDARK,0);
-	    break;
-	    
-	  case 3:
-	    // STROBE SLOW
-	    P_SpawnStrobeFlash(sector,SLOWDARK,0);
-	    break;
-	    
-	  case 4:
-	    // STROBE FAST/DEATH SLIME
-	    P_SpawnStrobeFlash(sector,FASTDARK,0);
-	    sector->special = 4;
-	    break;
-	    
-	  case 8:
-	    // GLOWING LIGHT
-	    P_SpawnGlowingLight(sector);
-	    break;
-	  case 9:
-	    // SECRET SECTOR
-	    totalsecret++;
-	    break;
-	    
-	  case 10:
-	    // DOOR CLOSE IN 30 SECONDS
-	    P_SpawnDoorCloseIn30 (sector);
-	    break;
-	    
-	  case 12:
-	    // SYNC STROBE SLOW
-	    P_SpawnStrobeFlash (sector, SLOWDARK, 1);
-	    break;
+        if (sector->special & SECRET_MASK) //jff 3/15/98 count extended
+            totalsecret++;                 // secret sectors too
 
-	  case 13:
-	    // SYNC STROBE FAST
-	    P_SpawnStrobeFlash (sector, FASTDARK, 1);
-	    break;
+        switch (sector->special & 31)
+        {
+            case 1:
+                // random off
+                P_SpawnLightFlash(sector);
+                break;
 
-	  case 14:
-	    // DOOR RAISE IN 5 MINUTES
-	    P_SpawnDoorRaiseIn5Mins (sector, i);
-	    break;
-	    
-        case 17:
-            // first introduced in official v1.4 beta
-            if (gameversion > exe_doom_1_2)
-            {
+            case 2:
+                // strobe fast
+                P_SpawnStrobeFlash(sector, FASTDARK, 0);
+                break;
+
+            case 3:
+                // strobe slow
+                P_SpawnStrobeFlash(sector, SLOWDARK, 0);
+                break;
+
+            case 4:
+                // strobe fast/death slime
+                P_SpawnStrobeFlash(sector, FASTDARK, 0);
+                sector->special |=
+                    3 << DAMAGE_SHIFT; //jff 3/14/98 put damage bits in
+                break;
+
+            case 8:
+                // glowing light
+                P_SpawnGlowingLight(sector);
+                break;
+            case 9:
+                // secret sector
+                if (sector->special <
+                    32)            //jff 3/14/98 bits don't count unless not
+                    totalsecret++; // a generalized sector type
+                break;
+
+            case 10:
+                // door close in 30 seconds
+                P_SpawnDoorCloseIn30(sector);
+                break;
+
+            case 12:
+                // sync strobe slow
+                P_SpawnStrobeFlash(sector, SLOWDARK, 1);
+                break;
+
+            case 13:
+                // sync strobe fast
+                P_SpawnStrobeFlash(sector, FASTDARK, 1);
+                break;
+
+            case 14:
+                // door raise in 5 minutes
+                P_SpawnDoorRaiseIn5Mins(sector, i);
+                break;
+
+            case 17:
+                // fire flickering
                 P_SpawnFireFlicker(sector);
-            }
-            break;
-	}
+                break;
+        }
     }
+
 
     
     //	Init line EFFECTs

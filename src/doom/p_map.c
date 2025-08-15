@@ -234,27 +234,46 @@ boolean PIT_CheckLine (line_t* ld)
     // could be crossed in either order.
     
     if (!ld->backsector)
-	return false;		// one sided line
-		
-    if (!(tmthing->flags & MF_MISSILE) )
-    {
-	if ( ld->flags & ML_BLOCKING )
-	    return false;	// explicitly blocking everything
+        return false; // one sided line
 
-	if (!tmthing->player && gameversion < exe_doom_2_0 &&
-            (ld->flags & ML_BLOCKMONSTERS))
+    if (!(tmthing->flags & MF_MISSILE))
+    {
+        if (ld->flags & ML_BLOCKING)
+            return false; // explicitly blocking everything
+        if (!tmthing->player && ld->flags & ML_BLOCKMONSTERS &&
+            gameversion < exe_doom_2_0)
+            return false; // block monsters only
+        if (tmthing->player &&
+            (gameversion == exe_doom_2_0 && ld->flags & ML_BLOCKPLAYERS))
         {
-            return false;
-        } // block monsters only
-    
-    if (!tmthing->player &&
-        gameversion == exe_doom_2_0 &
-        (!tmthing->info->flags2 & MF2_MONSTERPASS) &&
-        ld->flags & ML_BLOCKMONSTERS)
-        {
-            return false; //block monsters without MF2_MONSTERPASS
+            return false; //Block Players
         }
-           
+
+        if (!tmthing->player && gameversion == exe_doom_2_0) //If thing is not a player and gameversion 2.0
+        {
+            if (!(tmthing->info->flags2 & MF2_MONSTERPASS)) //If thing doesn't have a MF2_MONSTERPASS פכאד.
+            {
+                // If an actor without the MF_FLOAT flag attempts 
+                // to cross a line with ML_BLOCKLANDMONSTERS or ML_BLOCKMONSTERS, 
+                // the function returns false.
+                // If an actor with the MF_FLOAT flag attempts to cross a line with
+                // ML_BLOCKMONSTERS, the function returns false;
+                // however, it can cross lines with ML_BLOCKLANDMONSTERS.
+                if (ld->flags & (!(tmthing->info->flags & MF_FLOAT)
+                                     ? (ML_BLOCKLANDMONSTERS | ML_BLOCKMONSTERS)
+                                     : ML_BLOCKMONSTERS))
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    else
+    {
+        //Block projectile if linedef have a ML_BLOCKPROJECTILE
+        if (gameversion == exe_doom_2_0 && ld->flags & ML_BLOCKPROJECTILE)
+            return false;
     }
 
     // set openrange, opentop, openbottom
@@ -869,7 +888,9 @@ PTR_AimTraverse (intercept_t* in)
     {
 	li = in->d.line;
 	
-	if ( !(li->flags & ML_TWOSIDED) )
+	if ( !(li->flags & ML_TWOSIDED) || 
+        (gameversion == exe_doom_2_0 && 
+            li->flags & ML_BLOCKSCAN))
 	    return false;		// stop
 	
 	// Crosses a two sided line.
@@ -964,7 +985,10 @@ boolean PTR_ShootTraverse (intercept_t* in)
 	if (li->special)
 	    P_ShootSpecialLine (shootthing, li);
 
-	if ( !(li->flags & ML_TWOSIDED) )
+    //If linedef has a ML_TWOSIDED or ML_BLOCKSCAN -> Block hitscan
+	if ( !(li->flags & ML_TWOSIDED) || 
+        (gameversion == exe_doom_2_0 && 
+            li->flags & ML_BLOCKSCAN))
 	    goto hitline;
 	
 	// crosses a two sided line

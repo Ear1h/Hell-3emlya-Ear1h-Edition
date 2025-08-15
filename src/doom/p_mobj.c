@@ -33,6 +33,7 @@
 
 #include "doomstat.h"
 
+#include "p_spec.h"
 
 void G_PlayerReborn (int player);
 void P_SpawnMapThing (mapthing_t*	mthing);
@@ -106,8 +107,13 @@ void P_ExplodeMissile (mobj_t* mo)
 
     mo->flags &= ~MF_MISSILE;
 
-    if (mo->info->deathsound)
-	S_StartSound (mo, mo->info->deathsound);
+    if (!(mo->subsector->sector->special & SILENT_MOBJ) ||
+        gameversion < exe_doom_2_0)
+    {
+        if (mo->info->deathsound)
+            S_StartSound(mo, mo->info->deathsound);
+    }
+   
 }
 
 
@@ -418,14 +424,18 @@ P_NightmareRespawn (mobj_t* mobj)
 		      mobj->y,
 		      mobj->subsector->sector->floorheight , MT_TFOG); 
     // initiate teleport sound
-    S_StartSound (mo, sfx_telept);
+    if (!(mo->subsector->sector->special & SILENT_MOBJ) ||
+        gameversion < exe_doom_2_0)
+        S_StartSound (mo, sfx_telept);
 
     // spawn a teleport fog at the new spot
     ss = R_PointInSubsector (x,y); 
 
     mo = P_SpawnMobj (x, y, ss->sector->floorheight , MT_TFOG); 
 
-    S_StartSound (mo, sfx_telept);
+    if (!(mo->subsector->sector->special & SILENT_MOBJ) ||
+        gameversion < exe_doom_2_0)
+        S_StartSound (mo, sfx_telept);
 
     // spawn the new monster
     mthing = &mobj->spawnpoint;
@@ -649,7 +659,10 @@ void P_RespawnSpecials (void)
     // spawn a teleport fog at the new spot
     ss = R_PointInSubsector (x,y); 
     mo = P_SpawnMobj (x, y, ss->sector->floorheight , MT_IFOG); 
-    S_StartSound (mo, sfx_itmbk);
+    if (!(mo->subsector->sector->special & SILENT_MOBJ) ||
+        gameversion < exe_doom_2_0)
+        S_StartSound(mo, sfx_itmbk);
+    
 
     // find which type to spawn
     for (i=0 ; i< NUMMOBJTYPES ; i++)
@@ -805,7 +818,10 @@ void P_SpawnMapThing (mapthing_t* mthing)
 		
     if (gameskill == sk_baby)
 	bit = 1;
-    else if (gameskill == sk_nightmare)
+    else if (gameversion == exe_doom_2_0 && (gameskill == sk_nightmare &&
+             mthing->options & MTF_NIGHTMARE))
+    bit = 32;
+    else if (gameskill == sk_nightmare && gameversion < exe_doom_2_0)
 	bit = 4;
     else
         // avoid undefined behavior (left shift by negative value and rhs too big)
@@ -993,8 +1009,13 @@ P_SpawnMissile
 		      source->y,
 		      source->z + 4*8*FRACUNIT, type);
     
-    if (th->info->seesound)
-	S_StartSound (th, th->info->seesound);
+    if (!(th->subsector->sector->special & SILENT_MOBJ) ||
+        gameversion < exe_doom_2_0)
+    {
+        if (th->info->seesound)
+            S_StartSound(th, th->info->seesound);
+    }
+        
 
     th->target = source;	// where it came from
     an = R_PointToAngle2 (source->x, source->y, dest->x, dest->y);
@@ -1066,8 +1087,12 @@ P_SpawnPlayerMissile
 	
     th = P_SpawnMobj (x,y,z, type);
 
-    if (th->info->seesound)
-	S_StartSound (th, th->info->seesound);
+   if (!(th->subsector->sector->special & SILENT_MOBJ) ||
+        gameversion < exe_doom_2_0)
+    {
+        if (th->info->seesound)
+            S_StartSound(th, th->info->seesound);
+    }
 
     th->target = source;
     th->angle = an;

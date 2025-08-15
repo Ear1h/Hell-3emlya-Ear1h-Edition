@@ -62,9 +62,7 @@ void P_SpawnFireFlicker (sector_t*	sector)
 {
     fireflicker_t*	flick;
 	
-    // Note that we are resetting sector attributes.
-    // Nothing special about it during gameplay.
-    sector->special = 0; 
+    sector->special &= ~31; //Don't delete a Special for generalized effects
 	
     flick = Z_Malloc ( sizeof(*flick), PU_LEVSPEC, 0);
 
@@ -118,8 +116,7 @@ void P_SpawnLightFlash (sector_t*	sector)
 {
     lightflash_t*	flash;
 
-    // nothing special about it during gameplay
-    sector->special = 0;	
+    sector->special &= ~31;	//Don't delete a Special for generalized effects
 	
     flash = Z_Malloc ( sizeof(*flash), PU_LEVSPEC, 0);
 
@@ -192,8 +189,7 @@ P_SpawnStrobeFlash
     if (flash->minlight == flash->maxlight)
 	flash->minlight = 0;
 
-    // nothing special about it during gameplay
-    sector->special = 0;	
+    sector->special &= ~31; //Don't delete a Special for generalized effects
 
     if (!inSync)
 	flash->count = (P_Random()&7)+1;
@@ -345,6 +341,6 @@ void P_SpawnGlowingLight(sector_t*	sector)
     g->thinker.function.acp1 = (actionf_p1) T_Glow;
     g->direction = -1;
 
-    sector->special = 0;
+    sector->special &= ~31; //Don't delete a Special for generalized effects
 }
 

@@ -241,8 +241,15 @@ typedef struct
 #define MAXBUTTONS		16
 
  // 1 second, in ticks. 
-#define BUTTONTIME      35             
+#define BUTTONTIME      35     
 
+#define DAMAGE_MASK  0x60
+#define DAMAGE_SHIFT 5
+#define SECRET_MASK  0x80
+#define SECRET_SHIFT 7
+#define SILENT_MOBJ  0x100
+#define SILENT_SEC_MASK 0x200 //All Doors, Floors, Ceiling and Plat is silent
+#define KILL_MASK   0x1000
 extern button_t	buttonlist[MAXBUTTONS]; 
 
 void
