@@ -81,6 +81,10 @@ typedef enum
 // Deaf monsters/do not react to sound.
 #define	MTF_AMBUSH		8
 
+#define MTF_NIGHTMARE   32
+
+//#define MTF_SUBSTRACT   64
+
 
 //
 // Key cards.
