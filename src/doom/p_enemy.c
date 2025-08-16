@@ -910,6 +910,29 @@ void A_TroopAttack(mobj_t *actor)
     P_SpawnMissile(actor, actor->target, MT_TROOPSHOT);
 }
 
+void A_NightmareAttack(mobj_t *actor)
+{
+    int damage;
+
+    if (!actor->target)
+        return;
+
+    A_FaceTarget(actor);
+    if (P_CheckMeleeRange(actor))
+    {
+        if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
+            gameversion < exe_doom_2_0)
+            S_StartSound(actor, sfx_claw);
+        damage = (P_Random() % 8 + 1) * 3;
+        P_DamageMobj(actor->target, actor, actor, damage);
+        return;
+    }
+
+
+    // launch a missile
+    P_SpawnMissile(actor, actor->target, MT_NIGHTMAREBALL);
+}
+
 
 void A_SargAttack(mobj_t *actor)
 {
