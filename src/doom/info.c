@@ -44,7 +44,7 @@ const char *sprnames[] = {
     "COL3","COL4","CAND","CBRA","COL6","TRE1","TRE2","ELEC","CEYE","FSKU",
     "COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
     "HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2","MDPK","HEVA",
-	"VSRM","ARSD","REGN", NULL
+	"VSRM","ARSD","REGN","NBAL","NTRO","NMDM", NULL
 };
 
 
@@ -123,6 +123,7 @@ void A_BrainSpit();
 void A_SpawnSound();
 void A_SpawnFly();
 void A_BrainExplode();
+void A_NightmareAttack();
 
 
 state_t	states[NUMSTATES] = {
@@ -1106,7 +1107,72 @@ state_t	states[NUMSTATES] = {
     {SPR_REGN, 32768, 6, {NULL}, S_REGENERATION2, 0, 0},    //S_REGENERATION
     {SPR_REGN, 32769, 6, {NULL}, S_REGENERATION3, 0, 0},  //S_REGENERATION2
     {SPR_REGN, 32770, 6, {NULL}, S_REGENERATION4, 0, 0},  //S_REGENERATION3
-    {SPR_REGN, 32771, 6, {NULL}, S_REGENERATION, 0, 0}   //S_REGENERATION4
+    {SPR_REGN, 32771, 6, {NULL}, S_REGENERATION, 0, 0},   //S_REGENERATION4
+    {SPR_NBAL, 32768, 4, {NULL}, S_NBALL2, 0, 0},          // S_NBALL1
+    {SPR_NBAL, 32769, 4, {NULL}, S_NBALL1, 0, 0},          // S_NBALL2
+    {SPR_NBAL, 32770, 6, {NULL}, S_NBALLX2, 0, 0},         // S_NBALLX1
+    {SPR_NBAL, 32771, 6, {NULL}, S_NBALLX3, 0, 0},         // S_NBALLX2
+    {SPR_NBAL, 32772, 6, {NULL}, S_NULL, 0, 0},            // S_NBALLX3
+    {SPR_NTRO, 0, 10, {A_Look}, S_NTRO_STND2, 0, 0},       // S_NTRO_STND
+    {SPR_NTRO, 1, 10, {A_Look}, S_NTRO_STND, 0, 0},        // S_NTRO_STND2
+    {SPR_NTRO, 0, 3, {A_Chase}, S_NTRO_RUN2, 0, 0},        // S_NTRO_RUN1
+    {SPR_NTRO, 0, 3, {A_Chase}, S_NTRO_RUN3, 0, 0},        // S_NTRO_RUN2
+    {SPR_NTRO, 1, 3, {A_Chase}, S_NTRO_RUN4, 0, 0},        // S_NTRO_RUN3
+    {SPR_NTRO, 1, 3, {A_Chase}, S_NTRO_RUN5, 0, 0},        // S_NTRO_RUN4
+    {SPR_NTRO, 2, 3, {A_Chase}, S_NTRO_RUN6, 0, 0},        // S_NTRO_RUN5
+    {SPR_NTRO, 2, 3, {A_Chase}, S_NTRO_RUN7, 0, 0},        // S_NTRO_RUN6
+    {SPR_NTRO, 3, 3, {A_Chase}, S_NTRO_RUN8, 0, 0},        // S_NTRO_RUN7
+    {SPR_NTRO, 3, 3, {A_Chase}, S_NTRO_RUN1, 0, 0},        // S_NTRO_RUN8
+    {SPR_NTRO, 4, 8, {A_FaceTarget}, S_NTRO_ATK2, 0, 0},   // S_NTRO_ATK1
+    {SPR_NTRO, 5, 8, {A_FaceTarget}, S_NTRO_ATK3, 0, 0},   // S_NTRO_ATK2
+    {SPR_NTRO, 6, 6, {A_NightmareAttack}, S_NTRO_RUN1, 0, 0},  // S_NTRO_ATK3
+    {SPR_NTRO, 7, 2, {NULL}, S_NTRO_PAIN2, 0, 0},          // S_NTRO_PAIN
+    {SPR_NTRO, 7, 2, {A_Pain}, S_NTRO_RUN1, 0, 0},         // S_NTRO_PAIN2
+    {SPR_NTRO, 8, 8, {NULL}, S_NTRO_DIE2, 0, 0},           // S_NTRO_DIE1
+    {SPR_NTRO, 9, 8, {A_Scream}, S_NTRO_DIE3, 0, 0},       // S_NTRO_DIE2
+    {SPR_NTRO, 10, 6, {NULL}, S_NTRO_DIE4, 0, 0},          // S_NTRO_DIE3
+    {SPR_NTRO, 11, 6, {A_Fall}, S_NTRO_DIE5, 0, 0},        // S_NTRO_DIE4
+    {SPR_NTRO, 12, -1, {NULL}, S_NULL, 0, 0},              // S_NTRO_DIE5
+    {SPR_NTRO, 13, 5, {NULL}, S_NTRO_XDIE2, 0, 0},         // S_NTRO_XDIE1
+    {SPR_NTRO, 14, 5, {A_XScream}, S_NTRO_XDIE3, 0, 0},    // S_NTRO_XDIE2
+    {SPR_NTRO, 15, 5, {NULL}, S_NTRO_XDIE4, 0, 0},         // S_NTRO_XDIE3
+    {SPR_NTRO, 16, 5, {A_Fall}, S_NTRO_XDIE5, 0, 0},       // S_NTRO_XDIE4
+    {SPR_NTRO, 17, 5, {NULL}, S_NTRO_XDIE6, 0, 0},         // S_NTRO_XDIE5
+    {SPR_NTRO, 18, 5, {NULL}, S_NTRO_XDIE7, 0, 0},         // S_NTRO_XDIE6
+    {SPR_NTRO, 19, 5, {NULL}, S_NTRO_XDIE8, 0, 0},         // S_NTRO_XDIE7
+    {SPR_NTRO, 20, -1, {NULL}, S_NULL, 0, 0},              // S_NTRO_XDIE8
+    {SPR_NTRO, 12, 8, {NULL}, S_NTRO_RAISE2, 0, 0},        // S_NTRO_RAISE1
+    {SPR_NTRO, 11, 8, {NULL}, S_NTRO_RAISE3, 0, 0},        // S_NTRO_RAISE2
+    {SPR_NTRO, 10, 6, {NULL}, S_NTRO_RAISE4, 0, 0},        // S_NTRO_RAISE3
+    {SPR_NTRO, 9, 6, {NULL}, S_NTRO_RAISE5, 0, 0},         // S_NTRO_RAISE4
+    {SPR_NTRO, 8, 6, {NULL}, S_NTRO_RUN1, 0, 0},				// S_NTRO_RAISE5
+    {SPR_SARN, 0, 10, {A_Look}, S_SARN_STND2, 0, 0},          // S_SARN_STND
+    {SPR_SARN, 1, 10, {A_Look}, S_SARN_STND, 0, 0},           // S_SARN_STND2
+    {SPR_SARN, 0, 1, {A_Chase}, S_SARN_RUN2, 0, 0},           // S_SARN_RUN1
+    {SPR_SARN, 0, 1, {A_Chase}, S_SARN_RUN3, 0, 0},           // S_SARN_RUN2
+    {SPR_SARN, 1, 1, {A_Chase}, S_SARN_RUN4, 0, 0},           // S_SARN_RUN3
+    {SPR_SARN, 1, 1, {A_Chase}, S_SARN_RUN5, 0, 0},           // S_SARN_RUN4
+    {SPR_SARN, 2, 1, {A_Chase}, S_SARN_RUN6, 0, 0},           // S_SARN_RUN5
+    {SPR_SARN, 2, 1, {A_Chase}, S_SARN_RUN7, 0, 0},           // S_SARN_RUN6
+    {SPR_SARN, 3, 1, {A_Chase}, S_SARN_RUN8, 0, 0},           // S_SARN_RUN7
+    {SPR_SARN, 3, 1, {A_Chase}, S_SARN_RUN1, 0, 0},           // S_SARN_RUN8
+    {SPR_SARN, 4, 4, {A_FaceTarget}, S_SARN_ATK2, 0, 0},      // S_SARN_ATK1
+    {SPR_SARN, 5, 4, {A_FaceTarget}, S_SARN_ATK3, 0, 0},      // S_SARN_ATK2
+    {SPR_SARN, 6, 4, {A_SargAttack}, S_SARN_RUN1, 0, 0},      // S_SARN_ATK3
+    {SPR_SARN, 7, 1, {NULL}, S_SARN_PAIN2, 0, 0},             // S_SARN_PAIN
+    {SPR_SARN, 7, 1, {A_Pain}, S_SARN_RUN1, 0, 0},            // S_SARN_PAIN2
+    {SPR_SARN, 8, 8, {NULL}, S_SARN_DIE2, 0, 0},              // S_SARN_DIE1
+    {SPR_SARN, 9, 8, {A_Scream}, S_SARN_DIE3, 0, 0},          // S_SARN_DIE2
+    {SPR_SARN, 10, 4, {NULL}, S_SARN_DIE4, 0, 0},             // S_SARN_DIE3
+    {SPR_SARN, 11, 4, {A_Fall}, S_SARN_DIE5, 0, 0},           // S_SARN_DIE4
+    {SPR_SARN, 12, 4, {NULL}, S_SARN_DIE6, 0, 0},             // S_SARN_DIE5
+    {SPR_SARN, 13, -1, {NULL}, S_NULL, 0, 0},                 // S_SARN_DIE6
+    {SPR_SARN, 13, 5, {NULL}, S_SARN_RAISE2, 0, 0},           // S_SARN_RAISE1
+    {SPR_SARN, 12, 5, {NULL}, S_SARN_RAISE3, 0, 0},           // S_SARN_RAISE2
+    {SPR_SARN, 11, 5, {NULL}, S_SARN_RAISE4, 0, 0},           // S_SARN_RAISE3
+    {SPR_SARN, 10, 5, {NULL}, S_SARN_RAISE5, 0, 0},           // S_SARN_RAISE4
+    {SPR_SARN, 9, 5, {NULL}, S_SARN_RAISE6, 0, 0},            // S_SARN_RAISE5
+    {SPR_SARN, 8, 5, {NULL}, S_SARN_RUN1, 0, 0},              // S_SARN_RAISE6
 }; 
 
 
@@ -4944,6 +5010,85 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
     MF_SPECIAL|MF_COUNTITEM,    // flags
     S_NULL,         // raisestate
 	0 					//flags2
-    }
+    },
+	{		// MT_NIGHTMAREBALL
+	-1,		// doomednum
+	S_NBALL1,		// spawnstate
+	1000,		// spawnhealth
+	S_NULL,		// seestate
+	sfx_firsht,		// seesound
+	8,		// reactiontime
+	sfx_None,		// attacksound
+	S_NULL,		// painstate
+	0,		// painchance
+	sfx_None,		// painsound
+	S_NULL,		// meleestate
+	S_NULL,		// missilestate
+	S_NBALLX1,		// deathstate
+	S_NULL,		// xdeathstate
+	sfx_firxpl,		// deathsound
+	20*FRACUNIT,		// speed
+	6*FRACUNIT,		// radius
+	8*FRACUNIT,		// height
+	100,		// mass
+	3,		// damage
+	sfx_None,		// activesound
+	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
+	S_NULL,		// raisestate
+	0			//flags2
+    },
+	{		// MT_NIGHTIMP
+	4005,		// doomednum
+	S_NTRO_STND,		// spawnstate
+	75,		// spawnhealth
+	S_NTRO_RUN1,		// seestate
+	sfx_bgsit1,		// seesound
+	8,		// reactiontime
+	0,		// attacksound
+	S_NTRO_PAIN,		// painstate
+	128,		// painchance
+	sfx_popain,		// painsound
+	S_NTRO_ATK1,		// meleestate
+	S_NTRO_ATK1,		// missilestate
+	S_NTRO_DIE1,		// deathstate
+	S_NTRO_XDIE1,		// xdeathstate
+	sfx_bgdth1,		// deathsound
+	10,		// speed
+	20*FRACUNIT,		// radius
+	56*FRACUNIT,		// height
+	100,		// mass
+	0,		// damage
+	sfx_bgact,		// activesound
+	MF_SOLID|MF_SHOOTABLE,		// flags
+	S_NTRO_RAISE1,		// raisestate
+	MF2_SPAWNONLYNIGHTMARE			//flags2
+    },
+
+	{		// MT_NIGHTMAREDEMON
+	4006,		// doomednum
+	S_SARN_STND,		// spawnstate
+	150,		// spawnhealth
+	S_SARN_RUN1,		// seestate
+	sfx_sgtsit,		// seesound
+	8,		// reactiontime
+	sfx_sgtatk,		// attacksound
+	S_SARN_PAIN,		// painstate
+	180,		// painchance
+	sfx_dmpain,		// painsound
+	S_SARN_ATK1,		// meleestate
+	0,		// missilestate
+	S_SARN_DIE1,		// deathstate
+	S_NULL,		// xdeathstate
+	sfx_sgtdth,		// deathsound
+	20,		// speed
+	30*FRACUNIT,		// radius
+	56*FRACUNIT,		// height
+	400,		// mass
+	0,		// damage
+	sfx_dmact,		// activesound
+	MF_SOLID|MF_SHOOTABLE,		// flags
+	S_SARN_RAISE1,		// raisestate
+	MF2_SPAWNONLYNIGHTMARE	//flags2
+    },
 };
 
