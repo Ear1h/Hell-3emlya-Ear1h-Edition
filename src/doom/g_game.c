@@ -1157,10 +1157,8 @@ void G_PlayerReborn (int player)
     for (i=0 ; i<NUMAMMO ; i++) 
 	p->maxammo[i] = maxammo[i]; 
 
-    if (gameversion > exe_doom_2_0)
-    {
-        p->VitaHealth = deh_vitality_health; //Restore Player Health
-    }
+    p->VitaHealth = deh_initial_health; //Restore Player Health
+
 }
 
 //

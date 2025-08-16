@@ -441,7 +441,7 @@ P_TouchSpecialThing
 	player->mo->health = player->health;
         // We always give armor type 2 for the megasphere; dehacked only 
         // affects the MegaArmor.
-	if(gameversion > exe_doom_2_0)
+	if(gameversion == exe_doom_2_0)
 		P_GiveArmor (player, 3);
 	else
 		P_GiveArmor (player, 2);
