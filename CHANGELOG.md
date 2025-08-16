@@ -101,3 +101,15 @@
 * Bugfixes:
   * **Vitality Serum** now works correctly (previously non-functional due to `gameversion > exe_doom_2_0`).
   * Fixed an issue where picking up **Vitality Serum** with more than `150 HP` would reset health to the default value (150).
+
+# 16.08.25
+
+* Added new actors:
+  * **Nightmare Imp**: Spawns only in Nightmare mode. Functions like the regular Imp in Nightmare, but with reduced pain chance and higher health.
+  * **Nightmare Demon**: Spawns only in Nightmare mode. Functions like the regular Demon in Nightmare.
+  * **Nightmare Projectile**: Moves at the same speed as the Imp’s projectile in Nightmare mode.
+
+* Bug fixes:
+  * Fixed a logic error preventing the player from gaining health from `medkits`.
+  * Fixed an issue where the player could exceed `100` health without picking up `Vitality Serum`.
+  * Fixed an issue where an object with the `AMBUSH` flag would spawn on the map in Nightmare mode (without the `Nightmare` flag).
