@@ -502,8 +502,11 @@ void P_MobjThinker (mobj_t* mobj)
     else
     {
 	// check for nightmare respawn
-	if (! (mobj->flags & MF_COUNTKILL) )
-	    return;
+        if (!(mobj->flags & MF_COUNTKILL) && (mobj->type != MT_NIGHTIMP &&
+            mobj->type != MT_NIGHTDEMON))
+        {
+            return;
+        }
 
 	if (!respawnmonsters)
 	    return;
@@ -817,19 +820,44 @@ void P_SpawnMapThing (mapthing_t* mthing)
 	return;
 		
     if (gameskill == sk_baby)
-	bit = 1;
-    else if (gameversion == exe_doom_2_0 && (gameskill == sk_nightmare &&
-             mthing->options & MTF_NIGHTMARE))
-    bit = 32;
+    {
+        bit = 1;
+    }
+	
     else if (gameskill == sk_nightmare && gameversion < exe_doom_2_0)
-	bit = 4;
+    {
+        bit = 4;
+    }
+	
+    else if (gameversion == exe_doom_2_0)
+    {
+        if (gameskill == sk_nightmare && mthing->options & MTF_NIGHTMARE)
+        {
+            bit = 64; // 64
+        }
+        else
+        {
+            if (gameskill == sk_easy)
+                bit = 1;
+            else if (gameskill == sk_medium)
+                bit = 2;
+            else if (gameskill == sk_hard)
+                bit = 4;
+            else
+                bit = 0;
+        }
+    }
+
     else
+    {
         // avoid undefined behavior (left shift by negative value and rhs too big)
         // by accurately emulating what doom.exe did: reduce mod 32.
         // For more details check:
         // https://github.com/chocolate-doom/chocolate-doom/issues/1677
         bit = (int) (1U << ((gameskill - 1) & 0x1F));
-
+    }
+        
+    
     if (!(mthing->options & bit) )
 	return;
 	
