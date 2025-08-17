@@ -797,7 +797,6 @@ static void saveg_write_player_t(player_t *str)
     // int armorpoints;
     saveg_write32(str->armorpoints);
 
-    saveg_write32(str->VitaHealth);
     // int armortype;
     saveg_write32(str->armortype);
 
@@ -816,9 +815,6 @@ static void saveg_write_player_t(player_t *str)
     // boolean backpack;
     saveg_write32(str->backpack);
 
-    // boolean vitally
-
-    saveg_write32(str->vitally);
 
     // int frags[MAXPLAYERS];
     for (i=0; i<MAXPLAYERS; ++i)
