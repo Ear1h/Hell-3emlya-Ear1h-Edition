@@ -700,11 +700,19 @@ void A_Chase(mobj_t *actor)
     // check for melee attack
     if (actor->info->meleestate && P_CheckMeleeRange(actor))
     {
-	if ((!(actor->subsector->sector->special & SILENT_MOBJ) && 
-        actor->info->attacksound) && 
-        gameversion < exe_doom_2_0)
-	    S_StartSound (actor, actor->info->attacksound);
+        if (gameversion < exe_doom_2_0)
+        {
+            S_StartSound(actor, actor->info->attacksound);
+        }
+            
 
+        else
+        {
+            if ((!(actor->subsector->sector->special & SILENT_MOBJ) &&
+                 actor->info->attacksound))
+                S_StartSound(actor, actor->info->attacksound);
+        }
+	   
         P_SetMobjState(actor, actor->info->meleestate);
         return;
     }
