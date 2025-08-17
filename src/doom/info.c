@@ -5080,7 +5080,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	S_SARN_DIE1,		// deathstate
 	S_NULL,		// xdeathstate
 	sfx_sgtdth,		// deathsound
-	20,		// speed
+	10,		// speed
 	30*FRACUNIT,		// radius
 	56*FRACUNIT,		// height
 	400,		// mass
