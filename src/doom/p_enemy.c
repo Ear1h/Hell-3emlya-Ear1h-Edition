@@ -918,30 +918,6 @@ void A_TroopAttack(mobj_t *actor)
     P_SpawnMissile(actor, actor->target, MT_TROOPSHOT);
 }
 
-void A_NightmareAttack(mobj_t *actor)
-{
-    int damage;
-
-    if (!actor->target)
-        return;
-
-    A_FaceTarget(actor);
-    if (P_CheckMeleeRange(actor))
-    {
-        if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
-            gameversion < exe_doom_2_0)
-            S_StartSound(actor, sfx_claw);
-        damage = (P_Random() % 8 + 1) * 3;
-        P_DamageMobj(actor->target, actor, actor, damage);
-        return;
-    }
-
-
-    // launch a missile
-    P_SpawnMissile(actor, actor->target, MT_NIGHTMAREBALL);
-}
-
-
 void A_SargAttack(mobj_t *actor)
 {
     int damage;
@@ -1052,8 +1028,17 @@ void A_Tracer(mobj_t *actor)
     // spawn a puff of smoke behind the rocket
     P_SpawnPuff(actor->x, actor->y, actor->z);
 
-    th = P_SpawnMobj(actor->x - actor->momx, actor->y - actor->momy, actor->z,
+    if ((actor->type & MT_DARKIMPBALL) && 
+            gameversion == exe_doom_2_0)
+    {
+        th = P_SpawnMobj(actor->x - actor->momx, actor->y - actor->momy, actor->z,
+                     MT_DARKSMOKE);
+    }
+    else
+    {
+        th = P_SpawnMobj(actor->x - actor->momx, actor->y - actor->momy, actor->z,
                      MT_SMOKE);
+    }
 
     th->momz = FRACUNIT;
     th->tics -= P_Random() & 3;
@@ -2068,4 +2053,56 @@ void A_PlayerScream(mobj_t *mo)
     }
 
     S_StartSound(mo, sound);
+}
+
+void A_NightmareAttack(mobj_t *actor)
+{
+    int damage;
+
+    if (gameversion < exe_doom_2_0)
+        return;
+
+    if (!actor->target)
+        return;
+
+    A_FaceTarget(actor);
+    if (P_CheckMeleeRange(actor))
+    {
+        if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
+            gameversion < exe_doom_2_0)
+            S_StartSound(actor, sfx_claw);
+        damage = (P_Random() % 8 + 1) * 3;
+        P_DamageMobj(actor->target, actor, actor, damage);
+        return;
+    }
+
+
+    // launch a missile
+    P_SpawnMissile(actor, actor->target, MT_NIGHTMAREBALL);
+}
+
+void A_KamikazeSee(mobj_t* actor)
+{
+    if (gameversion < exe_doom_2_0)
+        return;
+
+    S_StartSound(actor, sfx_kami);
+}
+
+void A_DarkImpAttack(mobj_t *actor)
+{
+    mobj_t *mo;
+
+     if (gameversion < exe_doom_2_0)
+        return;
+
+    if (!actor->target)
+        return;
+
+    A_FaceTarget(actor);
+    mo = P_SpawnMissile(actor, actor->target, MT_DARKIMPBALL);
+
+    mo->x += mo->momx;
+    mo->y += mo->momy;
+    mo->tracer = actor->target;
 }
