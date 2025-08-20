@@ -230,6 +230,7 @@ typedef enum
     sfx_skesit,
     sfx_skeatk,
     sfx_radio,
+    sfx_kami,
     NUMSFX
 } sfxenum_t;
 
