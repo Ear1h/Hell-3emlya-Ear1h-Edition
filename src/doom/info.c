@@ -44,7 +44,7 @@ const char *sprnames[] = {
     "COL3","COL4","CAND","CBRA","COL6","TRE1","TRE2","ELEC","CEYE","FSKU",
     "COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
     "HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2","MDPK","HEVA",
-	"VSRM","ARSD","REGN","NBAL","NTRO","NMDM", NULL
+	"VSRM","ARSD","REGN","NBAL","NTRO","NMDM","KAMI","DARK","DRKP", NULL
 };
 
 
@@ -124,6 +124,8 @@ void A_SpawnSound();
 void A_SpawnFly();
 void A_BrainExplode();
 void A_NightmareAttack();
+void A_KamikazeSee();
+void A_DarkImpAttack();
 
 
 state_t	states[NUMSTATES] = {
@@ -1173,6 +1175,68 @@ state_t	states[NUMSTATES] = {
     {SPR_SARN, 10, 5, {NULL}, S_SARN_RAISE5, 0, 0},           // S_SARN_RAISE4
     {SPR_SARN, 9, 5, {NULL}, S_SARN_RAISE6, 0, 0},            // S_SARN_RAISE5
     {SPR_SARN, 8, 5, {NULL}, S_SARN_RUN1, 0, 0},              // S_SARN_RAISE6
+    {SPR_KAMI, 0, 10, {A_Look}, S_KAMI_STND2, 0, 0},          // S_KAMI_STND
+    {SPR_KAMI, 1, 10, {A_Look}, S_KAMI_STND, 0, 0},           // S_KAMI_STND2
+    {SPR_KAMI, 0, 2, {A_KamikazeSee}, S_KAMI_RUN2, 0, 0},     // S_KAMI_RUN1
+    {SPR_KAMI, 0, 2, {A_Chase}, S_KAMI_RUN3, 0, 0},           // S_KAMI_RUN2
+    {SPR_KAMI, 0, 2, {A_Chase}, S_KAMI_RUN4, 0, 0},           // S_KAMI_RUN3
+    {SPR_KAMI, 1, 2, {A_Chase}, S_KAMI_RUN5, 0, 0},           // S_KAMI_RUN4
+    {SPR_KAMI, 1, 2, {A_Chase}, S_KAMI_RUN6, 0, 0},           // S_KAMI_RUN5
+    {SPR_KAMI, 1, 2, {A_Chase}, S_KAMI_RUN7, 0, 0},           // S_KAMI_RUN6
+    {SPR_KAMI, 2, 2, {A_Chase}, S_KAMI_RUN8, 0, 0},           // S_KAMI_RUN7
+    {SPR_KAMI, 2, 2, {A_Chase}, S_KAMI_RUN9, 0, 0},           // S_KAMI_RUN8
+    {SPR_KAMI, 2, 2, {A_Chase}, S_KAMI_RUN10, 0, 0},          // S_KAMI_RUN9
+    {SPR_KAMI, 3, 2, {A_Chase}, S_KAMI_RUN11, 0, 0},          // S_KAMI_RUN10
+    {SPR_KAMI, 3, 2, {A_Chase}, S_KAMI_RUN12, 0, 0},          // S_KAMI_RUN11
+    {SPR_KAMI, 3, 2, {A_Chase}, S_KAMI_RUN, 0, 0},			  // S_KAMI_RUN12
+    {SPR_KAMI, 32772, 0, {A_Explode}, S_KAMI_XDIE, 0, 0},     // S_KAMI_MELEE
+    {SPR_KAMI, 32772, 0, {A_Explode}, S_KAMI_XDIE, 0, 0},     // S_KAMI_DEATH
+    {SPR_KAMI, 32772, 5, {A_Scream}, S_KAMI_XDIE2, 0, 0},      // S_KAMI_XDIE
+    {SPR_KAMI, 32773, 5, {NULL}, S_KAMI_XDIE3, 0, 0},         // S_KAMI_XDIE2
+    {SPR_KAMI, 6, 5, {A_Fall}, S_KAMI_XDIE4, 0, 0},           // S_KAMI_XDIE3
+    {SPR_KAMI, 7, 5, {NULL}, S_KAMI_XDIE5, 0, 0},             // S_KAMI_XDIE4
+    {SPR_KAMI, 8, 5, {NULL}, S_KAMI_XDIE6, 0, 0},             // S_KAMI_XDIE5
+    {SPR_KAMI, 9, 5, {NULL}, S_KAMI_XDIE7, 0, 0},             // S_KAMI_XDIE6
+    {SPR_KAMI, 10, 5, {NULL}, S_KAMI_XDIE8, 0, 0},            // S_KAMI_XDIE7
+    {SPR_KAMI, 11, -1, {NULL}, S_NULL, 0, 0},            // S_KAMI_XDIE8
+    {SPR_DRKP, 32768, 4, {A_Tracer}, S_DBALL2, 0, 0},             // S_DBALL1
+    {SPR_DRKP, 32769, 4, {A_Tracer}, S_DBALL1, 0, 0},         // S_DBALL2
+    {SPR_DRKP, 32770, 6, {NULL}, S_DBALLX2, 0, 0},            // S_DBALLX1
+    {SPR_DRKP, 32771, 6, {NULL}, S_DBALLX3, 0, 0},            // S_DBALLX2
+    {SPR_DRKP, 32772, 6, {NULL}, S_NULL, 0, 0},               // S_DBALLX3
+    {SPR_DARK, 0, 10, {A_Look}, S_DARK_STND2, 0, 0},          // S_DARK_STND
+    {SPR_DARK, 1, 10, {A_Look}, S_DARK_STND, 0, 0},           // S_DARK_STND2
+    {SPR_DARK, 0, 3, {A_Chase}, S_DARK_RUN2, 0, 0},           // S_DARK_RUN1
+    {SPR_DARK, 0, 3, {A_Chase}, S_DARK_RUN3, 0, 0},           // S_DARK_RUN2
+    {SPR_DARK, 1, 3, {A_Chase}, S_DARK_RUN4, 0, 0},           // S_DARK_RUN3
+    {SPR_DARK, 1, 3, {A_Chase}, S_DARK_RUN5, 0, 0},           // S_DARK_RUN4
+    {SPR_DARK, 2, 3, {A_Chase}, S_DARK_RUN6, 0, 0},           // S_DARK_RUN5
+    {SPR_DARK, 2, 3, {A_Chase}, S_DARK_RUN7, 0, 0},           // S_DARK_RUN6
+    {SPR_DARK, 3, 3, {A_Chase}, S_DARK_RUN8, 0, 0},           // S_DARK_RUN7
+    {SPR_DARK, 3, 3, {A_Chase}, S_DARK_RUN1, 0, 0},           // S_DARK_RUN8
+    {SPR_DARK, 4, 8, {A_FaceTarget}, S_DARK_ATK2, 0, 0},      // S_DARK_ATK1
+    {SPR_DARK, 5, 8, {A_FaceTarget}, S_DARK_ATK3, 0, 0},      // S_DARK_ATK2
+    {SPR_DARK, 6, 6, {A_DarkImpAttack}, S_DARK_RUN1, 0, 0},   // S_DARK_ATK3
+    {SPR_DARK, 7, 2, {NULL}, S_DARK_PAIN2, 0, 0},             // S_DARK_PAIN
+    {SPR_DARK, 7, 2, {A_Pain}, S_DARK_RUN1, 0, 0},            // S_DARK_PAIN2
+    {SPR_DARK, 8, 8, {NULL}, S_DARK_DIE2, 0, 0},              // S_DARK_DIE1
+    {SPR_DARK, 9, 8, {A_Scream}, S_DARK_DIE3, 0, 0},          // S_DARK_DIE2
+    {SPR_DARK, 10, 6, {NULL}, S_DARK_DIE4, 0, 0},             // S_DARK_DIE3
+    {SPR_DARK, 11, 6, {A_Fall}, S_DARK_DIE5, 0, 0},           // S_DARK_DIE4
+    {SPR_DARK, 12, -1, {NULL}, S_NULL, 0, 0},                 // S_DARK_DIE5
+    {SPR_DARK, 13, 5, {NULL}, S_DARK_XDIE2, 0, 0},            // S_DARK_XDIE1
+    {SPR_DARK, 14, 5, {A_XScream}, S_DARK_XDIE3, 0, 0},       // S_DARK_XDIE2
+    {SPR_DARK, 15, 5, {NULL}, S_DARK_XDIE4, 0, 0},            // S_DARK_XDIE3
+    {SPR_DARK, 16, 5, {A_Fall}, S_DARK_XDIE5, 0, 0},          // S_DARK_XDIE4
+    {SPR_DARK, 17, 5, {NULL}, S_DARK_XDIE6, 0, 0},            // S_DARK_XDIE5
+    {SPR_DARK, 18, 5, {NULL}, S_DARK_XDIE7, 0, 0},            // S_DARK_XDIE6
+    {SPR_DARK, 19, 5, {NULL}, S_DARK_XDIE8, 0, 0},            // S_DARK_XDIE7
+    {SPR_DARK, 20, -1, {NULL}, S_NULL, 0, 0},                 // S_DARK_XDIE8
+    {SPR_DARK, 12, 8, {NULL}, S_DARK_RAISE2, 0, 0},           // S_DARK_RAISE1
+    {SPR_DARK, 11, 8, {NULL}, S_DARK_RAISE3, 0, 0},           // S_DARK_RAISE2
+    {SPR_DARK, 10, 6, {NULL}, S_DARK_RAISE4, 0, 0},           // S_DARK_RAISE3
+    {SPR_DARK, 9, 6, {NULL}, S_DARK_RAISE5, 0, 0},            // S_DARK_RAISE4
+    {SPR_DARK, 8, 6, {NULL}, S_DARK_RUN1, 0, 0}               // S_DARK_RAISE5
 }; 
 
 
@@ -5076,7 +5140,7 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	180,		// painchance
 	sfx_dmpain,		// painsound
 	S_SARN_ATK1,		// meleestate
-	0,		// missilestate
+	S_NULL,		// missilestate
 	S_SARN_DIE1,		// deathstate
 	S_NULL,		// xdeathstate
 	sfx_sgtdth,		// deathsound
@@ -5089,6 +5153,112 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	MF_SOLID|MF_SHOOTABLE,		// flags
 	S_SARN_RAISE1,		// raisestate
 	MF2_SPAWNONLYNIGHTMARE	//flags2
+    },
+
+	{		// MT_KAMIKAZE
+	4007,		// doomednum
+	S_KAMI_STND,		// spawnstate
+	60,		// spawnhealth
+	S_KAMI_RUN,		// seestate
+	sfx_posit1,		// seesound
+	8,		// reactiontime
+	0,		// attacksound
+    S_NULL,			//painstate
+	0,		// painchance
+	0,		// painsound
+	S_KAMI_MELEE,		// meleestate
+	S_NULL,		// missilestate
+	S_KAMI_DEATH,		// deathstate
+	S_KAMI_XDIE,		// xdeathstate
+	sfx_barexp,		// deathsound
+	10,		// speed
+	24*FRACUNIT,		// radius
+	56*FRACUNIT,		// height
+	150,		// mass
+	0,		// damage
+	0,		// activesound
+	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
+	S_NULL,		// raisestate
+	MF2_NORESPAWN	//flags2
+    },
+
+	{		// MT_DARKBALL
+	-1,		// doomednum
+	S_DBALL1,		// spawnstate
+	1000,		// spawnhealth
+	S_NULL,		// seestate
+	sfx_firsht,		// seesound
+	8,		// reactiontime
+	sfx_None,		// attacksound
+	S_NULL,		// painstate
+	0,		// painchance
+	sfx_None,		// painsound
+	S_NULL,		// meleestate
+	S_NULL,		// missilestate
+	S_DBALLX1,		// deathstate
+	S_NULL,		// xdeathstate
+	sfx_firxpl,		// deathsound
+	8*FRACUNIT,		// speed
+	6*FRACUNIT,		// radius
+	8*FRACUNIT,		// height
+	100,		// mass
+	3,		// damage
+	sfx_None,		// activesound
+	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
+	S_NULL,		// raisestate
+	0			//flags2
+    },
+	{		// MT_DARKIMP
+	4008,		// doomednum
+	S_DARK_STND,		// spawnstate
+	80,		// spawnhealth
+	S_DARK_RUN1,		// seestate
+	sfx_bgsit1,		// seesound
+	8,		// reactiontime
+	0,		// attacksound
+	S_DARK_PAIN,		// painstate
+	128,		// painchance
+	sfx_popain,		// painsound
+	S_DARK_ATK1,		// meleestate
+	S_DARK_ATK1,		// missilestate
+	S_DARK_DIE1,		// deathstate
+	S_DARK_XDIE1,		// xdeathstate
+	sfx_bgdth1,		// deathsound
+	8,		// speed
+	20*FRACUNIT,		// radius
+	56*FRACUNIT,		// height
+	100,		// mass
+	0,		// damage
+	sfx_bgact,		// activesound
+	MF_SOLID|MF_SHOOTABLE|MF_COUNTKILL,		// flags
+	S_DARK_RAISE1,		// raisestate
+	MF2_NORESPAWN			//flags2
+    },
+	{		// MT_DARKSMOKE
+	-1,		// doomednum
+	S_SMOKE1,		// spawnstate
+	1000,		// spawnhealth
+	S_NULL,		// seestate
+	sfx_None,		// seesound
+	8,		// reactiontime
+	sfx_None,		// attacksound
+	S_NULL,		// painstate
+	0,		// painchance
+	sfx_None,		// painsound
+	S_NULL,		// meleestate
+	S_NULL,		// missilestate
+	S_NULL,		// deathstate
+	S_NULL,		// xdeathstate
+	sfx_None,		// deathsound
+	0,		// speed
+	20*FRACUNIT,		// radius
+	16*FRACUNIT,		// height
+	100,		// mass
+	0,		// damage
+	sfx_None,		// activesound
+	MF_NOBLOCKMAP|MF_NOGRAVITY|MF_SHADOW,		// flags
+	S_NULL,		// raisestate
+	MF2_NORESPAWN			//flags2
     },
 };
 
