@@ -1213,6 +1213,34 @@ void P_UpdateSpecials (void)
 	    // EFFECT FIRSTCOL SCROLL +
 	    sides[line->sidenum[0]].textureoffset += FRACUNIT;
 	    break;
+      case 256: //Scrool Left (Fast)
+          if(gameversion == exe_doom_2_0)
+              sides[line->sidenum[0]].textureoffset += FRACUNIT * 3;
+	      break;
+      case 257: //Scrool Right
+          if (gameversion == exe_doom_2_0)
+              sides[line->sidenum[0]].textureoffset -= FRACUNIT;
+          break;
+      case 258: //Scrool Right (Fast)
+          if (gameversion == exe_doom_2_0)
+              sides[line->sidenum[0]].textureoffset -= FRACUNIT * 3; 
+          break;
+      case 259:
+          if (gameversion == exe_doom_2_0)
+              sides[line->sidenum[0]].rowoffset -= FRACUNIT;
+          break;
+      case 260:
+          if (gameversion == exe_doom_2_0)
+              sides[line->sidenum[0]].rowoffset -= FRACUNIT * 3;
+          break;
+      case 261:
+          if (gameversion == exe_doom_2_0)
+              sides[line->sidenum[0]].rowoffset += FRACUNIT;
+          break;
+      case 262:
+          if (gameversion == exe_doom_2_0)
+              sides[line->sidenum[0]].rowoffset += FRACUNIT * 3;
+          break;
 	}
     }
 
@@ -1454,7 +1482,8 @@ static unsigned int NumScrollers()
 
     for (i = 0; i < numlines; i++)
     {
-        if (48 == lines[i].special)
+        if (lines[i].special == 48 ||
+            (lines[i].special >= 256 && lines[i].special <= 262))
         {
             scrollers++;
         }
@@ -1559,7 +1588,15 @@ void P_SpawnSpecials (void)
     {
 	switch(lines[i].special)
 	{
+      
 	  case 48:
+      case 256:
+      case 257:
+      case 258:
+      case 259:
+      case 260:
+      case 261:
+      case 262:
             if (numlinespecials >= MAXLINEANIMS)
             {
                 I_Error("Too many scrolling wall linedefs (%d)! "
