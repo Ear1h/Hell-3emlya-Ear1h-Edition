@@ -113,3 +113,18 @@
   * Fixed a logic error preventing the player from gaining health from `medkits`.
   * Fixed an issue where the player could exceed `100` health without picking up `Vitality Serum`.
   * Fixed an issue where an object with the `AMBUSH` flag would spawn on the map in Nightmare mode (without the `Nightmare` flag).
+
+# 20.08.25
+
+* Added new actors:
+  * **Dark Imp**: An enhanced version of the `Doom Imp`. Throws a slow projectile, but with a chance to home in on the player. The projectile accelerates in Nightmare skill.
+  * **Dark Imp Ball**: Dark Imp projectile.
+  * **Dark Imp Ball Smoke**: Smoke is now transparent.
+  * **Kamikaze**: Its sole purpose is to get close to the player and explode.
+
+* Added new codepointers:
+  * `A_KamikazeSee`: Play `dskami` sound
+  * `A_DarkImpAttack`: Shoot Dark Imp Ball
+
+* Added new linedef special:
+  * New wall scrollers added in multiple directions (up, down, left, right), with both normal and 3× speed variants. (256-262). Affects the limit (64 in vanilla).
