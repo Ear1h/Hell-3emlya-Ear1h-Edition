@@ -1897,6 +1897,8 @@ G_InitNew
     {
 	for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++)
 	    states[i].tics >>= 1;
+    if(gameversion == exe_doom_2_0)
+        mobjinfo[MT_DARKIMPBALL].speed = 16*FRACUNIT;
 	mobjinfo[MT_BRUISERSHOT].speed = 20*FRACUNIT;
 	mobjinfo[MT_HEADSHOT].speed = 20*FRACUNIT;
 	mobjinfo[MT_TROOPSHOT].speed = 20*FRACUNIT;
@@ -1905,6 +1907,8 @@ G_InitNew
     {
 	for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++)
 	    states[i].tics <<= 1;
+    if(gameversion == exe_doom_2_0)
+        mobjinfo[MT_DARKIMPBALL].speed = 8*FRACUNIT;
 	mobjinfo[MT_BRUISERSHOT].speed = 15*FRACUNIT;
 	mobjinfo[MT_HEADSHOT].speed = 10*FRACUNIT;
 	mobjinfo[MT_TROOPSHOT].speed = 10*FRACUNIT;
@@ -2263,7 +2267,8 @@ void G_DoPlayDemo (void)
     {
         longtics = true;
     }
-    else if (demoversion != G_VanillaVersionCode() &&
+    /*else if (demoversion != G_VanillaVersionCode() &&
+             demoversion != exe_doom_2_0 &&
              !(gameversion <= exe_doom_1_2 && olddemo))
     {
         const char *message = "Demo is from a different game version!\n"
@@ -2277,7 +2282,7 @@ void G_DoPlayDemo (void)
 
         I_Error(message, demoversion, G_VanillaVersionCode(),
                          DemoVersionDescription(demoversion));
-    }
+    }*/
 
     skill = *demo_p++; 
     episode = *demo_p++; 
