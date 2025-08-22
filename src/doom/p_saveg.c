@@ -1240,6 +1240,44 @@ static void saveg_write_lightflash_t(lightflash_t *str)
     saveg_write32(str->mintime);
 }
 
+//Fire Flicker
+static void saveg_write_fireflicker_t(fireflicker_t *str)
+{
+    // thinker_t thinker;
+    saveg_write_thinker_t(&str->thinker);
+
+    // sector_t* sector;
+    saveg_write32(str->sector - sectors);
+
+    // int count;
+    saveg_write32(str->count);
+
+    // int maxlight;
+    saveg_write32(str->maxlight);
+
+    // int minlight;
+    saveg_write32(str->minlight);
+}
+
+static void saveg_read_fireflicker_t(fireflicker_t *str)
+{
+    int sector;
+
+    // thinker_t thinker;
+    saveg_read_thinker_t(&str->thinker);
+
+    // sector_t* sector;
+    sector = saveg_read32();
+    str->sector = &sectors[sector];
+
+    // int minlight;
+    str->minlight = saveg_read32();
+
+    // int maxlight;
+    str->maxlight = saveg_read32();
+
+    str->count = saveg_read32();
+}
 //
 // strobe_t
 //
@@ -1682,6 +1720,7 @@ enum
     tc_flash,
     tc_strobe,
     tc_glow,
+    tc_fire,
     tc_endspecials
 
 } specials_e;	
@@ -1777,6 +1816,14 @@ void P_ArchiveSpecials (void)
             saveg_write_glow_t((glow_t *) th);
 	    continue;
 	}
+
+     if (th->function.acp1 == (actionf_p1) T_FireFlicker)
+        {
+            saveg_write8(tc_fire);
+            saveg_write_pad();
+            saveg_write_fireflicker_t((fireflicker_t *) th);
+            continue;
+        }
     }
 	
     // add a terminating marker
@@ -1798,6 +1845,7 @@ void P_UnArchiveSpecials (void)
     lightflash_t*	flash;
     strobe_t*		strobe;
     glow_t*		glow;
+    fireflicker_t* fire;
 	
 	
     // read in saved thinkers
@@ -1876,6 +1924,14 @@ void P_UnArchiveSpecials (void)
             saveg_read_glow_t(glow);
 	    glow->thinker.function.acp1 = (actionf_p1)T_Glow;
 	    P_AddThinker (&glow->thinker);
+	    break;
+      
+      case tc_fire:
+        saveg_read_pad();
+	    fire = Z_Malloc (sizeof(*fire), PU_LEVEL, NULL);
+            saveg_read_fireflicker_t(fire);
+	    fire->thinker.function.acp1 = (actionf_p1)T_FireFlicker;
+	    P_AddThinker (&fire->thinker);
 	    break;
 				
 	  default:
