@@ -122,6 +122,8 @@
 #define GOTSHOTGUN	"You got the shotgun!"
 #define GOTSHOTGUN2	"You got the super shotgun!"
 
+#define GOTSECRET	"You Found a Secret Area!"
+
 //
 // P_Doors.C
 //
