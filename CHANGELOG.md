@@ -128,3 +128,15 @@
 
 * Added new linedef special:
   * New wall scrollers added in multiple directions (up, down, left, right), with both normal and 3× speed variants. (256-262). Affects the limit (64 in vanilla).
+
+# 22.08.25
+
+* Added new linedef special:
+
+| Value | Description          
+|-------|--------------
+| 263 | W1 Clear Sector Special
+| 264 | W1 Clear Linedef Special
+
+* When entering a secret area, a corresponding message and a new sound are played.
+* Fixed a bug where `T_FireFlicker` would stop working after loading a save.
