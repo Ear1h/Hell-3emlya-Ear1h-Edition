@@ -25,7 +25,7 @@
 
 #include "doomdef.h"
 #include "doomstat.h"
-
+#include "dstrings.h"
 #include "deh_main.h"
 #include "i_system.h"
 #include "z_zone.h"
@@ -968,6 +968,14 @@ P_CrossSpecialLine
 	// Raise Floor Turbo
 	EV_DoFloor(line,raiseFloorTurbo);
 	break;
+     
+      case 263:
+    EV_DoClearSectorSpecial(line);
+    break;
+
+      case 264:
+    EV_DoClearLineSpecial(line);
+    break;
     }
 }
 
@@ -1046,6 +1054,8 @@ void P_PlayerInSpecialSector (player_t* player)
 		if (sector->special == 9)
 		{
 			player->secretcount++;
+            player->message = DEH_String(GOTSECRET);
+            S_StartSound(NULL, sfx_secret);
             sector->special = 0;
 		}
           
@@ -1152,9 +1162,12 @@ void P_PlayerInSpecialSector (player_t* player)
             if (sector->special&SECRET_MASK)
             {
                 player->secretcount++;
+                player->message = DEH_String(GOTSECRET);
                 sector->special &= ~SECRET_MASK;
                 if (sector->special < 32) // if all extended bits clear,
                     sector->special = 0;  // sector is not special anymore
+
+                S_StartSound(player, sfx_secret);
             }
 
 	}
@@ -1464,7 +1477,100 @@ int EV_DoDonut(line_t*	line)
     return rtn;
 }
 
+void P_ClearThinkerLight(sector_t* sector)
+{
+    thinker_t *th;
 
+    for (th = thinkercap.next; th != &thinkercap; th = th->next)
+    {
+        if (th->function.acp1 == (actionf_p1)T_Glow)
+        {
+            glow_t *g = (glow_t *) th;
+            if (g->sector == sector)
+            {
+                sector->lightlevel = g->maxlight;
+                P_RemoveThinker(th);
+                continue;
+            }
+        }
+
+        else if (th->function.acp1 == (actionf_p1)T_LightFlash)
+        {
+            lightflash_t *flash = (lightflash_t *) th;
+            if (flash->sector == sector)
+            {
+                sector->lightlevel = flash->maxlight;
+                P_RemoveThinker(th);
+                continue;
+            }
+        }
+
+        else if (th->function.acp1 == (actionf_p1) T_StrobeFlash)
+        {
+            strobe_t *strobe = (strobe_t *) th;
+            if (strobe->sector == sector)
+            {
+                sector->lightlevel = strobe->maxlight;
+                P_RemoveThinker(th);
+                continue;
+            }
+        }
+
+        else if (th->function.acp1 == (actionf_p1) T_FireFlicker)
+        {
+            fireflicker_t *fire = (fireflicker_t *) th;
+            if (fire->sector == sector)
+            {
+                sector->lightlevel = fire->maxlight;
+                P_RemoveThinker(th);
+                continue;
+            }
+        }
+    }
+}
+
+void EV_DoClearSectorSpecial(line_t* line)
+{
+    int i;
+    
+    sector_t* sector;
+
+    sector = sectors;
+
+    for (i = 0; i < numsectors; i++, sector++)
+    {
+        if (sector->tag == line->tag)
+        {
+            P_ClearThinkerLight(sector);
+
+            sector->specialdata = NULL;
+
+            sector->special = 0;
+           
+        }
+
+        
+    }
+
+}
+
+void EV_DoClearLineSpecial(line_t* line)
+{
+    int i;
+
+    line_t* temp;
+
+    linedef = lines;
+    temp = lines;
+
+    for (i = 0; i < numlines; i++, temp++)
+    {
+        if (line->tag == temp->tag)
+        {
+            temp->special = 0;
+        }
+    }
+}
 
 //
 // SPECIAL SPAWNING

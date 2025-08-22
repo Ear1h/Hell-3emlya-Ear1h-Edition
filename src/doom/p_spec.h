@@ -113,7 +113,11 @@ getNextSector
 //
 int EV_DoDonut(line_t* line);
 
+void EV_DoClearSectorSpecial(line_t* line);
 
+void EV_DoClearLineSpecial(line_t* line);
+
+void P_ClearThinkerLight(sector_t* sector);
 
 //
 // P_LIGHTS
@@ -179,6 +183,7 @@ void    P_SpawnFireFlicker (sector_t* sector);
 void    T_LightFlash (lightflash_t* flash);
 void    P_SpawnLightFlash (sector_t* sector);
 void    T_StrobeFlash (strobe_t* flash);
+void    T_FireFlicker(fireflicker_t *flick);
 
 void
 P_SpawnStrobeFlash
