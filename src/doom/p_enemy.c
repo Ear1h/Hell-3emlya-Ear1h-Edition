@@ -2083,8 +2083,8 @@ void A_NightmareAttack(mobj_t *actor)
 
 void A_KamikazeSee(mobj_t* actor)
 {
-    if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
-        gameversion < exe_doom_2_0)
+    if ((actor->subsector->sector->special & SILENT_MOBJ) &&
+        gameversion == exe_doom_2_0)
         return;
 
     S_StartSound(actor, sfx_kami);
