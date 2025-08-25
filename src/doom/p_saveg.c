@@ -683,6 +683,11 @@ static void saveg_read_player_t(player_t *str)
 
     // boolean backpack;
     str->backpack = saveg_read32();
+    
+    str->vitally = saveg_read32();
+
+    str->VitaHealth = saveg_read32();
+
 
     // int frags[MAXPLAYERS];
     for (i=0; i<MAXPLAYERS; ++i)
@@ -814,6 +819,10 @@ static void saveg_write_player_t(player_t *str)
 
     // boolean backpack;
     saveg_write32(str->backpack);
+
+    saveg_write32(str->vitally);
+
+    saveg_write32(str->VitaHealth);
 
 
     // int frags[MAXPLAYERS];

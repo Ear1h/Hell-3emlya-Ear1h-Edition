@@ -1158,6 +1158,7 @@ void G_PlayerReborn (int player)
 	p->maxammo[i] = maxammo[i]; 
 
     p->VitaHealth = deh_initial_health; //Restore Player Health
+    p->vitally = false; //Restore Boolean
 
 }
 
