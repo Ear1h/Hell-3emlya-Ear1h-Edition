@@ -633,7 +633,31 @@ P_UseSpecialLine
 	EV_LightTurnOn(line,35);
 	P_ChangeSwitchTexture(line,1);
 	break;
-			
+	  
+	  //S1 and SR Clear Specials
+	  case 265: //Clear Sector Special S1
+          EV_DoClearSectorSpecial(line);
+          P_ChangeSwitchTexture(line, 0);
+          line->special = 0;
+          break;
+	  case 266: //Clear Sector Special SR
+		  EV_DoClearSectorSpecial(line);
+		  P_ChangeSwitchTexture(line,1);
+	      break;
+	  case 267: //Clear Line Special S1
+		  EV_DoClearLineSpecial(line);
+		  P_ChangeSwitchTexture(line,0);
+		  line->special = 0;
+		  break;
+	  case 268: //Clear Line Special SR
+		  EV_DoClearLineSpecial(line);
+		  P_ChangeSwitchTexture(line,1);
+	      break;
+	  case 300:
+              if (EV_DoFloor(line, raiseFloor))
+                  P_ChangeSwitchTexture(line, 0);
+				  thing->player->message = "Exit opened on trains right side.";
+              break;
     }
 	
     return true;
