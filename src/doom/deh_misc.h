@@ -45,6 +45,7 @@
 #define DEH_DEFAULT_MEDKIT_HEALTH 25
 #define DEH_DEFAULT_MEDPACK_HEALTH 50
 #define DEH_DEFAULT_ARMOR_SHARD 10
+#define DEH_DEFAULT_NIGHTMARE_FILTER 0
 
 
 extern int deh_initial_health;
@@ -75,6 +76,7 @@ extern int deh_stimpack_health;
 extern int deh_medkit_health;
 extern int deh_medpack_health;		
 extern int deh_armor_shard_count;
+extern int deh_nightmare_filter;
 
 #if 0
 
@@ -103,6 +105,7 @@ extern int deh_armor_shard_count;
 #define deh_armor_per_point     DEH_DEFAULT_ARMOR_PER_POINT
 #define deh_regeneration_per_health     DEH_DEFAULT_REGENERATION_PER_HEALTH
 #define deh_heavy_armor_class DEH_DEFAULT_HEAVY_ARMOR_CLASS
+#define deh_nightmare_filter  DEH_DEFAULT_NIGHTMARE_FILTER
 #endif
 
 #endif /* #ifndef DEH_MISC_H */

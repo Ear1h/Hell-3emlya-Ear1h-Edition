@@ -158,6 +158,8 @@ int deh_medpack_health = DEH_DEFAULT_MEDPACK_HEALTH;
 
 int deh_armor_shard_count = DEH_DEFAULT_ARMOR_SHARD;
 
+int deh_nightmare_filter = DEH_DEFAULT_NIGHTMARE_FILTER;
+
 static struct
 {
     const char *deh_name;
@@ -186,7 +188,8 @@ static struct
     {"Regeneration Health", &deh_regeneration_per_health},
     {"Vitality Health",     &deh_vitality_health},
     {"Heavy Armor Class",   &deh_heavy_armor_class},
-    {"Armor Shard Count",   &deh_armor_shard_count}
+    {"Armor Shard Count",   &deh_armor_shard_count},
+    {"Nightmare Filter",    &deh_nightmare_filter}
 };
 
 static void *DEH_MiscStart(deh_context_t *context, char *line)

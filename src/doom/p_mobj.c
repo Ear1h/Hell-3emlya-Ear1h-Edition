@@ -23,6 +23,9 @@
 #include "m_random.h"
 
 #include "doomdef.h"
+#include "deh_main.h"
+#include "deh_misc.h"
+
 #include "p_local.h"
 #include "sounds.h"
 
@@ -34,6 +37,8 @@
 #include "doomstat.h"
 
 #include "p_spec.h"
+
+
 
 void G_PlayerReborn (int player);
 void P_SpawnMapThing (mapthing_t*	mthing);
@@ -824,12 +829,13 @@ void P_SpawnMapThing (mapthing_t* mthing)
         bit = 1;
     }
 	
-    else if (gameskill == sk_nightmare && gameversion < exe_doom_2_0)
+    else if (gameskill == sk_nightmare && (gameversion < exe_doom_2_0 ||
+             deh_nightmare_filter == 0))
     {
         bit = 4;
     }
 	
-    else if (gameversion == exe_doom_2_0)
+    else if (gameversion == exe_doom_2_0 && deh_nightmare_filter == 1)
     {
         if (gameskill == sk_nightmare && mthing->options & MTF_NIGHTMARE)
         {
