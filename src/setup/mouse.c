@@ -53,6 +53,7 @@ static int *all_mouse_buttons[] = {
     &mousebuseartifact,
     &mousebturnleft,
     &mousebturnright,
+    &mousebaltfire,
 };
 
 static void MouseSetCallback(TXT_UNCAST_ARG(widget), TXT_UNCAST_ARG(variable))
@@ -160,6 +161,7 @@ void ConfigMouse(TXT_UNCAST_ARG(widget), void *user_data)
 
     AddMouseControl(window, "Fire/Attack", &mousebfire);
     AddMouseControl(window, "Use", &mousebuse);
+    AddMouseControl(window, "AltFire", &mousebaltfire);
 
     TXT_AddWidget(window,
                   TXT_NewButton2("More controls...", ConfigExtraButtons, NULL));

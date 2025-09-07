@@ -29,6 +29,8 @@ extern int key_use;
 extern int key_strafe;
 extern int key_speed;
 
+extern int key_altfire;
+
 extern int key_jump;
  
 extern int key_flyup;
@@ -152,6 +154,8 @@ extern int mousebnextweapon;
 extern int mousebinvleft;
 extern int mousebinvright;
 extern int mousebuseartifact;
+
+extern int mousebaltfire;
 
 extern int joybfire;
 extern int joybstrafe;

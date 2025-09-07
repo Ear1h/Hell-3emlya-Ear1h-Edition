@@ -108,6 +108,8 @@ typedef enum
     //  occupy the second byte of buttons.    
     BTS_SAVEMASK	= (4+8+16),
     BTS_SAVESHIFT 	= 2,
+
+    BT_ALTFIRE      = 8,
   
 } buttoncode_t;
 

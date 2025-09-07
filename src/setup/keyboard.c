@@ -365,6 +365,10 @@ static void OtherKeysDialog(TXT_UNCAST_ARG(widget), TXT_UNCAST_ARG(unused))
     AddKeyControl(table, "- to player 3",         &key_multi_msgplayer[2]);
     AddKeyControl(table, "- to player 4",         &key_multi_msgplayer[3]);
 
+    AddSectionLabel(table, "new", true);
+
+    AddKeyControl(window, "AltFire/Attack",       &key_altfire);
+
     if (gamemission == hexen || gamemission == strife)
     {
         AddKeyControl(table, "- to player 5",     &key_multi_msgplayer[4]);
@@ -422,6 +426,7 @@ void ConfigKeyboard(TXT_UNCAST_ARG(widget), void *user_data)
     AddKeyControl(window, "Fire/Attack", &key_fire);
     TXT_AddWidget(window, TXT_TABLE_EMPTY);
     AddKeyControl(window, "Use", &key_use);
+    
 
     TXT_AddWidgets(window,
                    TXT_NewButton2("More controls...", ConfigExtraKeys, NULL),

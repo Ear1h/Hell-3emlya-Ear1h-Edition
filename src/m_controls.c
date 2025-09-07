@@ -38,6 +38,10 @@ int key_use = ' ';
 int key_strafe = KEY_RALT;
 int key_speed = KEY_RSHIFT; 
 
+// Gameversion 2.0 (AltFire)
+
+int key_altfire = 'o';
+
 // 
 // Heretic keyboard controls
 //
@@ -108,6 +112,7 @@ int mousebfire = 0;
 int mousebstrafe = 1;
 int mousebforward = 2;
 int mousebspeed = 3;
+int mousebaltfire = 4;
 
 int mousebjump = -1;
 
@@ -239,11 +244,14 @@ void M_BindBaseControls(void)
     M_BindIntVariable("key_use",            &key_use);
     M_BindIntVariable("key_strafe",         &key_strafe);
     M_BindIntVariable("key_speed",          &key_speed);
+    M_BindIntVariable("key_speed",          &key_altfire);
 
     M_BindIntVariable("mouseb_fire",        &mousebfire);
     M_BindIntVariable("mouseb_strafe",      &mousebstrafe);
     M_BindIntVariable("mouseb_forward",     &mousebforward);
     M_BindIntVariable("mouseb_speed",       &mousebspeed);
+
+    M_BindIntVariable("mouseb_speed",       &mousebaltfire);
 
     M_BindIntVariable("joyb_fire",          &joybfire);
     M_BindIntVariable("joyb_strafe",        &joybstrafe);
