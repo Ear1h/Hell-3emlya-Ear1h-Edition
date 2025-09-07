@@ -41,7 +41,7 @@
 #define WEAPONBOTTOM	128*FRACUNIT
 #define WEAPONTOP		32*FRACUNIT
 
-
+bool bAltFire;
 
 //
 // P_SetPsprite
@@ -69,6 +69,7 @@ P_SetPsprite
 	state = &states[stnum];
 	psp->state = state;
 	psp->tics = state->tics;	// could be 0
+
 
 	if (state->misc1)
 	{
@@ -246,13 +247,25 @@ void P_FireWeapon (player_t* player)
     if (!P_CheckAmmo (player))
 	return;
 	
+    bAltFire = false;
     P_SetMobjState (player->mo, S_PLAY_ATK1);
     newstate = weaponinfo[player->readyweapon].atkstate;
     P_SetPsprite (player, ps_weapon, newstate);
     P_NoiseAlert (player->mo, player->mo);
 }
 
-
+void P_AltFireWeapon(player_t *player)
+{
+    statenum_t newstate;
+    if (!P_CheckAmmo(player) || weaponinfo[player->readyweapon].altstate == S_NULL)
+        return;
+    
+    bAltFire = true;
+    P_SetMobjState(player->mo, S_PLAY_ATK1);
+    newstate = weaponinfo[player->readyweapon].altstate;
+    P_SetPsprite(player, ps_weapon, newstate);
+    P_NoiseAlert(player->mo, player->mo);
+}
 
 //
 // P_DropWeapon
@@ -310,19 +323,34 @@ A_WeaponReady
     
     // check for fire
     //  the missile launcher and bfg do not auto fire
+
+    if ((player->cmd.buttons & BT_ATTACK) && (player->cmd.buttons & BT_ALTFIRE))
+    {
+        return;
+    }
+
     if (player->cmd.buttons & BT_ATTACK)
     {
-	if ( !player->attackdown
-	     || (player->readyweapon != wp_missile
-		 && player->readyweapon != wp_bfg) )
-	{
-	    player->attackdown = true;
-	    P_FireWeapon (player);		
-	    return;
-	}
+        if (!player->attackdown)
+        {
+            player->attackdown = true;
+            P_FireWeapon(player);
+            return;
+        }
+    }
+    else if (player->cmd.buttons & BT_ALTFIRE)
+    {
+        if (!player->attackdown)
+        {
+            player->attackdown = true;
+            P_AltFireWeapon(player);
+            return;
+        }
     }
     else
-	player->attackdown = false;
+    {
+        player->attackdown = false;
+    }
     
     // bob the weapon based on movement speed
     angle = (128*leveltime)&FINEMASK;
@@ -345,17 +373,30 @@ void A_ReFire
     
     // check for fire
     //  (if a weaponchange is pending, let it go through instead)
-    if ( (player->cmd.buttons & BT_ATTACK) 
+    if ((player->cmd.buttons & BT_ATTACK) && (player->cmd.buttons & BT_ALTFIRE))
+    {
+        return;
+    }
+
+    if ((player->cmd.buttons & BT_ATTACK) 
+     && !bAltFire 
 	 && player->pendingweapon == wp_nochange
 	 && player->health)
     {
-	player->refire++;
-	P_FireWeapon (player);
+	    player->refire++;
+	    P_FireWeapon (player);
+    }
+    else if ((player->cmd.buttons & BT_ALTFIRE) &&
+        bAltFire &&
+        player->pendingweapon == wp_nochange && player->health)
+    {
+        player->refire++;
+        P_AltFireWeapon(player);
     }
     else
     {
-	player->refire = 0;
-	P_CheckAmmo (player);
+        player->refire = 0;
+        P_CheckAmmo(player);
     }
 }
 
@@ -449,6 +490,12 @@ A_GunFlash
   pspdef_t*	psp ) 
 {
     P_SetMobjState (player->mo, S_PLAY_ATK2);
+    if (bAltFire)
+    {
+        P_SetPsprite(player, ps_flash,
+                     weaponinfo[player->readyweapon].altflashstate);
+        return;
+    }
     P_SetPsprite (player,ps_flash,weaponinfo[player->readyweapon].flashstate);
 }
 
@@ -604,9 +651,20 @@ A_FirePlasma
 {
     DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, 1);
 
-    P_SetPsprite (player,
-		  ps_flash,
-		  weaponinfo[player->readyweapon].flashstate+(P_Random ()&1) );
+    if (!bAltFire)
+    {
+        P_SetPsprite(player, ps_flash,
+                     weaponinfo[player->readyweapon].flashstate +
+                         (P_Random() & 1));
+    }
+
+    else
+    {
+        P_SetPsprite(player, ps_flash,
+                     weaponinfo[player->readyweapon].altflashstate +
+                         (P_Random() & 1));
+    }
+   
 
     P_SpawnPlayerMissile (player->mo, MT_PLASMA);
 }
@@ -704,9 +762,17 @@ A_FireShotgun
 
     DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, 1);
 
-    P_SetPsprite (player,
-		  ps_flash,
-		  weaponinfo[player->readyweapon].flashstate);
+    if (!bAltFire)
+    {
+        P_SetPsprite(player, ps_flash,
+                     weaponinfo[player->readyweapon].flashstate);
+    }
+    
+    else
+    {
+        P_SetPsprite(player, ps_flash,
+                     weaponinfo[player->readyweapon].altflashstate);
+    }
 
     P_BulletSlope (player->mo);
 	
@@ -735,9 +801,17 @@ A_FireShotgun2
 
     DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, 2);
 
-    P_SetPsprite (player,
-		  ps_flash,
-		  weaponinfo[player->readyweapon].flashstate);
+    if (!bAltFire)
+    {
+        P_SetPsprite(player, ps_flash,
+                     weaponinfo[player->readyweapon].flashstate);
+    }
+
+    else
+    {
+        P_SetPsprite(player, ps_flash,
+                     weaponinfo[player->readyweapon].altflashstate);
+    }
 
     P_BulletSlope (player->mo);
 	
@@ -772,11 +846,19 @@ A_FireCGun
     P_SetMobjState (player->mo, S_PLAY_ATK2);
     DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, 1);
 
-    P_SetPsprite (player,
-		  ps_flash,
-		  weaponinfo[player->readyweapon].flashstate
-		  + psp->state
-		  - &states[S_CHAIN1] );
+    if (!bAltFire)
+    {
+        P_SetPsprite(player, ps_flash,
+                     weaponinfo[player->readyweapon].flashstate + psp->state -
+                         &states[S_CHAIN1]);
+    }
+
+    else
+    {
+        P_SetPsprite(player, ps_flash,
+                     weaponinfo[player->readyweapon].altflashstate + psp->state -
+                         &states[S_CHAIN1]);
+    }
 
     P_BulletSlope (player->mo);
 	
@@ -908,4 +990,54 @@ void P_MovePsprites (player_t* player)
     player->psprites[ps_flash].sy = player->psprites[ps_weapon].sy;
 }
 
+////From 
+//void A_RefireTo(player_t* player, pspdef_t* psp)
+//{
+//    if (gameversion != exe_doom_2_0 || !psp->state)
+//        return;
+//
+//    if ((psp->state->args[1] || P_CheckAmmo(player)) &&
+//        (player->cmd.buttons & BT_ATTACK) &&
+//        (player->pendingweapon == wp_nochange && player->health))
+//        P_SetPsprite(player, psp, psp->state->args[0]);
+//
+//
+//    else if ((psp->state->args[1] || P_CheckAmmo(player)) &&
+//             (player->cmd.buttons & BT_ALTFIRE) &&
+//             (player->pendingweapon == wp_nochange && player->health))
+//        P_SetPsprite(player, psp, psp->state->args[0]);
+//}
+//
+//void A_CustomMeleeAttack(player_t* player, pspdef_t* psp)
+//{
+//    int damagebase, damagemod;
+//    angle_t angle;
+//    int slope, damage;
+//
+//    if (gameversion != exe_doom_2_0 || !psp->state)
+//        return;
+//
+//    damagebase = psp->state->args[0];
+//    damagemod = psp->state->args[1];
+//
+//    damage = (P_Random() % damagemod + 1) * damagebase;
+//
+//    if (player->powers[pw_strength])
+//        damagebase *= 10;
+//
+//    angle = player->mo->angle;
+//    angle += P_SubRandom() << 18;
+//    slope = P_AimLineAttack(player->mo, angle, MELEERANGE);
+//    P_LineAttack(player->mo, angle, MELEERANGE, slope, damage);
+//
+//    // turn to face target
+//    if (linetarget)
+//    {
+//        if (!(player->mo->subsector->sector->special & SILENT_MOBJ) ||
+//            gameversion < exe_doom_2_0)
+//            S_StartSound(player->mo, sfx_punch);
+//        player->mo->angle = R_PointToAngle2(player->mo->x, player->mo->y,
+//                                            linetarget->x, linetarget->y);
+//    }
+//}
 
