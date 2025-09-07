@@ -486,7 +486,11 @@ void G_BuildTiccmd (ticcmd_t* cmd, int maketic)
     if (gamekeydown[key_fire] || mousebuttons[mousebfire] 
 	|| joybuttons[joybfire]) 
 	cmd->buttons |= BT_ATTACK; 
- 
+    
+    if ((gamekeydown[key_altfire] || mousebuttons[mousebaltfire]) && gameversion == exe_doom_2_0)
+    cmd->buttons |= BT_ALTFIRE;
+    
+
     if (gamekeydown[key_use]
      || joybuttons[joybuse]
      || mousebuttons[mousebuse])
