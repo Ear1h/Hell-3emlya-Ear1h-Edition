@@ -656,7 +656,7 @@ P_UseSpecialLine
 	  case 300:
               if (EV_DoFloor(line, raiseFloor))
                   P_ChangeSwitchTexture(line, 0);
-				  thing->player->message = "Exit opened on trains right side.";
+				  thing->player->message = "Exit opened on train's right side.";
               break;
     }
 	
