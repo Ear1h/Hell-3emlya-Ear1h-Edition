@@ -140,3 +140,16 @@
 
 * When entering a secret area, a corresponding message and a new sound are played.
 * Fixed a bug where `T_FireFlicker` would stop working after loading a save.
+
+# 08.09.25
+
+### New Features  
+- **ALTFIRE mechanic** added: every available weapon now supports an alternate fire (currently only for the pistol).  
+- **DeHackEd modding support**: you can now edit `altfire` and `altfireflash`.  
+
+⚠️ Works only with **version 2.0**.  
+
+# Bug fixes
+- Removed the `dssecret` sound.
+- Fixed a bug where `A_ReFire` behaved incorrectly when both `BT_ATTACK` and `BT_ALTFIRE` were held down simultaneously.
+- Fixed an issue where some `A_FireShotgun` states failed to display the `flashstate` on-screen.
