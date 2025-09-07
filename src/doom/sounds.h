@@ -231,7 +231,6 @@ typedef enum
     sfx_skeatk,
     sfx_radio,
     sfx_kami,
-    sfx_secret,
     NUMSFX
 } sfxenum_t;
 
