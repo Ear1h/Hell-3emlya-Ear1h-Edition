@@ -1055,7 +1055,7 @@ void P_PlayerInSpecialSector (player_t* player)
 		{
 			player->secretcount++;
             player->message = DEH_String(GOTSECRET);
-            S_StartSound(NULL, sfx_secret);
+            S_StartSound(NULL, sfx_itmbk);
             sector->special = 0;
 		}
           
@@ -1167,7 +1167,7 @@ void P_PlayerInSpecialSector (player_t* player)
                 if (sector->special < 32) // if all extended bits clear,
                     sector->special = 0;  // sector is not special anymore
 
-                S_StartSound(player, sfx_secret);
+                S_StartSound(player, sfx_itmbk);
             }
 
 	}
