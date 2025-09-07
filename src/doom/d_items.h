@@ -33,7 +33,8 @@ typedef struct
     int		readystate;
     int		atkstate;
     int		flashstate;
-
+    int     altstate;
+    int     altflashstate;
 } weaponinfo_t;
 
 extern  weaponinfo_t    weaponinfo[NUMWEAPONS];
