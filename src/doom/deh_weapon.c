@@ -34,6 +34,8 @@ DEH_BEGIN_MAPPING(weapon_mapping, weaponinfo_t)
   DEH_MAPPING("Bobbing frame",    readystate)
   DEH_MAPPING("Shooting frame",   atkstate)
   DEH_MAPPING("Firing frame",     flashstate)
+  DEH_MAPPING("AltShooting frame",altstate)
+  DEH_MAPPING("AltFiring frame",  altflashstate)
 DEH_END_MAPPING
 
 static void *DEH_WeaponStart(deh_context_t *context, char *line)
