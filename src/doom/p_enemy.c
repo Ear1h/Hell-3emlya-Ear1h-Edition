@@ -623,7 +623,10 @@ seeyou:
                 S_StartSound(NULL, sound);
             }
             else
+            {
                 S_StartSound(actor, sound);
+            }
+               
 
         else if (gameversion < exe_doom_2_0)
         {
