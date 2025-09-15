@@ -238,6 +238,9 @@ typedef enum
     //Things that would telefrag this thing are telefragged instead.
     MF2_ANTITELEFRAG = 256,
 
+    // Protect mobj from DAMAGE SECTOR
+    MF2_FLOORPROTECTOR = 512,
+
 }mobjflag2_t;
 
 // Map Object definition.

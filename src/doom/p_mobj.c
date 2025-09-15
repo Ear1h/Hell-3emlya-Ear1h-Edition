@@ -471,6 +471,7 @@ P_NightmareRespawn (mobj_t* mobj)
 //
 void P_MobjThinker (mobj_t* mobj)
 {
+
     // momentum movement
     if (mobj->momx
 	|| mobj->momy
@@ -492,7 +493,50 @@ void P_MobjThinker (mobj_t* mobj)
 	    return;		// mobj was removed
     }
 
-    
+    // Deals damage to all monsters except the player and flying enemies.
+
+    // If Special Action < 32 (7 & DAMAGEMOBJ_MASK). Mobj doesn't take damage
+    // Bug
+
+    if (gameversion == exe_doom_2_0)
+    {
+        sector_t* sector = mobj->subsector->sector;
+        if ((sector->special & DAMAGEMOBJ_MASK) &&
+            mobj->z == mobj->floorz &&
+            mobj->player == NULL &&
+            (mobj->flags & MF_SHOOTABLE) &&
+            !(mobj->flags & MF_FLOAT) &&
+            !(mobj->flags2 & MF2_FLOORPROTECTOR))
+        {
+            if (sector->special & KILL_MASK)
+            {
+                if (!(leveltime & 0x1f))
+                    P_DamageMobj(mobj, NULL, NULL, 10000);
+            }
+
+            switch ((sector->special & DAMAGE_MASK) >> DAMAGE_SHIFT)
+            {
+                case 0:
+                    break;
+                case 1:
+                    if (!(leveltime & 0x1f))
+                        P_DamageMobj(mobj, NULL, NULL, 5);
+                    break;
+                case 2:
+                    // HELLSLIME DAMAGE
+                    if (!(leveltime & 0x1f))
+                        P_DamageMobj(mobj, NULL, NULL, 10);
+                    break;
+                case 3:
+                    if (!(leveltime & 0x1f))
+                        P_DamageMobj(mobj, NULL, NULL, 20);
+                    break;
+            }
+
+            if (mobj->thinker.function.acv != P_MobjThinker)
+                return;
+        }
+    }
     // cycle through states,
     // calling action functions at transitions
     if (mobj->tics != -1)
