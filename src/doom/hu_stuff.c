@@ -91,6 +91,12 @@ static boolean		message_nottobefuckedwith;
 static hu_stext_t	w_message;
 static int		message_counter;
 
+static hu_textline_t w_kills;
+static hu_stext_t w_secret;
+
+static boolean secret_on;
+static boolean stat_on;
+static int secret_counter;
 
 static boolean		headsupactive = false;
 
@@ -366,6 +372,7 @@ void HU_Start(void)
 
     plr = &players[consoleplayer];
     message_on = false;
+    stat_on = false;
     message_dontfuckwithme = false;
     message_nottobefuckedwith = false;
     chat_on = false;
@@ -375,6 +382,11 @@ void HU_Start(void)
 		    HU_MSGX, HU_MSGY, HU_MSGHEIGHT,
 		    hu_font,
 		    HU_FONTSTART, &message_on);
+
+    HUlib_initSText(&w_secret, 72, 64, HU_MSGHEIGHT, hu_font,
+                    HU_FONTSTART, &secret_on);
+
+    HUlib_initTextLine(&w_kills, 0, 160, hu_font, HU_FONTSTART);
 
     // create the map title widget
     HUlib_initTextLine(&w_title,
@@ -437,8 +449,12 @@ void HU_Drawer(void)
 
     HUlib_drawSText(&w_message);
     HUlib_drawIText(&w_chat);
+    HUlib_drawSText(&w_secret);
+    if (!automapactive)
+    HUlib_drawTextLine(&w_kills, false);
     if (automapactive)
 	HUlib_drawTextLine(&w_title, false);
+
 
 }
 
@@ -446,9 +462,10 @@ void HU_Erase(void)
 {
 
     HUlib_eraseSText(&w_message);
+    HUlib_eraseTextLine(&w_kills);
     HUlib_eraseIText(&w_chat);
     HUlib_eraseTextLine(&w_title);
-
+    HUlib_eraseSText(&w_secret);
 }
 
 void HU_Ticker(void)
@@ -456,12 +473,52 @@ void HU_Ticker(void)
 
     int i, rc;
     char c;
+    char w_buffer[128], *s;
 
     // tick down message counter if message is up
     if (message_counter && !--message_counter)
     {
 	message_on = false;
 	message_nottobefuckedwith = false;
+    }
+
+    if (secret_counter && !--secret_counter)
+    {
+        secret_on = false;
+    }
+
+    // KIS Statistics
+    M_snprintf(w_buffer, sizeof(w_buffer), "K %d/%d ",
+                   plr->killcount, totalkills);
+    HUlib_clearTextLine(&w_kills);
+    s = w_buffer;
+
+    while (*s)
+        HUlib_addCharToTextLine(&w_kills, *(s++));
+
+    M_snprintf(w_buffer, sizeof(w_buffer), "I %d/%d ", plr->itemcount,
+               totalitems);
+    s = w_buffer;
+
+    while (*s)
+        HUlib_addCharToTextLine(&w_kills, *(s++));
+
+    M_snprintf(w_buffer, sizeof(w_buffer), "S %d/%d ",
+               plr->secretcount,
+               totalsecret);
+    s = w_buffer;
+
+    while (*s)
+        HUlib_addCharToTextLine(&w_kills, *(s++));
+
+    stat_on = true;
+
+    if (plr->secretmessage)
+    {
+        HUlib_addMessageToSText(&w_secret, 0, plr->secretmessage);
+        plr->secretmessage = 0;
+        secret_on = true;
+        secret_counter = 5 * TICRATE / 2; // [crispy] 2.5 seconds
     }
 
     if (showMessages || message_dontfuckwithme)
