@@ -324,14 +324,11 @@ A_WeaponReady
     // check for fire
     //  the missile launcher and bfg do not auto fire
 
-    if ((player->cmd.buttons & BT_ATTACK) && (player->cmd.buttons & BT_ALTFIRE))
-    {
-        return;
-    }
 
     if (player->cmd.buttons & BT_ATTACK)
     {
-        if (!player->attackdown)
+        if (!player->attackdown || (player->readyweapon != wp_missile &&
+                                    player->readyweapon != wp_bfg))
         {
             player->attackdown = true;
             P_FireWeapon(player);
@@ -373,13 +370,7 @@ void A_ReFire
     
     // check for fire
     //  (if a weaponchange is pending, let it go through instead)
-    if ((player->cmd.buttons & BT_ATTACK) && (player->cmd.buttons & BT_ALTFIRE))
-    {
-        return;
-    }
-
     if ((player->cmd.buttons & BT_ATTACK) 
-     && !bAltFire 
 	 && player->pendingweapon == wp_nochange
 	 && player->health)
     {
