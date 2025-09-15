@@ -119,7 +119,7 @@ void EV_DoClearLineSpecial(line_t* line);
 
 void P_ClearThinkerLight(sector_t* sector);
 
-//
+    //
 // P_LIGHTS
 //
 typedef struct
@@ -255,6 +255,9 @@ typedef struct
 #define SILENT_MOBJ  0x100
 #define SILENT_SEC_MASK 0x200 //All Doors, Floors, Ceiling and Plat is silent
 #define KILL_MASK   0x1000
+#define DAMAGEMOBJ_MASK 0x2000
+#define DAMAGEMOBJ_SHIFT 13
+
 extern button_t	buttonlist[MAXBUTTONS]; 
 
 void

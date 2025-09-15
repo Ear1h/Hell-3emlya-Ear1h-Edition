@@ -1054,7 +1054,7 @@ void P_PlayerInSpecialSector (player_t* player)
 		if (sector->special == 9)
 		{
 			player->secretcount++;
-            player->message = DEH_String(GOTSECRET);
+            player->secretmessage = DEH_String(GOTSECRET);
             S_StartSound(NULL, sfx_itmbk);
             sector->special = 0;
 		}
@@ -1162,7 +1162,7 @@ void P_PlayerInSpecialSector (player_t* player)
             if (sector->special&SECRET_MASK)
             {
                 player->secretcount++;
-                player->message = DEH_String(GOTSECRET);
+                player->secretmessage = DEH_String(GOTSECRET);
                 sector->special &= ~SECRET_MASK;
                 if (sector->special < 32) // if all extended bits clear,
                     sector->special = 0;  // sector is not special anymore
@@ -1535,7 +1535,12 @@ void EV_DoClearSectorSpecial(line_t* line)
     
     sector_t* sector;
 
+    if (gameversion != exe_doom_2_0)
+        return;
+
     sector = sectors;
+
+    
 
     for (i = 0; i < numsectors; i++, sector++)
     {
@@ -1545,6 +1550,15 @@ void EV_DoClearSectorSpecial(line_t* line)
 
             sector->specialdata = NULL;
 
+            if (sector->special == 9)
+            {
+                totalsecret--;
+            }
+
+            if (sector->special & SECRET_MASK)
+            {
+                totalsecret--;
+            }
             sector->special = 0;
            
         }
@@ -1560,8 +1574,13 @@ void EV_DoClearLineSpecial(line_t* line)
 
     line_t* temp;
 
+    if (gameversion != exe_doom_2_0)
+        return;
+
     linedef = lines;
     temp = lines;
+
+    
 
     for (i = 0; i < numlines; i++, temp++)
     {
