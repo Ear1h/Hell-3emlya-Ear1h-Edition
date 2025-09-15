@@ -153,3 +153,27 @@
 - Removed the `dssecret` sound.
 - Fixed a bug where `A_ReFire` behaved incorrectly when both `BT_ATTACK` and `BT_ALTFIRE` were held down simultaneously.
 - Fixed an issue where some `A_FireShotgun` states failed to display the `flashstate` on-screen.
+
+# 15.09.25
+
+### New Sector Flag
+
+| Value | Description          
+|-------|--------------
+| 8192 | If this flag is enabled, any actor (except the Voodoo Doll) will take damage (if damage flags are set).|
+
+### New actor flag
+
+| Flag | Description           | Value
+|-------|-----------------------|------
+|MF2_FLOORPROTECTOR | Protects the actor from damage floors.| 512
+
+### Quality of Life
+
+* This port now displays statistics (**KILLS, ITEMS, SECRETS**) in the HUD.
+* When the player enters a secret, a separate message is displayed in the center of the screen indicating the secret has been found.
+
+### Fixes
+
+* `Clear Sector Special` now removes the secret from the level.
+* Fixed an issue where the player couldn't fire after switching weapons.
