@@ -743,6 +743,9 @@ static void saveg_read_player_t(player_t *str)
     // char* message;
     str->message = saveg_readp();
 
+    // char* message;
+    str->secretmessage = saveg_readp();
+
     // int damagecount;
     str->damagecount = saveg_read32();
 
@@ -878,6 +881,9 @@ static void saveg_write_player_t(player_t *str)
 
     // char* message;
     saveg_writep(str->message);
+
+    // char* secret message;
+    saveg_writep(str->secretmessage);
 
     // int damagecount;
     saveg_write32(str->damagecount);
