@@ -124,8 +124,10 @@ void A_SpawnSound();
 void A_SpawnFly();
 void A_BrainExplode();
 void A_NightmareAttack();
-void A_KamikazeSee();
 void A_DarkImpAttack();
+void A_LineEffect2();
+void A_PlaySound2();
+void A_RadiusDamage2();
 
 
 state_t	states[NUMSTATES] = {
@@ -1147,7 +1149,7 @@ state_t	states[NUMSTATES] = {
     {SPR_NTRO, 11, 8, {NULL}, S_NTRO_RAISE3, 0, 0},        // S_NTRO_RAISE2
     {SPR_NTRO, 10, 6, {NULL}, S_NTRO_RAISE4, 0, 0},        // S_NTRO_RAISE3
     {SPR_NTRO, 9, 6, {NULL}, S_NTRO_RAISE5, 0, 0},         // S_NTRO_RAISE4
-    {SPR_NTRO, 8, 6, {NULL}, S_NTRO_RUN1, 0, 0},				// S_NTRO_RAISE5
+    {SPR_NTRO, 8, 6, {NULL}, S_NTRO_RUN1, 0, 0},		   // S_NTRO_RAISE5
     {SPR_SARN, 0, 10, {A_Look}, S_SARN_STND2, 0, 0},          // S_SARN_STND
     {SPR_SARN, 1, 10, {A_Look}, S_SARN_STND, 0, 0},           // S_SARN_STND2
     {SPR_SARN, 0, 1, {A_Chase}, S_SARN_RUN2, 0, 0},           // S_SARN_RUN1
@@ -1177,7 +1179,7 @@ state_t	states[NUMSTATES] = {
     {SPR_SARN, 8, 5, {NULL}, S_SARN_RUN1, 0, 0},              // S_SARN_RAISE6
     {SPR_KAMI, 0, 10, {A_Look}, S_KAMI_STND2, 0, 0},          // S_KAMI_STND
     {SPR_KAMI, 1, 10, {A_Look}, S_KAMI_STND, 0, 0},           // S_KAMI_STND2
-    {SPR_KAMI, 0, 2, {A_KamikazeSee}, S_KAMI_RUN2, 0, 0},     // S_KAMI_RUN1
+    {SPR_KAMI, 0, 2, {A_PlaySound2}, S_KAMI_RUN2, 0, 0, sfx_kami}, // S_KAMI_RUN1
     {SPR_KAMI, 0, 2, {A_Chase}, S_KAMI_RUN3, 0, 0},           // S_KAMI_RUN2
     {SPR_KAMI, 0, 2, {A_Chase}, S_KAMI_RUN4, 0, 0},           // S_KAMI_RUN3
     {SPR_KAMI, 1, 2, {A_Chase}, S_KAMI_RUN5, 0, 0},           // S_KAMI_RUN4
@@ -1189,8 +1191,8 @@ state_t	states[NUMSTATES] = {
     {SPR_KAMI, 3, 2, {A_Chase}, S_KAMI_RUN11, 0, 0},          // S_KAMI_RUN10
     {SPR_KAMI, 3, 2, {A_Chase}, S_KAMI_RUN12, 0, 0},          // S_KAMI_RUN11
     {SPR_KAMI, 3, 2, {A_Chase}, S_KAMI_RUN, 0, 0},			  // S_KAMI_RUN12
-    {SPR_KAMI, 32772, 0, {A_Explode}, S_KAMI_XDIE, 0, 0},     // S_KAMI_MELEE
-    {SPR_KAMI, 32772, 0, {A_Explode}, S_KAMI_XDIE, 0, 0},     // S_KAMI_DEATH
+    {SPR_KAMI, 32772, 0, {A_RadiusDamage2}, S_KAMI_XDIE, 0, 0, 256, 256}, // S_KAMI_MELEE
+    {SPR_KAMI, 32772, 0, {A_RadiusDamage2}, S_KAMI_XDIE, 0, 0, 256, 256}, // S_KAMI_DEATH
     {SPR_KAMI, 32772, 5, {A_Scream}, S_KAMI_XDIE2, 0, 0},      // S_KAMI_XDIE
     {SPR_KAMI, 32773, 5, {NULL}, S_KAMI_XDIE3, 0, 0},         // S_KAMI_XDIE2
     {SPR_KAMI, 6, 5, {A_Fall}, S_KAMI_XDIE4, 0, 0},           // S_KAMI_XDIE3
@@ -1236,7 +1238,8 @@ state_t	states[NUMSTATES] = {
     {SPR_DARK, 11, 8, {NULL}, S_DARK_RAISE3, 0, 0},           // S_DARK_RAISE2
     {SPR_DARK, 10, 6, {NULL}, S_DARK_RAISE4, 0, 0},           // S_DARK_RAISE3
     {SPR_DARK, 9, 6, {NULL}, S_DARK_RAISE5, 0, 0},            // S_DARK_RAISE4
-    {SPR_DARK, 8, 6, {NULL}, S_DARK_RUN1, 0, 0}               // S_DARK_RAISE5
+    {SPR_DARK, 8, 6, {NULL}, S_DARK_RUN1, 0, 0},              // S_DARK_RAISE5
+	{SPR_TROO, 0, -1, {A_LineEffect2}, S_NULL, 0,0}			  
 }; 
 
 

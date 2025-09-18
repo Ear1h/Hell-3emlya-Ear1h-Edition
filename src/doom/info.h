@@ -23,7 +23,7 @@
 
 // Needed for action function pointer handling.
 #include "d_think.h"
-
+#define MAXSTATEARGS 8
 typedef enum
 {
     SPR_TROO,
@@ -1289,6 +1289,7 @@ typedef enum
     S_DARK_RAISE3,
     S_DARK_RAISE4,
     S_DARK_RAISE5,
+    S_LINE_STAY,
     NUMSTATES
 } statenum_t;
 
@@ -1303,6 +1304,8 @@ typedef struct
     statenum_t nextstate;
     int misc1;
     int misc2;
+    long args[MAXSTATEARGS];
+
 } state_t;
 
 extern state_t	states[NUMSTATES];
