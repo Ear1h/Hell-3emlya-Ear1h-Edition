@@ -285,7 +285,8 @@ P_UseSpecialLine
 
     
     // Switches that other things can activate.
-    if (!thing->player)
+    if (!thing->player &&
+        (gameversion != exe_doom_2_0 || !(thing->info->flags2 & MF2_ACTIVATOR)))
     {
 	// never open secret doors
 	if (line->flags & ML_SECRET)
