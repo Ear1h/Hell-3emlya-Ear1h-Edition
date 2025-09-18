@@ -523,7 +523,6 @@ P_TryMove
     fixed_t	oldy;
     int		side;
     int		oldside;
-    line_t*	ld;
 
     floatok = false;
     if (!P_CheckPosition (thing, x, y))
@@ -567,15 +566,14 @@ P_TryMove
     {
 	while (numspechit--)
 	{
-	    // see if the line was crossed
-	    ld = spechit[numspechit];
-	    side = P_PointOnLineSide (thing->x, thing->y, ld);
-	    oldside = P_PointOnLineSide (oldx, oldy, ld);
+	    // see if the line was crossed  
+            side = P_PointOnLineSide(thing->x, thing->y, spechit[numspechit]);
+            oldside = P_PointOnLineSide(oldx, oldy, spechit[numspechit]);
 	    if (side != oldside)
-	    {
-		if (ld->special)
-		    P_CrossSpecialLine (ld-lines, oldside, thing);
+	    {  
+		    P_CrossSpecialLine(spechit[numspechit], oldside, thing);
 	    }
+        numspechit = 0;
 	}
     }
 
@@ -1241,6 +1239,7 @@ void P_UseLines (player_t*	player)
 mobj_t*		bombsource;
 mobj_t*		bombspot;
 int		bombdamage;
+int     bombdistance;
 
 
 //
@@ -1278,13 +1277,19 @@ boolean PIT_RadiusAttack (mobj_t* thing)
     if (dist < 0)
 	dist = 0;
 
-    if (dist >= bombdamage)
+    if (dist >= bombdistance)
 	return true;	// out of range
 
     if ( P_CheckSight (thing, bombspot) )
     {
+        int damage;
+
+        if (bombdamage == bombdistance)
+            damage = bombdamage - dist;
+        else
+            damage = (bombdamage * (bombdamage - dist) / bombdistance) + 1;
 	// must be in direct path
-	P_DamageMobj (thing, bombspot, bombsource, bombdamage - dist);
+	    P_DamageMobj (thing, bombspot, bombsource, damage);
     }
     
     return true;
@@ -1299,7 +1304,8 @@ void
 P_RadiusAttack
 ( mobj_t*	spot,
   mobj_t*	source,
-  int		damage )
+  int		damage, 
+  int   distance)
 {
     int		x;
     int		y;
@@ -1308,10 +1314,8 @@ P_RadiusAttack
     int		xh;
     int		yl;
     int		yh;
-    
-    fixed_t	dist;
 	
-    dist = (damage+MAXRADIUS)<<FRACBITS;
+    fixed_t dist = (damage+MAXRADIUS)<<FRACBITS;
     yh = (spot->y + dist - bmaporgy)>>MAPBLOCKSHIFT;
     yl = (spot->y - dist - bmaporgy)>>MAPBLOCKSHIFT;
     xh = (spot->x + dist - bmaporgx)>>MAPBLOCKSHIFT;
@@ -1319,6 +1323,7 @@ P_RadiusAttack
     bombspot = spot;
     bombsource = source;
     bombdamage = damage;
+    bombdistance = distance;
 	
     for (y=yl ; y<=yh ; y++)
 	for (x=xl ; x<=xh ; x++)

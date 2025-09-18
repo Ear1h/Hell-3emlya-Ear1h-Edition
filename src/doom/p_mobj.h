@@ -243,6 +243,11 @@ typedef enum
 
 }mobjflag2_t;
 
+typedef enum
+{
+    MF3_LINEDONE = 1,
+}mobjinternalflag_t;
+
 // Map Object definition.
 typedef struct mobj_s
 {
@@ -293,6 +298,7 @@ typedef struct mobj_s
     state_t*		state;
     int			flags;
     int         flags2; //New flags2 to GAMEVERSION 2.0
+    int         intflags; //Internal flags
     int			health;
 
     // Movement direction, movement generation (zig-zagging).

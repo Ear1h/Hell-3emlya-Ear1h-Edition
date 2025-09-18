@@ -259,7 +259,8 @@ void
 P_RadiusAttack
 ( mobj_t*	spot,
   mobj_t*	source,
-  int		damage );
+  int		damage,
+  int       distance);
 
 
 

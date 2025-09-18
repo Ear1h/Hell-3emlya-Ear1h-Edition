@@ -58,7 +58,7 @@ P_ShootSpecialLine
 
 void
 P_CrossSpecialLine
-( int		linenum,
+( line_t    *line,
   int		side,
   mobj_t*	thing );
 

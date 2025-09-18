@@ -120,6 +120,7 @@ animdef_t		animdefs[] =
     {true,	"SFALL4",	"SFALL1",	8},
     {true,	"WFALL4",	"WFALL1",	8},
     {true,	"DBRAIN4",	"DBRAIN1",	8},
+    {false,  "ZLV_36",   "ZLV_1",    4},
 	
     {-1,        "",             "",             0},
 };
@@ -498,14 +499,11 @@ P_FindMinSurroundingLight
 //
 void
 P_CrossSpecialLine
-( int		linenum,
+( line_t    *line,
   int		side,
   mobj_t*	thing )
 {
-    line_t*	line;
     int		ok;
-
-    line = &lines[linenum];
     
     if (gameversion <= exe_doom_1_2)
     {
