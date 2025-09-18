@@ -225,6 +225,7 @@ typedef struct
 #define NET_TICDIFF_CHATCHAR     (1 << 5)
 #define NET_TICDIFF_RAVEN        (1 << 6)
 #define NET_TICDIFF_STRIFE       (1 << 7)
+#define NET_TICDIFF_GAME2_0      (1 << 8)
 
 typedef struct
 {

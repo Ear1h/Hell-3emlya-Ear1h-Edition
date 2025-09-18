@@ -335,7 +335,8 @@ A_WeaponReady
             return;
         }
     }
-    else if (player->cmd.buttons & BT_ALTFIRE)
+
+    else if (player->cmd.buttons3 & BT3_ALTFIRE)
     {
         if (!player->attackdown)
         {
@@ -377,7 +378,7 @@ void A_ReFire
 	    player->refire++;
 	    P_FireWeapon (player);
     }
-    else if ((player->cmd.buttons & BT_ALTFIRE) &&
+    else if ((player->cmd.buttons3 & BT3_ALTFIRE) &&
         bAltFire &&
         player->pendingweapon == wp_nochange && player->health)
     {

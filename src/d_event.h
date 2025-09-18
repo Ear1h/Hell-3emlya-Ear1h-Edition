@@ -107,10 +107,8 @@ typedef enum
     // Savegame slot numbers
     //  occupy the second byte of buttons.    
     BTS_SAVEMASK	= (4+8+16),
-    BTS_SAVESHIFT 	= 2,
+    BTS_SAVESHIFT 	= 2,  
 
-    BT_ALTFIRE      = 8,
-  
 } buttoncode_t;
 
 // villsa [STRIFE] Strife specific buttons
@@ -134,7 +132,10 @@ typedef enum
   
 } buttoncode2_t;
 
-
+typedef enum
+{
+    BT3_ALTFIRE = 1,
+} buttoncode3_t;
 
 
 // Called by IO functions when input is detected.

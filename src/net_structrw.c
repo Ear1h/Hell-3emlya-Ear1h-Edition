@@ -211,6 +211,11 @@ void NET_WriteTiccmdDiff(net_packet_t *packet, net_ticdiff_t *diff,
         NET_WriteInt8(packet, diff->cmd.buttons2);
         NET_WriteInt16(packet, diff->cmd.inventory);
     }
+
+    if (diff->diff & NET_TICDIFF_GAME2_0)
+    {
+        NET_WriteInt8(packet, diff->cmd.buttons3);
+    }
 }
 
 boolean NET_ReadTiccmdDiff(net_packet_t *packet, net_ticdiff_t *diff,
@@ -299,6 +304,13 @@ boolean NET_ReadTiccmdDiff(net_packet_t *packet, net_ticdiff_t *diff,
         diff->cmd.inventory = val;
     }
 
+    if (diff->diff & NET_TICDIFF_GAME2_0)
+    {
+        if (!NET_ReadInt8(packet, &val))
+            return false;
+        diff->cmd.buttons3 = val;
+    }
+
     return true;
 }
 
@@ -329,6 +341,9 @@ void NET_TiccmdDiff(ticcmd_t *tic1, ticcmd_t *tic2, net_ticdiff_t *diff)
 
     if (tic1->buttons2 != tic2->buttons2 || tic2->inventory != 0)
         diff->diff |= NET_TICDIFF_STRIFE;
+
+    if (tic1->buttons3 != tic2->buttons3)
+        diff->diff |= NET_TICDIFF_GAME2_0;
 }
 
 void NET_TiccmdPatch(ticcmd_t *src, net_ticdiff_t *diff, ticcmd_t *dest)
@@ -376,6 +391,9 @@ void NET_TiccmdPatch(ticcmd_t *src, net_ticdiff_t *diff, ticcmd_t *dest)
     {
         dest->inventory = 0;
     }
+
+    if (diff->diff & NET_TICDIFF_GAME2_0)
+        dest->buttons3 = diff->cmd.buttons3;
 }
 
 // 

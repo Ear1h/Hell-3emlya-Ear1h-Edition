@@ -374,6 +374,10 @@ static void saveg_read_mobj_t(mobj_t *str)
     // int flags;
     str->flags = saveg_read32();
 
+    str->flags2 = saveg_read32();
+
+    str->intflags = saveg_read32();
+
     // int health;
     str->health = saveg_read32();
 
@@ -492,6 +496,12 @@ static void saveg_write_mobj_t(mobj_t *str)
     // int flags;
     saveg_write32(str->flags);
 
+    // int flags;
+    saveg_write32(str->flags2);
+
+    // int flags;
+    saveg_write32(str->intflags);
+
     // int health;
     saveg_write32(str->health);
 
@@ -555,6 +565,10 @@ static void saveg_read_ticcmd_t(ticcmd_t *str)
 
     // byte buttons;
     str->buttons = saveg_read8();
+
+    // byte buttons3;
+
+    str->buttons3 = saveg_read8();
 }
 
 static void saveg_write_ticcmd_t(ticcmd_t *str)
@@ -577,6 +591,9 @@ static void saveg_write_ticcmd_t(ticcmd_t *str)
 
     // byte buttons;
     saveg_write8(str->buttons);
+
+    // byte buttons3;
+    saveg_write8(str->buttons3);
 }
 
 //

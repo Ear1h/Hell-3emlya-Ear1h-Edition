@@ -43,6 +43,10 @@ typedef struct
     // villsa - Strife specific:
 
     byte buttons2;
+
+    //gameversion 2.0
+    byte buttons3;
+
     int inventory;
    
     // Heretic/Hexen specific:
