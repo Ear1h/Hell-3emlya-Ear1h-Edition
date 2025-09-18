@@ -43,6 +43,7 @@ deh_section_t *deh_section_types[] =
     &deh_section_thing,
     &deh_section_weapon,
     &deh_section_bexstr,
+    &deh_section_bexptr,
     NULL
 };
 

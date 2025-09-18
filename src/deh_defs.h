@@ -78,7 +78,8 @@ extern deh_section_t deh_section_thing;
 extern deh_section_t deh_section_weapon;
 // deh_bexstr.c:
 extern deh_section_t deh_section_bexstr;
-
+// deh_bexptr.c:
+extern deh_section_t deh_section_bexptr;
 
 #endif /* #ifndef DEH_DEFS_H */
 
