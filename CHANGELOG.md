@@ -177,3 +177,21 @@
 
 * `Clear Sector Special` now removes the secret from the level.
 * Fixed an issue where the player couldn't fire after switching weapons.
+
+# 18.09.25
+
+### Technical
+- Implemented **BEX_ptr** support for adding new codepointers directly from **BOOM**.
+
+### New Actions
+- Added `A_PlaySound2(sfx_id)`: actor plays an existing sound.  
+- Added `A_LineEffect2(spec, tag)`: actor remotely activates a special action.  
+- Added `A_RadiusDamage(damage, dist)`: configurable explosion radius and damage.  
+
+### Removed
+- Removed `A_KamikazeSee` in favor of `A_PlaySound2`.
+
+### Bugfixes
+
+- Fixed a bug where pressing weapon slots could trigger a shot from the alternate weapon.  
+- Fixed a crash when the `D_E4M#` lump was missing.  
