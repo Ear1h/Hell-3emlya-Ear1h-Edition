@@ -1347,7 +1347,7 @@ void A_VileAttack(mobj_t *actor)
     // move the fire between the vile and the player
     fire->x = actor->target->x - FixedMul(24 * FRACUNIT, finecosine[an]);
     fire->y = actor->target->y - FixedMul(24 * FRACUNIT, finesine[an]);
-    P_RadiusAttack(fire, actor, 70);
+    P_RadiusAttack(fire, actor, 70, 70);
 }
 
 
@@ -1630,7 +1630,7 @@ void A_Fall(mobj_t *actor)
 //
 void A_Explode(mobj_t *thingy)
 {
-    P_RadiusAttack(thingy, thingy->target, 128);
+    P_RadiusAttack(thingy, thingy->target, 128, 128);
 }
 
 // Check whether the death of the specified monster type is allowed
@@ -2084,15 +2084,6 @@ void A_NightmareAttack(mobj_t *actor)
     P_SpawnMissile(actor, actor->target, MT_NIGHTMAREBALL);
 }
 
-void A_KamikazeSee(mobj_t* actor)
-{
-    if ((actor->subsector->sector->special & SILENT_MOBJ) &&
-        gameversion == exe_doom_2_0)
-        return;
-
-    S_StartSound(actor, sfx_kami);
-}
-
 void A_DarkImpAttack(mobj_t *actor)
 {
     mobj_t *mo;
@@ -2110,3 +2101,49 @@ void A_DarkImpAttack(mobj_t *actor)
     mo->y += mo->momy;
     mo->tracer = actor->target;
 }
+
+//Code pointer from MBF
+void A_LineEffect2(mobj_t *mo)
+{
+    if (gameversion < exe_doom_2_0)
+        return;
+
+    if (!(mo->intflags & MF3_LINEDONE))
+    {
+        line_t junk = *lines;
+        if ((junk.special = (short) mo->state->args[0]))
+        {
+            static player_t player;
+            player_t *oldplayer = mo->player;
+            mo->player = &player;
+
+            junk.tag = (short)mo->state->args[1];
+
+            if (!P_UseSpecialLine(mo, &junk, 0))
+                P_CrossSpecialLine(&junk, 0, mo);
+
+            if (!junk.special)
+                mo->intflags |= MF3_LINEDONE;
+
+            mo->player = oldplayer;
+        }
+    }
+}
+
+void A_PlaySound2(mobj_t* thing)
+{
+    if (gameversion < exe_doom_2_0 ||
+        thing->subsector->sector->special & SILENT_MOBJ)
+        return;
+
+    S_StartSound(thing, thing->state->args[0]);
+}
+
+void A_RadiusDamage2(mobj_t* thing)
+{
+    if (gameversion < exe_doom_2_0)
+        return;
+
+    P_RadiusAttack(thing, thing->target, thing->state->args[0], thing->state->args[1]);
+}
+
