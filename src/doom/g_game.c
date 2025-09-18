@@ -488,7 +488,7 @@ void G_BuildTiccmd (ticcmd_t* cmd, int maketic)
 	cmd->buttons |= BT_ATTACK; 
     
     if ((gamekeydown[key_altfire] || mousebuttons[mousebaltfire]) && gameversion == exe_doom_2_0)
-    cmd->buttons |= BT_ALTFIRE;
+    cmd->buttons3 |= BT3_ALTFIRE;
     
 
     if (gamekeydown[key_use]
