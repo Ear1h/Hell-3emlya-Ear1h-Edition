@@ -22,6 +22,7 @@
 
 
 #include "doomtype.h"
+#include "m_fixed.h"
 
 
 // Returns a number from 0 to 255,
@@ -37,4 +38,6 @@ void M_ClearRandom (void);
 // Defined version of P_Random() - P_Random()
 int P_SubRandom (void);
 
+int P_RandomHitscanAngle(fixed_t spread);
+int P_RandomHitscanSlope(fixed_t spread);
 #endif

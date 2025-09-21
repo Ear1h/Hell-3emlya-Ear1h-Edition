@@ -602,7 +602,14 @@ P_SpawnMobj
     mobj->radius = info->radius;
     mobj->height = info->height;
     mobj->flags = info->flags;
+    mobj->flags2 = info->flags2;
     mobj->health = info->spawnhealth;
+
+    //gameversion 2.0
+    mobj->counter1 = info->counter1;
+    mobj->counter2 = info->counter2;
+    mobj->counter3 = info->counter3;
+    mobj->counter4 = info->counter4;
 
     if (gameskill != sk_nightmare)
 	mobj->reactiontime = info->reactiontime;

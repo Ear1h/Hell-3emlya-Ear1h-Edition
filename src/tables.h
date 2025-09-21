@@ -80,6 +80,12 @@ extern const byte gammatable[5][256];
 
 typedef unsigned int angle_t;
 
+// mbf21: More utility functions, courtesy of Quasar (James Haley).
+// These are straight from Eternity so demos stay in sync.
+inline static angle_t FixedToAngle(fixed_t a)
+{
+    return (angle_t) (((uint64_t) a * ANG1) >> FRACBITS);
+}
 
 // Effective size is 2049;
 // The +1 size is to handle the case when x==y
@@ -90,7 +96,5 @@ extern const angle_t tantoangle[SLOPERANGE+1];
 // Utility function,
 //  called by R_PointToAngle.
 int SlopeDiv(unsigned int num, unsigned int den);
-
-
 #endif
 

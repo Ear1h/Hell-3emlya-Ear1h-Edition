@@ -128,7 +128,14 @@ void A_DarkImpAttack();
 void A_LineEffect2();
 void A_PlaySound2();
 void A_RadiusDamage2();
-
+void A_JumpIfCounterEqual();
+void A_DecreaseCounter();
+void A_IncreaseCounter();
+void A_CustomWeaponBulletAttack();
+void A_CustomMeleeAttack();
+void A_RefireTo();
+void A_WeaponCustomMissileAttack();
+void A_CheckAmmo();
 
 state_t	states[NUMSTATES] = {
     {SPR_TROO,0,-1,{NULL},S_NULL,0,0},	// S_NULL
@@ -1239,7 +1246,10 @@ state_t	states[NUMSTATES] = {
     {SPR_DARK, 10, 6, {NULL}, S_DARK_RAISE4, 0, 0},           // S_DARK_RAISE3
     {SPR_DARK, 9, 6, {NULL}, S_DARK_RAISE5, 0, 0},            // S_DARK_RAISE4
     {SPR_DARK, 8, 6, {NULL}, S_DARK_RUN1, 0, 0},              // S_DARK_RAISE5
-	{SPR_TROO, 0, -1, {A_LineEffect2}, S_NULL, 0,0}			  
+	{SPR_TROO, 0, -1, {A_LineEffect2}, S_NULL, 0,0},
+    {SPR_TROO, 0, -1, {A_DecreaseCounter}, S_NULL, 0, 0},
+	{SPR_TROO, 0, -1, {A_JumpIfCounterEqual}, S_NULL, 0,0},
+    {SPR_MISL, 32768, 1, {A_Tracer}, S_ROCKET, 0, 0},
 }; 
 
 
@@ -5262,6 +5272,33 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	MF_NOBLOCKMAP|MF_NOGRAVITY|MF_SHADOW,		// flags
 	S_NULL,		// raisestate
 	MF2_NORESPAWN			//flags2
+    },
+
+	{		// MT_HOMROCKET
+	-1,		// doomednum
+	S_HOMROCKET,		// spawnstate
+	1000,		// spawnhealth
+	S_NULL,		// seestate
+	sfx_rlaunc,		// seesound
+	8,		// reactiontime
+	sfx_None,		// attacksound
+	S_NULL,		// painstate
+	0,		// painchance
+	sfx_None,		// painsound
+	S_NULL,		// meleestate
+	S_NULL,		// missilestate
+	S_EXPLODE1,		// deathstate
+	S_NULL,		// xdeathstate
+	sfx_barexp,		// deathsound
+	16*FRACUNIT,		// speed
+	11*FRACUNIT,		// radius
+	8*FRACUNIT,		// height
+	100,		// mass
+	20,		// damage
+	sfx_None,		// activesound
+	MF_NOBLOCKMAP|MF_MISSILE|MF_DROPOFF|MF_NOGRAVITY,		// flags
+	S_NULL,		// raisestate
+	0			//flags2
     },
 };
 

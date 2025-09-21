@@ -417,6 +417,11 @@ static void saveg_read_mobj_t(mobj_t *str)
 
     // struct mobj_s* tracer;
     str->tracer = saveg_readp();
+
+    str->counter1 = saveg_readp();
+    str->counter2 = saveg_readp();
+    str->counter3 = saveg_readp();
+    str->counter4 = saveg_readp();
 }
 
 static void saveg_write_mobj_t(mobj_t *str)
@@ -538,6 +543,11 @@ static void saveg_write_mobj_t(mobj_t *str)
 
     // struct mobj_s* tracer;
     saveg_writep(str->tracer);
+
+    saveg_writep(str->counter1);
+    saveg_writep(str->counter2);
+    saveg_writep(str->counter3);
+    saveg_writep(str->counter4);
 }
 
 

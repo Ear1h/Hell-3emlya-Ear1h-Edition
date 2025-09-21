@@ -1497,6 +1497,16 @@ void WI_checkForAccelerate(void)
 	    }
 	    else
 		player->attackdown = false;
+
+		if (player->cmd.buttons3 & BT3_ALTFIRE)
+            {
+                if (!player->attackdown)
+                    acceleratestage = 1;
+                player->attackdown = true;
+            }
+            else
+                player->attackdown = false;
+
 	    if (player->cmd.buttons & BT_USE)
 	    {
 		if (!player->usedown)

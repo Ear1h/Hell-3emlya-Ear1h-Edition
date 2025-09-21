@@ -40,6 +40,8 @@
 
 #include "p_spec.h"
 
+#include "m_misc.h"
+
 
 
 
@@ -1025,7 +1027,7 @@ void A_Tracer(mobj_t *actor)
     mobj_t *dest;
     mobj_t *th;
 
-    if (gametic & 3)
+    if (gametic & 3 || !(gameversion == exe_doom_2_0 && actor->type & MT_HOMROCKET))
         return;
 
     // spawn a puff of smoke behind the rocket
@@ -2147,3 +2149,91 @@ void A_RadiusDamage2(mobj_t* thing)
     P_RadiusAttack(thing, thing->target, thing->state->args[0], thing->state->args[1]);
 }
 
+/*
+    A_JumpIFCounterEqual
+    Args[0] = Counter Type      (1-4)
+    Args[1] = Counter Needed    (0-255)
+    Args[2] = Frame id
+*/
+
+void A_JumpIfCounterEqual(mobj_t* thing)
+{
+    if (gameversion < exe_doom_2_0)
+        return;
+
+    int variable_type = thing->state->args[0];
+
+    if (variable_type < 1 || variable_type > 4)
+        variable_type = 1; //Counter 1;
+
+    int *counters[] = {
+        &thing->counter1,
+        &thing->counter2,
+        &thing->counter3,
+        &thing->counter4,
+    };
+
+    int *counter = counters[variable_type - 1];
+
+    if (*counter == thing->state->args[1])
+        P_SetMobjState(thing, thing->state->args[2]);
+}
+
+/*
+    A_DecreaseCounter
+    Args[0] = Counter Type      (1-4)
+    Args[1] = Counter Inc       (0-255)
+*/
+
+void A_DecreaseCounter(mobj_t* thing)
+{
+    if (gameversion < exe_doom_2_0)
+        return;
+    
+    int variable_type   = thing->state->args[0];
+    int variable_inc    = thing->state->args[1];
+
+    if (variable_type < 1 || variable_type > 4)
+        variable_type = 1; //Counter 1
+
+    int *counters[] = {
+        &thing->counter1,
+        &thing->counter2,
+        &thing->counter3,
+        &thing->counter4,
+    };
+
+    int *counter = counters[variable_type - 1];
+
+    *counter = (*counter > variable_inc) ? *counter - variable_inc : 0;
+}
+
+/*
+    A_DecreaseCounter
+    Args[0] = Counter Type      (1-4)
+    Args[1] = Counter Inc       (0-255)
+*/
+
+void A_IncreaseCounter(mobj_t *thing)
+{
+    if (gameversion < exe_doom_2_0)
+        return;
+
+    int count = 0;
+    int variable_type = thing->state->args[0];
+    int variable_inc = thing->state->args[1];
+
+    if (variable_type < 1 || variable_type > 4)
+        variable_type = 1; //Counter 1
+
+    int *counters[] = {
+        &thing->counter1,
+        &thing->counter2,
+        &thing->counter3,
+        &thing->counter4,
+    };
+
+    int *counter = counters[variable_type - 1];
+
+    *counter = (*counter + variable_inc > 255) ? 255 : *counter + variable_inc;
+}

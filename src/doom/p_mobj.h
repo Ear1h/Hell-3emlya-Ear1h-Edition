@@ -329,7 +329,13 @@ typedef struct mobj_s
 
     // Thing being chased/attacked for tracers.
     struct mobj_s*	tracer;	
-    
+
+    // Gameversion 2.0
+    int counter1;
+    int counter2;
+    int counter3;
+    int counter4;
+
 } mobj_t;
 
 

@@ -1290,7 +1290,11 @@ typedef enum
     S_DARK_RAISE4,
     S_DARK_RAISE5,
     S_LINE_STAY,
-    NUMSTATES
+    S_DEC_STAY,
+    S_JUMP_STAY,
+    S_HOMROCKET,
+    EXTRASTATES = 1200,
+    NUMSTATES = 4000,
 } statenum_t;
 
 
@@ -1462,6 +1466,7 @@ typedef enum
     MT_DARKIMPBALL,
     MT_DARKIMP,
     MT_DARKSMOKE,
+    MT_HOMROCKET,
     NUMMOBJTYPES
 
 } mobjtype_t;
@@ -1492,6 +1497,10 @@ typedef struct
     int	flags;
     int	raisestate;
     int flags2;
+    int counter1;
+    int counter2;
+    int counter3;
+    int counter4;
 
 } mobjinfo_t;
 

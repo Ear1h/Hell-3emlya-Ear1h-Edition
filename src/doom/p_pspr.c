@@ -43,7 +43,7 @@
 
 bool bAltFire;
 
-//
+    //
 // P_SetPsprite
 //
 void
@@ -597,6 +597,11 @@ static void DecreaseAmmo(player_t *player, int ammonum, int amount)
     if (ammonum < NUMAMMO)
     {
         player->ammo[ammonum] -= amount;
+        if (player->ammo[ammonum] < 0)
+        {
+            player->ammo[ammonum] = 0;
+        }
+            
     }
     else
     {
@@ -982,54 +987,156 @@ void P_MovePsprites (player_t* player)
     player->psprites[ps_flash].sy = player->psprites[ps_weapon].sy;
 }
 
-////From 
-//void A_RefireTo(player_t* player, pspdef_t* psp)
-//{
-//    if (gameversion != exe_doom_2_0 || !psp->state)
-//        return;
 //
-//    if ((psp->state->args[1] || P_CheckAmmo(player)) &&
-//        (player->cmd.buttons & BT_ATTACK) &&
-//        (player->pendingweapon == wp_nochange && player->health))
-//        P_SetPsprite(player, psp, psp->state->args[0]);
+// A_WeaponBulletAttack
+// A parameterized player weapon bullet attack. Does not consume ammo.
+//   args[0]: Horizontal spread (degrees, in fixed point)
+//   args[1]: Vertical spread (degrees, in fixed point)
+//   args[2]: Number of bullets to fire; if not set, defaults to 1
+//   args[3]: Base damage of attack (e.g. for 5d3, customize the 5); if not set, defaults to 5
+//   args[4]: Attack damage modulus (e.g. for 5d3, customize the 3); if not set, defaults to 3
 //
-//
-//    else if ((psp->state->args[1] || P_CheckAmmo(player)) &&
-//             (player->cmd.buttons & BT_ALTFIRE) &&
-//             (player->pendingweapon == wp_nochange && player->health))
-//        P_SetPsprite(player, psp, psp->state->args[0]);
-//}
-//
-//void A_CustomMeleeAttack(player_t* player, pspdef_t* psp)
-//{
-//    int damagebase, damagemod;
-//    angle_t angle;
-//    int slope, damage;
-//
-//    if (gameversion != exe_doom_2_0 || !psp->state)
-//        return;
-//
-//    damagebase = psp->state->args[0];
-//    damagemod = psp->state->args[1];
-//
-//    damage = (P_Random() % damagemod + 1) * damagebase;
-//
-//    if (player->powers[pw_strength])
-//        damagebase *= 10;
-//
-//    angle = player->mo->angle;
-//    angle += P_SubRandom() << 18;
-//    slope = P_AimLineAttack(player->mo, angle, MELEERANGE);
-//    P_LineAttack(player->mo, angle, MELEERANGE, slope, damage);
-//
-//    // turn to face target
-//    if (linetarget)
-//    {
-//        if (!(player->mo->subsector->sector->special & SILENT_MOBJ) ||
-//            gameversion < exe_doom_2_0)
-//            S_StartSound(player->mo, sfx_punch);
-//        player->mo->angle = R_PointToAngle2(player->mo->x, player->mo->y,
-//                                            linetarget->x, linetarget->y);
-//    }
-//}
+void A_CustomWeaponBulletAttack(player_t* player, pspdef_t* psp)
+{
+    int hspread, vspread, numbullets, damagebase, damagemod, sound, ammodecrease;
+    int i, damage, angle, slope;
 
+    if (gameversion < exe_doom_2_0 || !psp->state)
+        return;
+
+    hspread =       psp->state->args[0];
+    vspread =       psp->state->args[1];
+    numbullets =    psp->state->args[2];
+    damagebase =    psp->state->args[3];
+    damagemod =     psp->state->args[4];
+    sound =         psp->state->args[5];
+    ammodecrease =  psp->state->args[6];
+
+    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, ammodecrease);
+    A_GunFlash(player, psp);
+    P_BulletSlope(player->mo);
+    
+     if (!(player->mo->subsector->sector->special & SILENT_MOBJ))
+        S_StartSound(player->mo, sound);
+
+    for (i = 0; i < numbullets; i++)
+    {
+        damage = (P_Random() % damagemod + 1) * damagebase;
+        angle = (int)player->mo->angle + P_RandomHitscanAngle(hspread);
+        slope = bulletslope + P_RandomHitscanSlope(vspread);
+
+        P_LineAttack(player->mo, angle, MISSILERANGE, slope, damage);
+    }
+}
+
+void A_RefireTo(player_t* player, pspdef_t* psp)
+{
+    int to_state, ammocheck; 
+    if (gameversion < exe_doom_2_0 || !psp->state)
+        return;
+
+    to_state = psp->state->args[0];
+    ammocheck = psp->state->args[1];
+    
+
+    if ((ammocheck || P_CheckAmmo(player)) &&
+        (player->cmd.buttons & BT_ATTACK) &&
+        (player->pendingweapon == wp_nochange && player->health))
+        P_SetPsprite(player, ps_weapon, to_state);
+
+
+    else if ((ammocheck || P_CheckAmmo(player)) &&
+             (player->cmd.buttons3 & BT3_ALTFIRE) && bAltFire &&
+             (player->pendingweapon == wp_nochange && player->health))
+        P_SetPsprite(player, ps_weapon, to_state);
+}
+
+void A_WeaponCustomMissileAttack(player_t* player, pspdef_t* psp)
+{
+    int type, ammodecrease;
+
+     if (gameversion < exe_doom_2_0 || !psp->state || !psp->state->args[0])
+        return;
+
+    type = psp->state->args[0];
+    ammodecrease = psp->state->args[1];
+
+    DecreaseAmmo(player, weaponinfo[player->readyweapon].ammo, ammodecrease);
+    P_SpawnPlayerMissile(player->mo, type);
+}
+
+//
+// A_WeaponMeleeAttack
+// A parameterized player weapon melee attack.
+//   args[0]: Base damage of attack (e.g. for 2d10, customize the 2); if not set, defaults to 2
+//   args[1]: Attack damage modulus (e.g. for 2d10, customize the 10); if not set, defaults to 10
+//   args[2]: Berserk damage multiplier (fixed point); if not set, defaults to 1.0 (no change).
+//   args[3]: Sound to play if attack hits
+//   args[4]: Range (fixed point); if not set, defaults to player mobj's melee range
+//
+void A_CustomMeleeAttack(player_t* player, pspdef_t* psp)
+{
+    int damagebase, damagemod, zerkfactor, range;
+    angle_t angle;
+    
+    int slope, damage;
+
+    if (gameversion != exe_doom_2_0 || !psp->state)
+        return;
+
+    damagebase =    psp->state->args[0];
+    damagemod =     psp->state->args[1];
+    zerkfactor =    psp->state->args[2];
+    range =         psp->state->args[3];
+
+    damage = (P_Random() % damagemod + 1) * damagebase;
+
+    if (range == 0)
+        range = MELEERANGE;
+
+    if (player->powers[pw_strength])
+        damage = (damage * zerkfactor) >> FRACBITS;
+
+    angle = player->mo->angle;
+    angle += P_SubRandom() << 18;
+    slope = P_AimLineAttack(player->mo, angle, range);
+    P_LineAttack(player->mo, angle, range, slope, damage);
+
+    // turn to face target
+    if (linetarget)
+    {
+        if (!(player->mo->subsector->sector->special & SILENT_MOBJ) ||
+            gameversion < exe_doom_2_0)
+            S_StartSound(player->mo, sfx_punch);
+        player->mo->angle = R_PointToAngle2(player->mo->x, player->mo->y,
+                                            linetarget->x, linetarget->y);
+    }
+}
+
+
+//
+// A_CheckAmmo
+// Jumps to a state if the player's ammo is lower than the specified amount.
+//   args[0]: State to jump to
+//   args[1]: Minimum required ammo to NOT jump. If zero, use the weapon's ammo-per-shot amount.
+//
+void A_CheckAmmo(player_t *player, pspdef_t *psp)
+{
+    int amount;
+    ammotype_t type;
+
+    if (gameversion < exe_doom_2_0)
+        return;
+
+    type = weaponinfo[player->readyweapon].ammo;
+    if (!psp->state || type == am_noammo)
+        return;
+
+    if (psp->state->args[1] != 0)
+        amount = psp->state->args[1];
+    else
+        amount = 0;
+
+    if (player->ammo[type] < amount)
+        P_SetPsprite(player, ps_weapon, psp->state->args[0]);
+}
