@@ -195,3 +195,51 @@
 
 - Fixed a bug where pressing weapon slots could trigger a shot from the alternate weapon.  
 - Fixed a crash when the `D_E4M#` lump was missing.  
+
+# 21.09.25
+
+### Enhancements
+- Increased number of states to **4000** (DehExtra).  
+- Added new codepointers:  
+
+#### `A_ReFireTo(state states, bool CheckAmmo)` (from MBF21)  
+- Switches to the next state when the player holds the fire (or alt-fire) button.  
+- If `CheckAmmo` is true and there isn’t enough ammo, the weapon switches to another state.  
+
+#### `A_CheckAmmo(state states, uint ammo)` (adapted from MBF21)  
+- Checks the amount of ammo.  
+- If there isn’t enough, the weapon switches to another state.  
+
+#### `A_CustomWeaponBulletAttack(fixed hspread, fixed vspread, int bullets, int damage, int damage_mod, int sound, int ammo)`  
+- Similar to the MBF21 codepointer.  
+- `hspread` and `vspread` control bullet spread.  
+- `bullets` = number of projectiles fired.  
+- `damage` = base damage.  
+- `damage_mod` = random damage modifier.  
+- `sound` = firing sound.  
+- `ammo` = amount of ammo consumed per shot.
+
+#### `A_WeaponCustomMissileAttack(int type, int ammo)`  
+- A simplified version of `A_WeaponProjectile`.  
+- Spawns the specified projectile and consumes the given amount of ammo.  
+
+#### `A_CustomMeleeAttack(int damage, int damage_mod, fixed zerkfactor, fixed range)`  
+- Player performs a melee attack based on damage and range.  
+- `zerkfactor` controls the berserk damage multiplier (editable).  
+
+#### `A_JumpIfCounterEqual(uint CounterType, byte CounterCount, state id)`  
+- Switches to another state if the selected counter matches the value specified in the arguments.  
+
+#### `A_DecreaseCounter(uint CounterType, byte CounterCount)`  
+- Decreases the specified counter by the given amount.  
+
+#### `A_IncreaseCounter(uint CounterType, byte CounterCount)`  
+- Increases the specified counter by the given amount.  
+
+---
+
+### New Actor Properties  
+- **Counter1–4**  
+
+The counter system is a simplified version of `A_JumpIfInventory` from DECORATE or `if (i > 0)` from ZScript.  
+It allows an actor to switch to a desired state without wasting extra frames idling.  
