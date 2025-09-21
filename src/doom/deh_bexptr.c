@@ -101,6 +101,15 @@ extern void A_BrainExplode();
 extern void A_LineEffect2();
 extern void A_PlaySound2();
 extern void A_RadiusDamage2();
+extern void A_JumpIfCounterEqual();
+extern void A_DecreaseCounter();
+extern void A_IncreaseCounter();
+extern void A_CheckAmmo2();
+extern void A_CustomWeaponBulletAttack();
+extern void A_CustomMeleeAttack();
+extern void A_RefireTo();
+extern void A_WeaponCustomMissileAttack();
+extern void A_CheckAmmo();
 
 typedef struct
 {
@@ -186,6 +195,14 @@ static const bex_codeptr_t bex_codeptrtable[] = {
     {"LineEffect2", {A_LineEffect2}},
     {"PlaySound2", {A_PlaySound2}},
     {"RadiusDamage2", {A_RadiusDamage2}},
+    {"JumpIfCounterEqual", {A_JumpIfCounterEqual}},
+    {"DecreaseCounter", {A_DecreaseCounter}},
+    {"IncreaseCounter", {A_IncreaseCounter}},
+    {"CustomWeaponBulletAttack", {A_CustomWeaponBulletAttack}},
+    {"CustomMeleeAttack", {A_CustomMeleeAttack}},
+    {"RefireTo", {A_RefireTo}},
+    {"WeaponCustomMissileAttack", {A_WeaponCustomMissileAttack}},
+    {"CheckAmmo", {A_CheckAmmo}},
     {"NULL", {NULL}},
 };
 
