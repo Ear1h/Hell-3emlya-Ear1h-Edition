@@ -963,3 +963,16 @@ void M_NormalizeSlashes(char *str)
         }
     }
 }
+
+
+void M_CopyLumpName(char *dest, const char *src)
+{
+    for (int i = 0; i < 8; i++)
+    {
+        dest[i] = src[i];
+        if (src[i] == '\0')
+        {
+            break;
+        }
+    }
+}
