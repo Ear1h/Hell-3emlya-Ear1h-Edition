@@ -110,6 +110,14 @@ extern void A_CustomMeleeAttack();
 extern void A_RefireTo();
 extern void A_WeaponCustomMissileAttack();
 extern void A_CheckAmmo();
+extern void A_Jump();
+extern void A_ResetHealth();
+extern void A_SetSelfHealth();
+extern void A_JumpIfSetFlags();
+extern void A_Die();
+extern void A_SetSpeed();
+extern void A_NoiseAlert();
+extern void A_JumpIfSkill();
 
 typedef struct
 {
@@ -203,6 +211,14 @@ static const bex_codeptr_t bex_codeptrtable[] = {
     {"RefireTo", {A_RefireTo}},
     {"WeaponCustomMissileAttack", {A_WeaponCustomMissileAttack}},
     {"CheckAmmo", {A_CheckAmmo}},
+    {"Jump", {A_Jump}},
+    {"ResetHeatlh", {A_ResetHealth}},
+    {"SetSelfHealth", {A_SetSelfHealth}},
+    {"JumpIfSetFlags", {A_JumpIfSetFlags}},
+    {"Die", {A_Die}},
+    {"SetSpeed", {A_SetSpeed}},
+    {"NoiseAlert", {A_NoiseAlert}},
+    {"JumpifSkill", {A_JumpIfSkill}},
     {"NULL", {NULL}},
 };
 
