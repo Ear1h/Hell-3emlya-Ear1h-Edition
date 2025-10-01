@@ -83,7 +83,12 @@ typedef enum
 
 #define MTF_NIGHTMARE   64
 
-//#define MTF_SUBSTRACT   64
+//Generic flags
+#define MTF_GENERIC1    256
+#define MTF_GENERIC2    512
+#define MTF_GENERIC3    0x400
+#define MTF_GENERIC4    0x800
+
 
 
 //
