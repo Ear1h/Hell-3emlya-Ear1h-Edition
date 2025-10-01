@@ -92,9 +92,11 @@ set(GAME_SOURCE_FILES
     mus2mid.c           mus2mid.h
     m_bbox.c            m_bbox.h
     m_cheat.c           m_cheat.h
+                        m_array.h
     m_config.c          m_config.h
     m_controls.c        m_controls.h
     m_fixed.c           m_fixed.h
+    m_json.c            m_json.h
     net_client.c        net_client.h
     net_common.c        net_common.h
     net_dedicated.c     net_dedicated.h
@@ -122,6 +124,7 @@ set(GAME_SOURCE_FILES
     w_file_posix.c
     w_file_win32.c
     w_merge.c           w_merge.h
+    yyjson.c            yyjson.h
     z_zone.c            z_zone.h)
 
 set(GAME_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/../")
