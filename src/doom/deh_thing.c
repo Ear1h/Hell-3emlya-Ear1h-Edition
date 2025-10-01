@@ -55,6 +55,7 @@ DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
   DEH_MAPPING("Counter 2",           counter2)
   DEH_MAPPING("Counter 3",           counter3)
   DEH_MAPPING("Counter 4",           counter4)
+  DEH_MAPPING("Generic Flags",       genericflags)
 DEH_END_MAPPING
 
 static void *DEH_ThingStart(deh_context_t *context, char *line)
