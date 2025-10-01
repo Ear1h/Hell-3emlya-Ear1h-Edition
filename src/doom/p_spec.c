@@ -32,10 +32,12 @@
 #include "m_argv.h"
 #include "m_misc.h"
 #include "m_random.h"
+#include "m_array.h"
 #include "w_wad.h"
 
 #include "r_local.h"
 #include "p_local.h"
+#include "specdefs.h"
 
 #include "g_game.h"
 
@@ -47,6 +49,8 @@
 // Data.
 #include "sounds.h"
 
+
+specdefs_t *specdefs;
 
 //
 // Animating textures and planes
@@ -120,8 +124,6 @@ animdef_t		animdefs[] =
     {true,	"SFALL4",	"SFALL1",	8},
     {true,	"WFALL4",	"WFALL1",	8},
     {true,	"DBRAIN4",	"DBRAIN1",	8},
-    {false,  "ZLV_36",   "ZLV_1",    4},
-	
     {-1,        "",             "",             0},
 };
 
@@ -184,7 +186,10 @@ void P_InitPicAnims (void)
 	
 }
 
-
+void P_InitSpecdefs(void)
+{
+    specdefs = ParseSpecdefs();
+}
 
 //
 // UTILITIES
@@ -974,6 +979,24 @@ P_CrossSpecialLine
       case 264:
     EV_DoClearLineSpecial(line);
     break;
+
+      case 300:
+          EV_DoMacro(line, thing);
+          line->special = 0;
+          break;
+
+      case 301:
+          EV_DoMacro(line, thing);
+          break;
+
+      case 302:
+          EV_DoText(line, thing);
+          line->special = 0;
+          break;
+
+      case 303:
+          EV_DoText(line, thing);
+          break;
     }
 }
 
@@ -1523,6 +1546,53 @@ void P_ClearThinkerLight(sector_t* sector)
                 P_RemoveThinker(th);
                 continue;
             }
+        }
+    }
+}
+
+void EV_DoMacro(line_t *line, mobj_t *mo)
+{
+    if (gameversion < exe_doom_2_0)
+        return;
+    line_t junk;
+    macros_t *macro = NULL;
+
+    if (!specdefs || !specdefs->spec_macro)
+        return;
+
+    array_foreach(macro, specdefs->spec_macro)
+    {
+        if (macro->macroid == line->tag)
+        {
+            macro_special_t *spec = NULL;
+            array_foreach(spec, macro->specials)
+            {
+                junk = *line; // копируем исходную линию
+
+                junk.special = spec->action;
+                junk.tag = spec->tag;
+
+                if (!P_UseSpecialLine(mo, &junk, 0))
+                    P_CrossSpecialLine(&junk, 0, mo);
+            }
+        }
+    }
+}
+
+void EV_DoText(line_t *line, mobj_t *mo)
+{
+    if (gameversion < exe_doom_2_0)
+        return;
+
+    static player_t *player;
+    player = mo->player;
+    spec_message_t *message = NULL;
+
+    array_foreach(message, specdefs->spec_message)
+    {
+        if (message->messageid == line->tag)
+        {
+            player->message = message->messages;
         }
     }
 }

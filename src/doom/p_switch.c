@@ -654,11 +654,23 @@ P_UseSpecialLine
 		  EV_DoClearLineSpecial(line);
 		  P_ChangeSwitchTexture(line,1);
 	      break;
-	  case 300:
-              if (EV_DoFloor(line, raiseFloor))
-                  P_ChangeSwitchTexture(line, 0);
-				  thing->player->message = "Exit opened on train's right side.";
-              break;
+	  case 304:
+          EV_DoMacro(line, thing);
+          line->special = 0;
+          break;
+
+      case 305:
+          EV_DoMacro(line, thing);
+          break;
+
+      case 306:
+          EV_DoText(line, thing);
+          line->special = 0;
+          break;
+
+      case 307:
+          EV_DoText(line, thing);
+          break;
     }
 	
     return true;

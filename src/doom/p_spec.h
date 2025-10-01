@@ -20,6 +20,7 @@
 //
 
 
+#include "specdefs.h"
 #ifndef __P_SPEC__
 #define __P_SPEC__
 
@@ -37,6 +38,8 @@ extern	int	levelTimeCount;
 
 // at game start
 void    P_InitPicAnims (void);
+
+void P_InitSpecdefs(void);
 
 // at map load
 void    P_SpawnSpecials (void);
@@ -118,6 +121,10 @@ void EV_DoClearSectorSpecial(line_t* line);
 void EV_DoClearLineSpecial(line_t* line);
 
 void P_ClearThinkerLight(sector_t* sector);
+
+void EV_DoMacro(line_t *line, mobj_t *mo);
+
+void EV_DoText(line_t *line, mobj_t *mo);
 
     //
 // P_LIGHTS
