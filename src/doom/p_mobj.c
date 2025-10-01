@@ -264,7 +264,7 @@ void P_ZMovement (mobj_t* mo)
 {
     fixed_t	dist;
     fixed_t	delta;
-    
+
     // check for smooth step up
     if (mo->player && mo->z < mo->floorz)
     {
@@ -506,7 +506,7 @@ void P_MobjThinker (mobj_t* mobj)
             mobj->player == NULL &&
             (mobj->flags & MF_SHOOTABLE) &&
             !(mobj->flags & MF_FLOAT) &&
-            !(mobj->flags2 & MF2_FLOORPROTECTOR))
+            mobj->flags2 & MF2_FLOORDAMAGE)
         {
             if (sector->special & KILL_MASK)
             {
@@ -791,9 +791,11 @@ void P_SpawnPlayer (mapthing_t* mthing)
     mobj	= P_SpawnMobj (x,y,z, MT_PLAYER);
 
     // set color translations for player sprites
-    if (mthing->type > 1)		
-	mobj->flags |= (mthing->type-1)<<MF_TRANSSHIFT;
-		
+    if (mthing->type > 1)
+    {
+        mobj->flags |= (mthing->type - 1) << MF_TRANSSHIFT;
+    }
+
     mobj->angle	= ANG45 * (mthing->angle/45);
     mobj->player = p;
     mobj->health = p->health;
@@ -968,6 +970,18 @@ void P_SpawnMapThing (mapthing_t* mthing)
     mobj->angle = ANG45 * (mthing->angle/45);
     if (mthing->options & MTF_AMBUSH)
 	mobj->flags |= MF_AMBUSH;
+
+    if (mthing->options & MTF_GENERIC1)
+        mobj->genericflags |= MF4_GENERIC1;
+
+    if (mthing->options & MTF_GENERIC2)
+        mobj->genericflags |= MF4_GENERIC2;
+
+    if (mthing->options & MTF_GENERIC3)
+        mobj->genericflags |= MF4_GENERIC3;
+
+    if (mthing->options & MTF_GENERIC4)
+        mobj->genericflags |= MF4_GENERIC4;
 }
 
 
@@ -1101,7 +1115,7 @@ P_SpawnMissile
             S_StartSound(th, th->info->seesound);
     }
         
-
+    th->tracer = dest;
     th->target = source;	// where it came from
     an = R_PointToAngle2 (source->x, source->y, dest->x, dest->y);
 

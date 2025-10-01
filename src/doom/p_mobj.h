@@ -238,8 +238,13 @@ typedef enum
     //Things that would telefrag this thing are telefragged instead.
     MF2_ANTITELEFRAG = 256,
 
-    // Protect mobj from DAMAGE SECTOR
-    MF2_FLOORPROTECTOR = 512,
+    // Damage mobj from DAMAGE SECTOR
+    MF2_FLOORDAMAGE = 512,
+
+    // Disable Projectile Random
+    MF2_NORANDOM    = 0x400,
+
+    MF2_STAY  = 0x800,
 
 }mobjflag2_t;
 
@@ -247,6 +252,14 @@ typedef enum
 {
     MF3_LINEDONE = 1,
 }mobjinternalflag_t;
+
+typedef enum
+{
+    MF4_GENERIC1 = 1,
+    MF4_GENERIC2 = 2,
+    MF4_GENERIC3 = 4,
+    MF4_GENERIC4 = 16,
+}mobjgenflag_t;
 
 // Map Object definition.
 typedef struct mobj_s
@@ -299,6 +312,7 @@ typedef struct mobj_s
     int			flags;
     int         flags2; //New flags2 to GAMEVERSION 2.0
     int         intflags; //Internal flags
+    int         genericflags;
     int			health;
 
     // Movement direction, movement generation (zig-zagging).
