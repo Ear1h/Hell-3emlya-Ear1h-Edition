@@ -243,3 +243,100 @@
 
 The counter system is a simplified version of `A_JumpIfInventory` from DECORATE or `if (i > 0)` from ZScript.  
 It allows an actor to switch to a desired state without wasting extra frames idling.  
+
+# 01.10.25
+
+### New Lump: `SPECDEFS`
+
+This lump allows defining **macros** for linedefs so that a single line can trigger multiple actions at once.  
+The lump uses **JSON** syntax.
+
+#### Example Syntax
+
+```json
+"macro": [
+  {
+    "id": 1,
+    "specials": [
+      { "action": 101, "tag": 19 },
+      { "action": 306, "tag": 1 },
+      { "action": 268, "tag": 2 }
+    ]
+  }
+]
+```
+* action → specifies the linedef special (only S1/SR are supported; W1/WR and G1/GR do not work).
+* tag → parameter required for the action (can represent sector tag, text ID, etc.).
+* The number of macros is unlimited.
+
+#### Message Definitions
+
+SPECDEFS also allows defining messages that can be displayed in chat when a given linedef is triggered.
+
+```json
+"message": [
+  {
+    "id": 1,
+    "text": "Exit opened on train's right side."
+  }
+]
+```
+* id → linedef tag.
+* text[80] → message string (max length = 80).
+* If text length exceeds 80, the game will intentionally crash during initialization.
+
+### Added New Codepointers
+
+- **A_Jump(random, state1, state2, state3, state4)**  
+  Jumps to a random state.  
+  - If `state2–4` are set to `0`, they are treated as `state1`.
+
+- **A_ResetHealth()**  
+  Resets actor health to the default value defined in `info->health`.
+
+- **A_SetSelfHealth(int health)**  
+  Increases actor’s health by the given `health` amount.
+
+- **A_JumpIfSetFlags(int flags, int flags2, int genericflags, state)**  
+  Jumps to the specified state if one or more of the given flags are set.
+
+- **A_Die()**  
+  Instantly kills the actor.
+
+- **A_SetSpeed(int speed)**  
+  Sets the actor’s movement speed.
+
+- **A_NoiseAlert()**  
+  Alerts all nearby monsters and directs them to the actor’s target.
+
+- **A_JumpIfSkill(skill skill, int state, bool IsHigher)**  
+  Jumps to the specified state depending on current game skill.  
+  - If `IsHigher = false`: checks for **exact skill match**.  
+  - If `IsHigher = true`: condition passes if current skill is **greater or equal** than the given skill.
+ 
+ ### New Map Flags
+
+- **GENERIC1 – GENERIC4**  
+  Utility flags that allow customizing monsters and actors **without creating duplicate “trash actors”**.  
+  Can be used to enable conditional behavior or script-like effects.
+
+ ### New ACtor Flags
+- **MF4_GENERIC1 – MF4_GENERIC4**  
+  Actor-side equivalents of the above `GENERIC` flags.  
+
+- **MF2_NORANDOM**  
+  Projectiles with this flag deal **non-randomized damage** (fixed value, no Doom RNG spread).  
+
+- **MF2_STAY**  
+  Actors with this flag:  
+  - Remain in place (immobile).  
+  - Do not trigger secondary effects such as chasing or wandering.  
+
+---
+
+### New Actor: **Ceiling Turret**
+
+- Always spawns **attached to the ceiling**.  
+- No collision box (actors can pass through), but **still vulnerable to damage**.  
+- Weapon behavior:  
+  - Fires **two-round bursts** in sequence.  
