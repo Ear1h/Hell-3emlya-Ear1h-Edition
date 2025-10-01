@@ -175,6 +175,7 @@ typedef enum
     SPR_KAMI, //Sprite for New monster: Kamikaze
     SPR_DARK, //Sprite for New monster: Dark Imp
     SPR_DRKP, //Sprite for New monster: Dark Imp ball
+    SPR_VHTU,
     NUMSPRITES
 
 } spritenum_t;
@@ -1293,6 +1294,20 @@ typedef enum
     S_DEC_STAY,
     S_JUMP_STAY,
     S_HOMROCKET,
+    S_TURRET_STAY,
+    S_TURRET_SEE,
+    S_TURRET_ATTACK1,
+    S_TURRET_ATTACK2,
+    S_TURRET_ATTACK3,
+    S_TURRET_ATTACK4,
+    S_TURRET_ATTACK5,
+    S_TURRET_ATTACK6,
+    S_TURRET_DEATH1,
+    S_TURRET_DEATH2,
+    S_TURRET_DEATH3,
+    S_TURRET_DEATH4,
+    S_TURRET_DEATH5,
+
     EXTRASTATES = 1200,
     NUMSTATES = 4000,
 } statenum_t;
@@ -1467,6 +1482,7 @@ typedef enum
     MT_DARKIMP,
     MT_DARKSMOKE,
     MT_HOMROCKET,
+    MT_TURRET,
     NUMMOBJTYPES
 
 } mobjtype_t;
@@ -1501,6 +1517,7 @@ typedef struct
     int counter2;
     int counter3;
     int counter4;
+    int genericflags;
 
 } mobjinfo_t;
 

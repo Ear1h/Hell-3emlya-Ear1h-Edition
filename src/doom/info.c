@@ -44,7 +44,8 @@ const char *sprnames[] = {
     "COL3","COL4","CAND","CBRA","COL6","TRE1","TRE2","ELEC","CEYE","FSKU",
     "COL5","TBLU","TGRN","TRED","SMBT","SMGT","SMRT","HDB1","HDB2","HDB3",
     "HDB4","HDB5","HDB6","POB1","POB2","BRS1","TLMP","TLP2","MDPK","HEVA",
-	"VSRM","ARSD","REGN","NBAL","NTRO","NMDM","KAMI","DARK","DRKP", NULL
+	"VSRM","ARSD","REGN","NBAL","NTRO","NMDM","KAMI","DARK","DRKP", "VHTU",
+	NULL
 };
 
 
@@ -136,6 +137,14 @@ void A_CustomMeleeAttack();
 void A_RefireTo();
 void A_WeaponCustomMissileAttack();
 void A_CheckAmmo();
+void A_Jump();
+void A_ResetHealth();
+void A_SetSelfHealth();
+void A_JumpIfSetFlags();
+void A_Die();
+void A_SetSpeed();
+void A_NoiseAlert();
+void A_JumpIfSkill();
 
 state_t	states[NUMSTATES] = {
     {SPR_TROO,0,-1,{NULL},S_NULL,0,0},	// S_NULL
@@ -1198,8 +1207,8 @@ state_t	states[NUMSTATES] = {
     {SPR_KAMI, 3, 2, {A_Chase}, S_KAMI_RUN11, 0, 0},          // S_KAMI_RUN10
     {SPR_KAMI, 3, 2, {A_Chase}, S_KAMI_RUN12, 0, 0},          // S_KAMI_RUN11
     {SPR_KAMI, 3, 2, {A_Chase}, S_KAMI_RUN, 0, 0},			  // S_KAMI_RUN12
-    {SPR_KAMI, 32772, 0, {A_RadiusDamage2}, S_KAMI_XDIE, 0, 0, 256, 256}, // S_KAMI_MELEE
-    {SPR_KAMI, 32772, 0, {A_RadiusDamage2}, S_KAMI_XDIE, 0, 0, 256, 256}, // S_KAMI_DEATH
+    {SPR_KAMI, 32772, 0, {A_RadiusDamage2}, S_KAMI_XDIE, 0, 0, 128, 128}, // S_KAMI_MELEE
+    {SPR_KAMI, 32772, 0, {A_RadiusDamage2}, S_KAMI_XDIE, 0, 0, 128, 128}, // S_KAMI_DEATH
     {SPR_KAMI, 32772, 5, {A_Scream}, S_KAMI_XDIE2, 0, 0},      // S_KAMI_XDIE
     {SPR_KAMI, 32773, 5, {NULL}, S_KAMI_XDIE3, 0, 0},         // S_KAMI_XDIE2
     {SPR_KAMI, 6, 5, {A_Fall}, S_KAMI_XDIE4, 0, 0},           // S_KAMI_XDIE3
@@ -1250,6 +1259,19 @@ state_t	states[NUMSTATES] = {
     {SPR_TROO, 0, -1, {A_DecreaseCounter}, S_NULL, 0, 0},
 	{SPR_TROO, 0, -1, {A_JumpIfCounterEqual}, S_NULL, 0,0},
     {SPR_MISL, 32768, 1, {A_Tracer}, S_ROCKET, 0, 0},
+    {SPR_VHTU, 0, 1, {A_Look}, S_TURRET_STAY, 0, 0},
+    {SPR_VHTU, 0, 1, {A_Chase}, S_TURRET_SEE, 0, 0},
+    {SPR_VHTU, 0, 2, {A_FaceTarget}, S_TURRET_ATTACK2, 0, 0},
+    {SPR_VHTU, 32769, 2, {A_CPosAttack}, S_TURRET_ATTACK3, 0, 0},
+    {SPR_VHTU, 0, 2, {A_FaceTarget}, S_TURRET_ATTACK4, 0, 0},
+    {SPR_VHTU, 32769, 2, {A_CPosAttack}, S_TURRET_ATTACK5, 0, 0},
+    {SPR_VHTU, 0, 2, {A_FaceTarget}, S_TURRET_ATTACK6, 0, 0},
+    {SPR_VHTU, 0, 2, {A_CPosRefire}, S_TURRET_SEE, 0, 0},
+    {SPR_VHTU, 32770, 6, {A_Scream}, S_TURRET_DEATH2, 0, 0},
+    {SPR_VHTU, 32771, 6, {NULL}, S_TURRET_DEATH3, 0, 0},
+    {SPR_VHTU, 32772, 6, {NULL}, S_TURRET_DEATH4, 0, 0},
+    {SPR_VHTU, 5, 10, {NULL}, S_TURRET_DEATH5, 0, 0},
+    {SPR_VHTU, 6, -1, {NULL}, S_NULL, 0, 0},
 }; 
 
 
@@ -5300,5 +5322,32 @@ mobjinfo_t mobjinfo[NUMMOBJTYPES] = {
 	S_NULL,		// raisestate
 	0			//flags2
     },
+
+	{
+	4009,		// doomednum
+	S_TURRET_STAY,		// spawnstate
+	150,		// spawnhealth
+	S_TURRET_SEE,		// seestate
+	sfx_None,		// seesound
+	0,		// reactiontime
+	sfx_None,		// attacksound
+	S_NULL,		// painstate
+	0,		// painchance
+	sfx_None,		// painsound
+	S_NULL,		// meleestate
+	S_TURRET_ATTACK1,		// missilestate
+	S_TURRET_DEATH1,		// deathstate
+	S_NULL,		// xdeathstate
+	sfx_barexp,		// deathsound
+	0,		// speed
+	22*FRACUNIT,		// radius
+	42*FRACUNIT,		// height
+	10000000,		// mass
+	0,		// damage
+	sfx_None,		// activesound
+	MF_SHOOTABLE|MF_SPAWNCEILING|MF_NOGRAVITY|MF_COUNTKILL|MF_AMBUSH|MF_NOBLOOD,		// flags
+	S_NULL,		// raisestate
+	MF2_STAY, MF2_NORESPAWN			//flags2
+    }
 };
 
