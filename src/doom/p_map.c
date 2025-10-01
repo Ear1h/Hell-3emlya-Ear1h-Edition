@@ -386,7 +386,12 @@ boolean PIT_CheckThing (mobj_t* thing)
 	}
 	
 	// damage / explode
-	damage = ((P_Random()%8)+1)*tmthing->info->damage;
+    
+    if (!(thing->flags2 & MF2_NORANDOM) || gameversion < exe_doom_2_0)
+	    damage = ((P_Random()%8)+1)*tmthing->info->damage;
+    else
+        damage = tmthing->info->damage;
+
 	P_DamageMobj (thing, tmthing, tmthing->target, damage);
 
 	// don't traverse any more
@@ -526,26 +531,26 @@ P_TryMove
 
     floatok = false;
     if (!P_CheckPosition (thing, x, y))
-	return false;		// solid wall or thing
-    
+	    return false;		// solid wall or thing
+
     if ( !(thing->flags & MF_NOCLIP) )
     {
-	if (tmceilingz - tmfloorz < thing->height)
-	    return false;	// doesn't fit
+	    if (tmceilingz - tmfloorz < thing->height)
+	        return false;	// doesn't fit
 
-	floatok = true;
+	    floatok = true;
 	
-	if ( !(thing->flags&MF_TELEPORT) 
-	     &&tmceilingz - thing->z < thing->height)
-	    return false;	// mobj must lower itself to fit
+	    if ( !(thing->flags&MF_TELEPORT) 
+	        &&tmceilingz - thing->z < thing->height)
+	        return false;	// mobj must lower itself to fit
 
-	if ( !(thing->flags&MF_TELEPORT)
-	     && tmfloorz - thing->z > 24*FRACUNIT )
-	    return false;	// too big a step up
+	    if ( !(thing->flags&MF_TELEPORT)
+	        && tmfloorz - thing->z > 24*FRACUNIT )
+	        return false;	// too big a step up
 
-	if ( !(thing->flags&(MF_DROPOFF|MF_FLOAT))
-	     && tmfloorz - tmdropoffz > 24*FRACUNIT )
-	    return false;	// don't stand over a dropoff
+	    if ( !(thing->flags&(MF_DROPOFF|MF_FLOAT))
+	         && tmfloorz - tmdropoffz > 24*FRACUNIT )
+	        return false;	// don't stand over a dropoff
     }
     
     // the move is ok,
