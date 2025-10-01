@@ -230,6 +230,7 @@ boolean P_CheckSight (mobj_t* t1, mobj_t* t2);
 void 	P_UseLines (player_t* player);
 
 boolean P_ChangeSector (sector_t* sector, boolean crunch);
+void P_NoMissile(mobj_t *actor);
 
 extern mobj_t*	linetarget;	// who got hit (or NULL)
 
