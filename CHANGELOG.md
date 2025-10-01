@@ -320,7 +320,7 @@ SPECDEFS also allows defining messages that can be displayed in chat when a give
   Utility flags that allow customizing monsters and actors **without creating duplicate “trash actors”**.  
   Can be used to enable conditional behavior or script-like effects.
 
- ### New ACtor Flags
+ ### New Actor Flags
 - **MF4_GENERIC1 – MF4_GENERIC4**  
   Actor-side equivalents of the above `GENERIC` flags.  
 
