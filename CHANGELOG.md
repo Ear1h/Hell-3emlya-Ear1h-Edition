@@ -332,8 +332,6 @@ SPECDEFS also allows defining messages that can be displayed in chat when a give
   - Remain in place (immobile).  
   - Do not trigger secondary effects such as chasing or wandering.  
 
----
-
 ### New Actor: **Ceiling Turret**
 
 - Always spawns **attached to the ceiling**.  
