@@ -672,17 +672,20 @@ void A_Chase(mobj_t *actor)
     }
 
     // turn towards movement direction if not there yet
-    if (actor->movedir < 8)
+    if (gameversion < exe_doom_2_0 || !(actor->flags2 & MF2_STAY))
     {
-        actor->angle &= (7u << 29);
-        delta = actor->angle - (actor->movedir << 29);
+        if (actor->movedir < 8)
+        {
+            actor->angle &= (7u << 29);
+            delta = actor->angle - (actor->movedir << 29);
 
-        if (delta > 0)
-            actor->angle -= ANG90 / 2;
-        else if (delta < 0)
-            actor->angle += ANG90 / 2;
+            if (delta > 0)
+                actor->angle -= ANG90 / 2;
+            else if (delta < 0)
+                actor->angle += ANG90 / 2;
+        }
     }
-
+    
     if (!actor->target || !(actor->target->flags & MF_SHOOTABLE))
     {
         // look for a new target
@@ -694,14 +697,17 @@ void A_Chase(mobj_t *actor)
     }
 
     // do not attack twice in a row
-    if (actor->flags & MF_JUSTATTACKED)
+    if (gameversion < exe_doom_2_0 || !(actor->flags2 & MF2_STAY))
     {
-        actor->flags &= ~MF_JUSTATTACKED;
-        if (gameskill != sk_nightmare && !fastparm)
-            P_NewChaseDir(actor);
-        return;
+        if (actor->flags & MF_JUSTATTACKED)
+        {
+            actor->flags &= ~MF_JUSTATTACKED;
+            if (gameskill != sk_nightmare && !fastparm)
+                P_NewChaseDir(actor);
+            return;
+        }
     }
-
+        
     // check for melee attack
     if (actor->info->meleestate && P_CheckMeleeRange(actor))
     {
@@ -719,7 +725,6 @@ void A_Chase(mobj_t *actor)
         }
 	   
         P_SetMobjState(actor, actor->info->meleestate);
-        return;
     }
 
     // check for missile attack
@@ -727,20 +732,26 @@ void A_Chase(mobj_t *actor)
     {
         if (gameskill < sk_nightmare && !fastparm && actor->movecount)
         {
-            goto nomissile;
+            P_NoMissile(actor);
+            return;
         }
 
         if (!P_CheckMissileRange(actor))
-            goto nomissile;
-
+        {
+            P_NoMissile(actor);
+            return;
+        }
+    
         P_SetMobjState(actor, actor->info->missilestate);
         actor->flags |= MF_JUSTATTACKED;
         return;
     }
 
-    // ?
-nomissile:
-    // possibly choose another target
+    P_NoMissile(actor);
+}
+
+void P_NoMissile(mobj_t *actor)
+{
     if (netgame && !actor->threshold && !P_CheckSight(actor, actor->target))
     {
         if (P_LookForPlayers(actor, true))
@@ -748,21 +759,27 @@ nomissile:
     }
 
     // chase towards player
-    if (--actor->movecount < 0 || !P_Move(actor))
+
+    if (gameversion < exe_doom_2_0 || !(actor->flags2 & MF2_STAY))
     {
-        P_NewChaseDir(actor);
+        if (--actor->movecount < 0 || !P_Move(actor))
+        {
+            P_NewChaseDir(actor);
+        }
     }
-    
+
+    // make active sound
     if ((actor->subsector->sector->special & SILENT_MOBJ) &&
         gameversion == exe_doom_2_0)
-        return;
-    // make active sound
-    if (actor->info->activesound && P_Random() < 3)
     {
-        S_StartSound(actor, actor->info->activesound);
+        if (actor->info->activesound && P_Random() < 3)
+        {
+            S_StartSound(actor, actor->info->activesound);
+        }
     }
+    
+    return;
 }
-
 
 //
 // A_FaceTarget
@@ -2236,4 +2253,146 @@ void A_IncreaseCounter(mobj_t *thing)
     int *counter = counters[variable_type - 1];
 
     *counter = (*counter + variable_inc > 255) ? 255 : *counter + variable_inc;
+}
+
+/*
+    A_Jump
+    Args[0] = Random (0-255)
+    Args[1] = Goto to State 1 (0 - 32768)
+    Args[2] = Goto to State 2 (0 - 32768)
+    Args[3] = Goto to State 3 (0 - 32768)
+    Args[4] = Goto to State 4 (0 - 32768)
+*/
+
+void A_Jump(mobj_t* thing)
+{
+    if (gameversion < exe_doom_2_0)
+        return;
+
+    int i, Random;
+
+    Random =  thing->state->args[0];
+
+    int Gotos[4] = {
+        thing->state->args[1],
+        thing->state->args[2],
+        thing->state->args[3],
+        thing->state->args[4],
+    };
+
+    for (i = 1; i < 4; i++)
+    {
+        if (Gotos[i] < 1)
+            Gotos[i] = Gotos[0];
+    }
+    
+    if (P_Random() < Random)
+    {
+        int RandomIndex = P_Random() % 4;
+        P_SetMobjState(thing, Gotos[RandomIndex]);
+    }
+}
+
+void A_ResetHealth(mobj_t* mo)
+{
+    if (gameversion < exe_doom_2_0 || mo->health < 0)
+        return;
+
+    mo->health = mo->info->spawnhealth;
+}
+
+void A_SetSelfHealth(mobj_t* mo)
+{
+    if (gameversion < exe_doom_2_0 || mo->health < 0)
+        return;
+
+    mo->health = mo->health + mo->state->args[0];
+}
+
+void A_JumpIfSetFlags(mobj_t* mo)
+{
+    unsigned int flags, flags2, genericflags;
+    int states;
+
+    if (gameversion < exe_doom_2_0)
+        return;
+
+    flags =         mo->state->args[0];
+    flags2 =        mo->state->args[1];
+    genericflags =  mo->state->args[2];
+    states =        mo->state->args[3];
+
+    if ((flags & mo->flags) == flags && (flags2 & mo->flags2) == flags2 &&
+        (genericflags & mo->genericflags) == genericflags)
+        P_SetMobjState(mo, states);
+}
+
+void A_Die(mobj_t* mo)
+{
+    if (gameversion < exe_doom_2_0)
+        return;
+
+    P_DamageMobj(mo, NULL, NULL, mo->health);  
+}
+
+void A_SetSpeed(mobj_t* mo)
+{
+    int speed;
+    int an;
+
+    fixed_t dist;
+    
+    mobj_t *dest;
+
+    if (gameversion < exe_doom_2_0 || !mo)
+        return;
+
+    speed = mo->state->args[0];
+
+    if (speed <= 0)
+    {
+        mo->momx = mo->momy = mo->momz = 0;
+        return;
+    }
+        
+
+    dest = mo->tracer;
+    an = mo->angle >> ANGLETOFINESHIFT;
+    mo->momx = FixedMul(speed, finecosine[an]);
+    mo->momy = FixedMul(speed, finesine[an]);
+
+    // change slope
+    dist = P_AproxDistance(dest->x - mo->x, dest->y - mo->y);
+    
+    dist = dist / speed;
+
+    if (dist < 1)
+        dist = 1;
+    
+    mo->momz = ((dest->z + (dest->height >> 1)) - mo->z) / dist;
+}
+
+void A_NoiseAlert(mobj_t* actor)
+{
+    if (gameversion < exe_doom_2_0 || !actor->target)
+        return;
+
+    P_NoiseAlert(actor->target, actor);
+}
+
+void A_JumpIfSkill(mobj_t* actor)
+{
+    if (gameversion < exe_doom_2_0 || gameskill < 1)
+        return;
+
+    int skill, state;
+    int isHigher;
+
+    skill =     actor->state->args[0];
+    state =     actor->state->args[1];
+    isHigher =  actor->state->args[2];
+
+    if (((skill == (int) gameskill) && !isHigher) ||
+        ((skill > (int) gameskill) && isHigher))
+        P_SetMobjState(actor, state);
 }
