@@ -360,8 +360,9 @@ boolean PIT_CheckThing (mobj_t* thing)
 		
 	if (tmthing->target 
          && (tmthing->target->type == thing->type || 
-	    (tmthing->target->type == MT_KNIGHT && thing->type == MT_BRUISER)||
-	    (tmthing->target->type == MT_BRUISER && thing->type == MT_KNIGHT) ) )
+	    ((tmthing->target->type == MT_KNIGHT && thing->type == MT_BRUISER)||
+	    (tmthing->target->type == MT_BRUISER && thing->type == MT_KNIGHT))))
+        
 	{
 	    // Don't hit same species as originator.
 	    if (thing == tmthing->target)
@@ -384,10 +385,21 @@ boolean PIT_CheckThing (mobj_t* thing)
 	    // didn't do any damage
 	    return !(thing->flags & MF_SOLID);	
 	}
+
+    if (tmthing->flags2 & MF2_RIP)
+    {
+        damage = tmthing->info->damage;
+        if (!(thing->flags & MF_NOBLOOD))
+            P_SpawnBlood(tmthing->x, tmthing->y, tmthing->z, damage);
+
+        P_DamageMobj(thing, tmthing, tmthing->target, damage);
+        numspechit = 0;
+        return true;
+    }
 	
 	// damage / explode
     
-    if (!(thing->flags2 & MF2_NORANDOM) || gameversion < exe_doom_2_0)
+    if (!(tmthing->flags2 & MF2_NORANDOM) || gameversion < exe_doom_2_0)
 	    damage = ((P_Random()%8)+1)*tmthing->info->damage;
     else
         damage = tmthing->info->damage;
@@ -1292,8 +1304,8 @@ boolean PIT_RadiusAttack (mobj_t* thing)
         if (bombdamage == bombdistance)
             damage = bombdamage - dist;
         else
-            damage = (bombdamage * (bombdamage - dist) / bombdistance) + 1;
-	// must be in direct path
+            damage = (bombdamage * (bombdistance - dist) / bombdistance) + 1;
+
 	    P_DamageMobj (thing, bombspot, bombsource, damage);
     }
     

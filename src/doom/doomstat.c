@@ -19,7 +19,8 @@
 #include <stdio.h>
 
 #include "doomstat.h"
-
+#include "doomtype.h"
+#include "m_misc.h"
 
 // Game Mode - identify IWAD as shareware, retail etc.
 GameMode_t gamemode = indetermined;
@@ -29,6 +30,18 @@ GameVariant_t   gamevariant = vanilla;
 
 // Set if homebrew PWAD stuff has been added.
 boolean	modifiedgame;
+
+char *MapName(int e, int m)
+{
+    static char name[9];
+
+    if (gamemode == commercial)
+        M_snprintf(name, sizeof(name), "MAP%02d", m);
+    else
+        M_snprintf(name, sizeof(name), "E%dM%d", e, m);
+
+    return name;
+}
 
 
 

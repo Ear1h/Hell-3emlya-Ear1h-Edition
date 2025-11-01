@@ -124,6 +124,7 @@ animdef_t		animdefs[] =
     {true,	"SFALL4",	"SFALL1",	8},
     {true,	"WFALL4",	"WFALL1",	8},
     {true,	"DBRAIN4",	"DBRAIN1",	8},
+
     {-1,        "",             "",             0},
 };
 
@@ -997,6 +998,11 @@ P_CrossSpecialLine
       case 303:
           EV_DoText(line, thing);
           break;
+      case 309:
+          resetinventory = true;
+          P_ChangeSwitchTexture(line, 0);
+          G_ExitLevel();
+          break;
     }
 }
 
@@ -1047,6 +1053,12 @@ P_ShootSpecialLine
 	EV_DoPlat(line,raiseToNearestAndChange,0);
 	P_ChangeSwitchTexture(line,0);
 	break;
+
+    case 330:
+        EV_DoFloor(line,lowerFloor);
+	    P_ChangeSwitchTexture(line,0);
+	    break;
+
     }
 }
 
@@ -1188,7 +1200,7 @@ void P_PlayerInSpecialSector (player_t* player)
                 if (sector->special < 32) // if all extended bits clear,
                     sector->special = 0;  // sector is not special anymore
 
-                S_StartSound(player, sfx_itmbk);
+                S_StartSound(NULL, sfx_itmbk);
             }
 
 	}
@@ -1555,7 +1567,7 @@ void EV_DoMacro(line_t *line, mobj_t *mo)
     if (gameversion < exe_doom_2_0)
         return;
     line_t junk;
-    macros_t *macro = NULL;
+    macros_t *macro;
 
     if (!specdefs || !specdefs->spec_macro)
         return;
@@ -1564,10 +1576,10 @@ void EV_DoMacro(line_t *line, mobj_t *mo)
     {
         if (macro->macroid == line->tag)
         {
-            macro_special_t *spec = NULL;
+            macro_special_t *spec;
             array_foreach(spec, macro->specials)
             {
-                junk = *line; // копируем исходную линию
+                junk = *line;
 
                 junk.special = spec->action;
                 junk.tag = spec->tag;
@@ -1592,7 +1604,7 @@ void EV_DoText(line_t *line, mobj_t *mo)
     {
         if (message->messageid == line->tag)
         {
-            player->message = message->messages;
+            player->printmessage = message->messages;
         }
     }
 }
@@ -1779,27 +1791,41 @@ void P_SpawnSpecials (void)
     numlinespecials = 0;
     for (i = 0;i < numlines; i++)
     {
-	switch(lines[i].special)
-	{
+	    switch(lines[i].special)
+	    {
       
-	  case 48:
-      case 256:
-      case 257:
-      case 258:
-      case 259:
-      case 260:
-      case 261:
-      case 262:
-            if (numlinespecials >= MAXLINEANIMS)
+	      case 48:
+          case 256:
+          case 257:
+          case 258:
+          case 259:
+          case 260:
+          case 261:
+          case 262:
+                if (numlinespecials >= MAXLINEANIMS)
+                {
+                    I_Error("Too many scrolling wall linedefs (%d)! "
+                            "(Vanilla limit is 64)", NumScrollers());
+                }
+	        // EFFECT FIRSTCOL SCROLL+
+	        linespeciallist[numlinespecials] = &lines[i];
+	        numlinespecials++;
+	        break;
+
+            case 310:
             {
-                I_Error("Too many scrolling wall linedefs (%d)! "
-                        "(Vanilla limit is 64)", NumScrollers());
+                  int secnum;
+
+                  for (secnum = 0; secnum < numsectors; secnum++)
+                  {
+                      if (sectors[secnum].tag == lines[i].tag)
+                      {
+                          sectors[secnum].sky = i | PL_SKYFLAT;
+                      }
+                  }
             }
-	    // EFFECT FIRSTCOL SCROLL+
-	    linespeciallist[numlinespecials] = &lines[i];
-	    numlinespecials++;
-	    break;
-	}
+              
+	    }
     }
 
     

@@ -34,6 +34,9 @@
 // State.
 #include "doomstat.h"
 #include "r_state.h"
+#include "w_wad.h"
+
+#include "g_game.h"
 
 
 //
@@ -654,24 +657,63 @@ P_UseSpecialLine
 		  EV_DoClearLineSpecial(line);
 		  P_ChangeSwitchTexture(line,1);
 	      break;
+	  case 280:
+		  EV_LightTurnOn(line,0);
+		  line->special = 0;
+		  break;
+      case 281:
+              // Turn lights off in sector(tag)
+              EV_TurnTagLightsOff(line);
+              line->special = 0;
+              break;
 	  case 304:
           EV_DoMacro(line, thing);
+		  P_ChangeSwitchTexture(line,0);
           line->special = 0;
           break;
 
       case 305:
           EV_DoMacro(line, thing);
+          P_ChangeSwitchTexture(line, 1);
           break;
 
       case 306:
           EV_DoText(line, thing);
+          P_ChangeSwitchTexture(line, 0);
           line->special = 0;
           break;
 
       case 307:
           EV_DoText(line, thing);
+          P_ChangeSwitchTexture(line, 1);
           break;
-    }
+
+	  //Exit Level and reset Inventory (like feature from ID24)
+      case 308:
+          resetinventory = true;
+          P_ChangeSwitchTexture(line, 0);
+          G_ExitLevel();
+          break;
+
+		case 320:
+          S_ChangeMusic(mus_mus001, 1);
+          break;
+
+		case 321: //Teleport S1
+			EV_Teleport( line, side, thing );
+			line->special = 0;
+			break;
+		case 322: //Teleport SR
+			EV_Teleport( line, side, thing );
+			break;
+		case 323: //Floor_LowerToLowerst_ChangesTexture S1
+			EV_DoFloor(line,lowerAndChange);
+			line->special = 0;
+			break;
+		case 324: //Floor_LowerToLowerst_ChangesTexture SR
+			EV_DoFloor(line,lowerAndChange);
+			break;
+    }	
 	
     return true;
 }

@@ -20,13 +20,11 @@ typedef struct
 {
     short action;
     short tag;
-    int delay;
 } macro_special_t;
 
 typedef struct
 {
     int macroid;
-    int count;
     macro_special_t *specials;
 } macros_t;
 
@@ -46,6 +44,4 @@ typedef struct
 }specdefs_t;
 
 specdefs_t *ParseSpecdefs(void);
-
-extern specdefs_t *specdefs;
 #endif

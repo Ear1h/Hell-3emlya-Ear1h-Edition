@@ -31,6 +31,7 @@
 #include "w_wad.h"
 
 #include "g_game.h"
+#include "g_umapinfo.h"
 
 #include "r_local.h"
 #include "s_sound.h"
@@ -300,7 +301,7 @@ static anim_t *anims[NUMEPISODES] =
 
 
 // used to accelerate or skip a stage
-static int		acceleratestage;
+int		acceleratestage;
 
 // wbs->pnum
 static int		me;
@@ -768,10 +769,29 @@ void WI_updateNoState(void) {
 }
 
 static boolean		snl_pointeron = false;
-
+static void WI_loadData(void);
 
 void WI_initShowNextLoc(void)
 {
+    if (gamemapinfo)
+    {
+        if (gamemapinfo->flags & MapInfo_EndGame)
+        {
+            G_WorldDone();
+            return;
+        }
+
+        state = ShowNextLoc;
+
+        // episode change
+        if (wbs->epsd != wbs->nextep)
+        {
+            wbs->epsd = wbs->nextep;
+            wbs->last = wbs->next - 1;
+            WI_loadData();
+        }
+    }
+
     state = ShowNextLoc;
     acceleratestage = 0;
     cnt = SHOWNEXTLOCDELAY * TICRATE;
@@ -794,7 +814,11 @@ void WI_drawShowNextLoc(void)
 
     int		i;
     int		last;
-
+	
+	if (gamemapinfo && gamemapinfo->flags & MapInfo_EndGame)
+    {
+        return;
+    }
     WI_slamBackground();
 
     // draw animated background
@@ -1720,7 +1744,7 @@ static void WI_loadCallback(const char *name, patch_t **variable)
     *variable = W_CacheLumpName(name, PU_STATIC);
 }
 
-void WI_loadData(void)
+static void WI_loadData(void)
 {
     if (gamemode == commercial)
     {

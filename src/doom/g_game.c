@@ -41,6 +41,8 @@
 #include "i_input.h"
 #include "i_swap.h"
 #include "i_video.h"
+#include "g_umapinfo.h"
+#include "hu_stuff.h"
 
 #include "p_setup.h"
 #include "p_saveg.h"
@@ -102,6 +104,7 @@ skill_t         gameskill;
 boolean		respawnmonsters;
 int             gameepisode; 
 int             gamemap; 
+mapentry_t *gamemapinfo;
 
 // If non-zero, exit the level after this number of minutes.
 
@@ -129,6 +132,7 @@ int             consoleplayer;          // player taking events and displaying
 int             displayplayer;          // view being displayed 
 int             levelstarttic;          // gametic at level start 
 int             totalkills, totalitems, totalsecret;    // for intermission 
+boolean         resetinventory;
  
 char           *demoname;
 boolean         demorecording; 
@@ -232,6 +236,7 @@ int		bodyqueslot;
  
 int             vanilla_savegame_limit = 1;
 int             vanilla_demo_limit = 1;
+int             debug_mode = 0;
  
 int G_CmdChecksum (ticcmd_t* cmd) 
 { 
@@ -702,6 +707,18 @@ void G_DoLoadLevel (void)
 	wipegamestate = -1;             // force a wipe 
 
     gamestate = GS_LEVEL; 
+
+    if (resetinventory)
+    {
+        for (int player = 0; player < MAXPLAYERS; player++)
+        {
+            if (playeringame[player])
+            {
+                G_PlayerReborn(player);
+            }
+        }
+        resetinventory = false;
+    }
 
     for (i=0 ; i<MAXPLAYERS ; i++) 
     { 
@@ -1410,6 +1427,7 @@ void G_SecretExitLevel (void)
     gameaction = ga_completed; 
 } 
  
+boolean um_pars = false;
 void G_DoCompleted (void) 
 { 
     int             i; 
@@ -1423,6 +1441,57 @@ void G_DoCompleted (void)
     if (automapactive) 
 	AM_Stop (); 
 	
+     wminfo.nextep = wminfo.epsd = gameepisode - 1;
+    wminfo.last = gamemap - 1;
+
+    wminfo.lastmapinfo = gamemapinfo;
+    wminfo.nextmapinfo = NULL;
+    um_pars = false;
+    if (gamemapinfo)
+    {
+        const char *next = NULL;
+        boolean intermission = false;
+
+        if (gamemapinfo->flags & MapInfo_EndGame)
+        {
+            if (gamemapinfo->flags & MapInfo_NoIntermission)
+            {
+                gameaction = ga_victory;
+                return;
+            }
+            else
+            {
+                intermission = true;
+            }
+        }
+
+        if (secretexit && gamemapinfo->nextsecret[0])
+            next = gamemapinfo->nextsecret;
+        else if (gamemapinfo->nextmap[0])
+            next = gamemapinfo->nextmap;
+
+        if (next)
+        {
+            G_ValidateMapName(next, &wminfo.nextep, &wminfo.next);
+            wminfo.nextep--;
+            wminfo.next--;
+            // episode change
+            if (wminfo.nextep != wminfo.epsd)
+            {
+                for (i = 0; i < MAXPLAYERS; i++)
+                    players[i].didsecret = false;
+            }
+        }
+
+        if (next || intermission)
+        {
+            wminfo.didsecret = players[consoleplayer].didsecret;
+            wminfo.partime = gamemapinfo->partime * TICRATE;
+            if (wminfo.partime > 0)
+                um_pars = true;
+            goto frommapinfo; // skip past the default setup.
+        }
+    }
     if (gamemode != commercial)
     {
         // Chex Quest ends after 5 levels, rather than 8.
@@ -1468,11 +1537,6 @@ void G_DoCompleted (void)
     } 
 //#endif
     
-	 
-    wminfo.didsecret = players[consoleplayer].didsecret; 
-    wminfo.epsd = gameepisode -1; 
-    wminfo.last = gamemap -1;
-    
     // wminfo.next is 0 biased, unlike gamemap
     if ( gamemode == commercial)
     {
@@ -1516,11 +1580,6 @@ void G_DoCompleted (void)
 	else 
 	    wminfo.next = gamemap;          // go to next level 
     }
-		 
-    wminfo.maxkills = totalkills; 
-    wminfo.maxitems = totalitems; 
-    wminfo.maxsecret = totalsecret; 
-    wminfo.maxfrags = 0; 
 
     // Set par time. Exceptions are added for purposes of
     // statcheck regression testing.
@@ -1558,6 +1617,13 @@ void G_DoCompleted (void)
     {
         wminfo.partime = TICRATE*cpars[gamemap];
     }
+frommapinfo:
+    wminfo.nextmapinfo = G_LookupMapinfo(wminfo.nextep + 1, wminfo.next + 1);
+
+    wminfo.maxkills = totalkills;
+    wminfo.maxitems = totalitems;
+    wminfo.maxsecret = totalsecret;
+    wminfo.maxfrags = 0;
 
     wminfo.pnum = consoleplayer; 
  
@@ -1585,35 +1651,72 @@ void G_DoCompleted (void)
 //
 // G_WorldDone 
 //
-void G_WorldDone (void) 
-{ 
-    gameaction = ga_worlddone; 
+void G_WorldDone(void)
+{
+    gameaction = ga_worlddone;
 
-    if (secretexit) 
-	players[consoleplayer].didsecret = true; 
+    if (secretexit)
+        players[consoleplayer].didsecret = true;
 
-    if ( gamemode == commercial )
+    if (gamemapinfo)
     {
-	switch (gamemap)
-	{
-	  case 15:
-	  case 31:
-	    if (!secretexit)
-		break;
-	  case 6:
-	  case 11:
-	  case 20:
-	  case 30:
-	    F_StartFinale ();
-	    break;
-	}
+        if (secretexit)
+        {
+            if (gamemapinfo->flags & MapInfo_InterTextSecretClear)
+            {
+                return;
+            }
+            if (gamemapinfo->intertextsecret)
+            {
+                F_StartFinale();
+                return;
+            }
+        }
+        else
+        {
+            if (gamemapinfo->flags & MapInfo_EndGame)
+            {
+                // game ends without a status screen.
+                gameaction = ga_victory;
+                return;
+            }
+            else if (gamemapinfo->flags & MapInfo_InterTextClear)
+            {
+                return;
+            }
+            else if (gamemapinfo->intertext)
+            {
+                F_StartFinale();
+                return;
+            }
+        }
+        // if nothing applied, use the defaults.
     }
-} 
+
+    if (gamemode == commercial)
+    {
+        switch (gamemap)
+        {
+            case 15:
+            case 31:
+                if (!secretexit)
+                    break;
+            case 6:
+            case 11:
+            case 20:
+            case 30:
+                F_StartFinale();
+                break;
+        }
+    }   
+}
  
 void G_DoWorldDone (void) 
 {        
-    gamestate = GS_LEVEL; 
-    gamemap = wminfo.next+1; 
+    gamestate = GS_LEVEL;
+    gameepisode = wminfo.nextep + 1;
+    gamemap = wminfo.next + 1;
+    gamemapinfo = G_LookupMapinfo(gameepisode, gamemap);
     G_DoLoadLevel (); 
     gameaction = ga_nothing; 
     viewactive = true; 
@@ -1667,7 +1770,7 @@ void G_DoLoadGame (void)
     P_UnArchiveWorld (); 
     P_UnArchiveThinkers (); 
     P_UnArchiveSpecials (); 
- 
+   
     if (!P_ReadSaveGameEOF())
 	I_Error ("Bad savegame");
 
@@ -1900,23 +2003,53 @@ G_InitNew
 
     if (fastparm || (skill == sk_nightmare && gameskill != sk_nightmare) )
     {
-	for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++)
-	    states[i].tics >>= 1;
-    if(gameversion == exe_doom_2_0)
-        mobjinfo[MT_DARKIMPBALL].speed = 16*FRACUNIT;
-	mobjinfo[MT_BRUISERSHOT].speed = 20*FRACUNIT;
-	mobjinfo[MT_HEADSHOT].speed = 20*FRACUNIT;
-	mobjinfo[MT_TROOPSHOT].speed = 20*FRACUNIT;
+	    for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++)
+	        states[i].tics >>= 1;
+	    mobjinfo[MT_BRUISERSHOT].speed = 20*FRACUNIT;
+	    mobjinfo[MT_HEADSHOT].speed = 20*FRACUNIT;
+	    mobjinfo[MT_TROOPSHOT].speed = 20*FRACUNIT;
+
+        for (int i = 0; i < NUMSTATES; i++)
+        {
+            if (states[i].flags & MF5_FASTSPEED && (states[i].tics != 1 || gameversion < exe_doom_2_0))
+            {
+                states[i].tics >>= 1;
+            }
+        }
+
+        for (int i = 0; i < NUMMOBJTYPES; i++)
+        {
+            if (mobjinfo[i].fastspeed)
+            {
+                mobjinfo[i].tempspeed = mobjinfo[i].speed;
+                mobjinfo[i].speed = mobjinfo[i].fastspeed;
+            }
+        }
+
     }
     else if (skill != sk_nightmare && gameskill == sk_nightmare)
     {
-	for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++)
-	    states[i].tics <<= 1;
-    if(gameversion == exe_doom_2_0)
-        mobjinfo[MT_DARKIMPBALL].speed = 8*FRACUNIT;
-	mobjinfo[MT_BRUISERSHOT].speed = 15*FRACUNIT;
-	mobjinfo[MT_HEADSHOT].speed = 10*FRACUNIT;
-	mobjinfo[MT_TROOPSHOT].speed = 10*FRACUNIT;
+	    for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++)
+	        states[i].tics <<= 1;
+	    mobjinfo[MT_BRUISERSHOT].speed = 15*FRACUNIT;
+	    mobjinfo[MT_HEADSHOT].speed = 10*FRACUNIT;
+	    mobjinfo[MT_TROOPSHOT].speed = 10*FRACUNIT;
+
+        for (int i = 0; i < NUMSTATES; i++)
+            {
+                if (states[i].flags & MF5_FASTSPEED)
+                {
+                    states[i].tics <<= 1;
+                }
+            }
+
+        for (int i = 0; i < NUMMOBJTYPES; i++)
+        {
+            if (mobjinfo[i].tempspeed)
+            {
+                mobjinfo[i].speed = mobjinfo[i].tempspeed;
+            }
+        }
     }
 
     // force players to be initialized upon first level load
@@ -1931,6 +2064,7 @@ G_InitNew
     gameepisode = episode;
     gamemap = map;
     gameskill = skill;
+    gamemapinfo = G_LookupMapinfo(gameepisode, gamemap);
 
     // Set the sky to use.
     //
@@ -2416,5 +2550,63 @@ boolean G_CheckDemoStatus (void)
     return false; 
 } 
  
- 
- 
+ static boolean IsVanillaMap(int e, int m)
+{
+    if (gamemode == commercial)
+    {
+        return (e == 1 && m > 0 && m <= 32);
+    }
+    else
+    {
+        return (e > 0 && e <= 4 && m > 0 && m <= 9);
+    }
+}
+
+const char *G_GetLevelTitle(void)
+{
+    static char string[128];
+    const char *result = "";
+
+    if (gamemapinfo && gamemapinfo->levelname)
+    {
+        if (!(gamemapinfo->flags & MapInfo_LabelClear))
+        {
+            const char *label =
+                gamemapinfo->label ? gamemapinfo->label : gamemapinfo->mapname;
+            M_snprintf(string, sizeof(string), "%s: %s", label,
+                       gamemapinfo->levelname);
+            result = string;
+        }
+        else
+        {
+            result = gamemapinfo->levelname;
+        }
+    }
+    else if (gamestate == GS_LEVEL)
+    {
+        if (IsVanillaMap(gameepisode, gamemap))
+        {
+            result = (gamemode != commercial)
+                         ? mapnames[(gameepisode - 1) * 9 + gamemap - 1]
+                     : (gamemission == pack_tnt)  ? mapnamest[gamemap - 1]
+                     : (gamemission == pack_plut) ? mapnamesp[gamemap - 1]
+                                                  : mapnames2[gamemap - 1];
+        }
+        // WADs like pl2.wad have a MAP33, and rely on the layout in the
+        // Vanilla executable, where it is possible to overflow the end of one
+        // array into the next.
+        else if (gamemode == commercial && gamemap >= 33 && gamemap <= 35)
+        {
+            result = (gamemission == doom2)       ? mapnamesp[gamemap - 33]
+                     : (gamemission == pack_plut) ? mapnamest[gamemap - 33]
+                                                  : "";
+        }
+        else
+        {
+            // initialize the map title widget with the generic map lump name
+            result = MapName(gameepisode, gamemap);
+        }
+    }
+
+    return result;
+}

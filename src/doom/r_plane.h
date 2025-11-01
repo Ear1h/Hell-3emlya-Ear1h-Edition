@@ -23,16 +23,24 @@
 
 #include "r_data.h"
 
-
+#define MAXVISPLANES 128
+#define MAXREALVISPLANES 4096
+#define PL_SKYFLAT       0x80000000
 
 // Visplane related.
 extern  short*		lastopening;
-
+extern int visplane_count;
+extern int visplane_reused;
+extern visplane_t *lastvisplane;
+extern visplane_t *visplanes;
+extern int numvisplanes;
 
 typedef void (*planefunction_t) (int top, int bottom);
 
 extern planefunction_t	floorfunc;
 extern planefunction_t	ceilingfunc_t;
+
+
 
 extern short		floorclip[SCREENWIDTH];
 extern short		ceilingclip[SCREENWIDTH];

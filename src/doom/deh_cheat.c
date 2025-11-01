@@ -51,6 +51,8 @@ static deh_cheat_t allcheats[] =
     {"Level Warp",          &cheat_clev },
     {"Player Position",     &cheat_mypos },
     {"Map cheat",           &cheat_amap },
+    {"Notarget Cheat",      &cheat_notarget},
+    {"Notarget Cheat",      &cheat_kill},
 };
 
 static deh_cheat_t *FindCheatByName(char *name)

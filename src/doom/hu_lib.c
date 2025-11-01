@@ -24,6 +24,7 @@
 
 #include "v_video.h"
 #include "i_swap.h"
+#include "v_trans.h"
 
 #include "hu_lib.h"
 #include "r_local.h"
@@ -31,6 +32,7 @@
 
 // boolean : whether the screen is always erased
 #define noterased viewwindowx
+
 
 
 void HUlib_init(void)
@@ -99,37 +101,49 @@ HUlib_drawTextLine
     int			i;
     int			w;
     int			x;
+    int         y;
     unsigned char	c;
 
     // draw the new stuff
     x = l->x;
+    y = l->y; // [crispy] support line breaks
     for (i=0;i<l->len;i++)
     {
-	c = toupper(l->l[i]);
-	if (c != ' '
-	    && c >= l->sc
-	    && c <= '_')
-	{
-	    w = SHORT(l->f[c - l->sc]->width);
-	    if (x+w > SCREENWIDTH)
-		break;
-	    V_DrawPatchDirect(x, l->y, l->f[c - l->sc]);
-	    x += w;
-	}
-	else
-	{
-	    x += 4;
-	    if (x >= SCREENWIDTH)
-		break;
-	}
+        c = toupper(l->l[i]);
+            if (c == '\n')
+            {
+                x = l->x;
+                y += SHORT(l->f[0]->height) + 1;
+            }
+
+            else
+            {
+
+                if (c != ' ' && c >= l->sc && c <= '_')
+                {
+                    w = SHORT(l->f[c - l->sc]->width);
+                    if (x + w > SCREENWIDTH)
+                        break;
+                    V_DrawPatchDirect(x, y, l->f[c - l->sc]);
+                    x += w;
+                }
+                else
+                {
+                    x += 4;
+                    if (x >= SCREENWIDTH)
+                        break;
+                }
+        }
     }
 
     // draw the cursor if requested
     if (drawcursor
 	&& x + SHORT(l->f['_' - l->sc]->width) <= SCREENWIDTH)
     {
-	V_DrawPatchDirect(x, l->y, l->f['_' - l->sc]);
+	V_DrawPatchDirect(x, y, l->f['_' - l->sc]);
     }
+
+    dp_translation = NULL;
 }
 
 

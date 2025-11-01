@@ -91,6 +91,7 @@ extern  boolean		autostart;
 extern  skill_t         gameskill;
 extern  int		gameepisode;
 extern  int		gamemap;
+extern struct mapentry_s *gamemapinfo;
 
 // If non-zero, exit the level after this number of minutes
 extern  int             timelimit;
@@ -103,6 +104,8 @@ extern  boolean	netgame;
 
 // 0=Cooperative; 1=Deathmatch; 2=Altdeath
 extern int deathmatch;
+
+extern char *MapName(int e, int m);
 
 // -------------------------
 // Internal parameters for sound rendering.

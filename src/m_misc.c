@@ -433,7 +433,6 @@ long M_FileLength(FILE *handle)
 
     return length;
 }
-
 //
 // M_WriteFile
 //
@@ -782,7 +781,11 @@ boolean M_StringCopy(char *dest, const char *src, size_t dest_size)
     if (dest_size >= 1)
     {
         dest[dest_size - 1] = '\0';
-        strncpy(dest, src, dest_size - 1);
+
+        if (dest_size > 1)
+        {
+            strncpy(dest, src, dest_size - 1);
+        }
     }
     else
     {
@@ -974,5 +977,47 @@ void M_CopyLumpName(char *dest, const char *src)
         {
             break;
         }
+    }
+}
+
+char M_ToUpper(const char c)
+{
+    if (c >= 'a' && c <= 'z')
+    {
+        return c + 'A' - 'a';
+    }
+    else
+    {
+        return c;
+    }
+}
+
+void M_StringToUpper(char *str)
+{
+    while (*str)
+    {
+        *str = M_ToUpper(*str);
+        ++str;
+    }
+}
+
+char M_ToLower(const char c)
+{
+    if (c >= 'A' && c <= 'Z')
+    {
+        return c - 'A' + 'a';
+    }
+    else
+    {
+        return c;
+    }
+}
+
+void M_StringToLower(char *str)
+{
+    while (*str)
+    {
+        *str = M_ToLower(*str);
+        ++str;
     }
 }

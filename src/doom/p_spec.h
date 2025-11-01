@@ -30,6 +30,7 @@
 //
 extern	boolean levelTimer;
 extern	int	levelTimeCount;
+extern  specdefs_t* specdefs;
 
 
 //      Define values for map objects

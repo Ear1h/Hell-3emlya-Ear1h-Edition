@@ -56,7 +56,11 @@ typedef enum
 
 } playerstate_t;
 
-
+typedef struct
+{
+    int episode;
+    int map;
+} level_t;
 //
 // Player internal flags, for cheats and debug.
 //
@@ -67,7 +71,9 @@ typedef enum
     // No damage, no health loss.
     CF_GODMODE		= 2,
     // Not really a cheat, just a debug aid.
-    CF_NOMOMENTUM	= 4
+    CF_NOMOMENTUM	= 4,
+    // No target cheat
+    CF_NOTARGET     = 8,
 
 } cheat_t;
 
@@ -138,6 +144,7 @@ typedef struct player_s
     // Hint messages.
     const char		*message;
     const char      *secretmessage;
+    const char      *printmessage;
     
     // For screen flashing (red or bright).
     int			damagecount;
@@ -194,6 +201,11 @@ typedef struct
     // previous and next levels, origin 0
     int		last;
     int		next;	
+
+     // for when MAPINFO progression crosses into another episode.
+    int nextep;
+    struct mapentry_s *lastmapinfo;
+    struct mapentry_s *nextmapinfo;
     
     int		maxkills;
     int		maxitems;

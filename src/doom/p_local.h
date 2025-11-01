@@ -222,15 +222,19 @@ extern	line_t*		ceilingline;
 extern	line_t*	spechit[MAXSPECIALCROSS];
 extern	int	numspechit;
 
+void P_ThrustThing(mobj_t *mo, angle_t angle, fixed_t force);
+void P_ThrustThingZ(mobj_t *mo, fixed_t force);
 boolean P_CheckPosition (mobj_t *thing, fixed_t x, fixed_t y);
 boolean P_TryMove (mobj_t* thing, fixed_t x, fixed_t y);
 boolean P_TeleportMove (mobj_t* thing, fixed_t x, fixed_t y);
 void	P_SlideMove (mobj_t* mo);
 boolean P_CheckSight (mobj_t* t1, mobj_t* t2);
+boolean P_CheckFOV(mobj_t *t1, mobj_t *t2, angle_t fov);
 void 	P_UseLines (player_t* player);
 
 boolean P_ChangeSector (sector_t* sector, boolean crunch);
 void P_NoMissile(mobj_t *actor);
+void P_TargetSee(mobj_t *actor);
 
 extern mobj_t*	linetarget;	// who got hit (or NULL)
 

@@ -41,12 +41,6 @@ static boolean ParseSpecials(json_t *json, macros_t *macro)
 
     spec.tag = (short) JS_GetInteger(tag);
 
-    json_t *delay = JS_GetObject(json, "delay");
-    if (!JS_IsNumber(delay))
-        return false;
-
-    spec.delay = JS_GetInteger(delay);
-
     array_push(macro->specials, spec);
 
     return true;
@@ -84,12 +78,6 @@ static boolean ParseMessage(json_t *json, spec_message_t *message)
     const char *text = JS_GetStringValue(json, "text");
     if (!text)
         return false;
-
-    if (strlen(text) > 80)
-    {
-        I_Error("ID: %d; MAX LINE LENGTH IS 80: %d", message->messageid, strlen(text));
-        return false;
-    }
         
     message->messages = M_StringDuplicate(text);
     return true;

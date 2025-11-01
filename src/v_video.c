@@ -47,6 +47,9 @@
 // is common code. Fix this.
 #define RANGECHECK
 
+// [JN] Color translation.
+byte *dp_translation = NULL;
+
 // Blending table used for fuzzpatch, etc.
 // Only used in Heretic/Hexen
 
@@ -146,6 +149,8 @@ void V_DrawPatch(int x, int y, patch_t *patch)
     pixel_t *desttop;
     pixel_t *dest;
     byte *source;
+    byte *sourcetrans;
+
     int w;
 
     y -= SHORT(patch->topoffset);
@@ -182,13 +187,21 @@ void V_DrawPatch(int x, int y, patch_t *patch)
         // step through the posts in a column
         while (column->topdelta != 0xff)
         {
-            source = (byte *)column + 3;
-            dest = desttop + column->topdelta*SCREENWIDTH;
+            source = sourcetrans = (byte *) column + 3;
+            dest = desttop + column->topdelta * SCREENWIDTH;
             count = column->length;
 
             while (count--)
             {
-                *dest = *source++;
+                if (dp_translation)
+                {
+                    sourcetrans = &dp_translation[*source++];
+                }
+                else
+                {
+                    *dest = *sourcetrans++;
+                }
+                
                 dest += SCREENWIDTH;
             }
             column = (column_t *)((byte *)column + column->length + 4);
@@ -282,6 +295,7 @@ void V_DrawTLPatch(int x, int y, patch_t * patch)
 {
     int count, col;
     column_t *column;
+
     pixel_t *desttop, *dest;
     byte *source;
     int w;

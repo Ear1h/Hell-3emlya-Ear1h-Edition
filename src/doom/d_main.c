@@ -60,6 +60,7 @@
 #include "i_video.h"
 
 #include "g_game.h"
+#include "g_umapinfo.h"
 
 #include "hu_stuff.h"
 #include "wi_stuff.h"
@@ -363,6 +364,7 @@ void D_BindVariables(void)
     M_BindIntVariable("vanilla_demo_limit",     &vanilla_demo_limit);
     M_BindIntVariable("show_endoom",            &show_endoom);
     M_BindIntVariable("show_diskicon",          &show_diskicon);
+    M_BindIntVariable("debug_mode",             &debug_mode);        
 
     // Multiplayer chat macros
 
@@ -1725,6 +1727,27 @@ void D_DoomMain (void)
         printf("  loaded %i DEHACKED lumps from PWAD files.\n", loaded);
     }
 
+    if (!M_ParmExists("-nomapinfo"))
+    {
+        int i, loaded = 0;
+        int numiwadlumps = numlumps;
+
+        while (!W_IsIWADLump(lumpinfo[numiwadlumps - 1]))
+        {
+            numiwadlumps--;
+        }
+
+        for (i = numiwadlumps; i < numlumps; ++i)
+        {
+            if (!strncmp(lumpinfo[i]->name, "UMAPINFO", 8))
+            {
+                G_ParseMapInfo(i);
+                loaded++;
+            }
+        }
+
+        printf("  loaded %i DEHACKED lumps from PWAD files.\n", loaded);
+    }
     // Set the gamedescription string. This is only possible now that
     // we've finished loading Dehacked patches.
     D_SetGameDescription();

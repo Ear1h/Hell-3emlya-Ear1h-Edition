@@ -62,7 +62,10 @@ int M_vsnprintf(char *buf, size_t buf_len, const char *s, va_list args);
 int M_snprintf(char *buf, size_t buf_len, const char *s, ...) PRINTF_ATTR(3, 4);
 void M_NormalizeSlashes(char *str);
 void M_CopyLumpName(char *dest, const char *src);
-
+char M_ToUpper(const char c);
+void M_StringToUpper(char *str);
+char M_ToLower(const char c);
+void M_StringToLower(char *text);
 
 // debugging code to check there are no loops in a linked list
 // disabled unless explicitly requested

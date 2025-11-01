@@ -244,7 +244,23 @@ typedef enum
     // Disable Projectile Random
     MF2_NORANDOM    = 0x400,
 
+    //ACtors don't move in see state
     MF2_STAY  = 0x800,
+
+    //Actors don't fall (don't remove MF_NOGRAVITY flag)
+    MF2_DONTFALL = 0x1000,
+
+    //Projectile can rip actors
+    MF2_RIP     = 0x2000,
+
+    // Mobj Can Respawn without +COUNTKILL Flag
+    MF2_NIGHTMAREMOBJ = 0x4000, 
+
+    // Missile can't explode in floor
+
+    MF2_FLOORHUGGER = 0x8000,
+
+    MF2_DMGIGNORED = 0x10000,
 
 }mobjflag2_t;
 
@@ -258,7 +274,7 @@ typedef enum
     MF4_GENERIC1 = 1,
     MF4_GENERIC2 = 2,
     MF4_GENERIC3 = 4,
-    MF4_GENERIC4 = 16,
+    MF4_GENERIC4 = 8,
 }mobjgenflag_t;
 
 // Map Object definition.

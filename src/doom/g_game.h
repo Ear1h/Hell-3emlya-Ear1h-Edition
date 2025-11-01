@@ -25,7 +25,6 @@
 #include "d_ticcmd.h"
 #include "m_fixed.h"
 
-
 //
 // GAME
 //
@@ -74,15 +73,19 @@ void G_ScreenShot (void);
 
 void G_DrawMouseSpeedBox(void);
 int G_VanillaVersionCode(void);
+const char *G_GetLevelTitle(void);
 
 extern int vanilla_savegame_limit;
 extern int vanilla_demo_limit;
+extern int debug_mode;
 
 extern fixed_t forwardmove[2];
 extern fixed_t sidemove[2];
 
 extern boolean sendpause;
+extern boolean resetinventory;
 
-
+extern boolean secretexit;
+extern boolean um_pars;
 #endif
 

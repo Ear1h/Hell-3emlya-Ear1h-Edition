@@ -23,7 +23,7 @@
 #include "i_swap.h"
 #include "i_system.h"
 #include "z_zone.h"
-
+#include "v_trans.h"
 
 #include "w_wad.h"
 
@@ -674,17 +674,92 @@ void R_InitSpriteLumps (void)
 //
 // R_InitColormaps
 //
-void R_InitColormaps (void)
+//
+// R_InitColormaps
+//
+static void R_InitColormaps(void)
 {
-    int	lump;
+    int lump;
 
-    // Load in the light tables, 
+    // Load in the light tables,
     //  256 byte align tables.
     lump = W_GetNumForName(DEH_String("COLORMAP"));
     colormaps = W_CacheLumpNum(lump, PU_STATIC);
+
+    // [crispy] initialize color translation and color strings tables
+    {
+        byte *playpal = W_CacheLumpName("PLAYPAL", PU_STATIC);
+        char c[3];
+        int i, j;
+        boolean keepgray = false;
+
+        if (!crstr)
+        {
+            crstr = realloc(NULL, CRMAX * sizeof(*crstr));
+        }
+
+        // [crispy] check for status bar graphics replacements
+        i = W_CheckNumForName(DEH_String("sttnum0")); // [crispy] Status Bar '0'
+        keepgray = W_CheckMultipleLumps("sttnum0") < 2;
+
+        for (i = 0; i < CRMAX; i++)
+        {
+            for (j = 0; j < 256; j++)
+            {
+                cr[i][j] = V_Colorize(playpal, i, j, keepgray);
+            }
+
+            M_snprintf(c, sizeof(c), "%c%c", cr_esc, '0' + i);
+            crstr[i] = M_StringDuplicate(c);
+        }
+
+        W_ReleaseLumpName("PLAYPAL");
+    }
 }
 
+// [crispy] initialize color translation and color string tables
+static void R_InitHSVColors(void)
+{
+    byte *playpal = W_CacheLumpName("PLAYPAL", PU_STATIC);
+    char c[3];
+    int i, j;
+    boolean keepgray = false;
 
+    if (!crstr)
+        crstr = I_Realloc(NULL, CRMAX * sizeof(*crstr));
+
+    // [crispy] check for status bar graphics replacements
+    i = W_CheckNumForName(DEH_String("sttnum0")); // [crispy] Status Bar '0'
+    keepgray = (i >= 0 && W_IsIWADLump(lumpinfo[i]));
+
+    // [crispy] CRMAX - 2: don't override the original GREN and BLUE2 Boom tables
+    for (i = 0; i < CRMAX - 2; i++)
+    {
+        for (j = 0; j < 256; j++)
+        {
+            cr[i][j] = V_Colorize(playpal, i, j, keepgray);
+        }
+
+        M_snprintf(c, sizeof(c), "%c%c", cr_esc, '0' + i);
+        crstr[i] = M_StringDuplicate(c);
+    }
+
+    W_ReleaseLumpName("PLAYPAL");
+
+    i = W_CheckNumForName(DEH_String("CRGREEN"));
+    if (i >= 0)
+    {
+        cr[CR_GREEN] = W_CacheLumpNum(i, PU_STATIC);
+    }
+
+    i = W_CheckNumForName(DEH_String("CRBLUE2"));
+    if (i == -1)
+        i = W_CheckNumForName(DEH_String("CRBLUE"));
+    if (i >= 0)
+    {
+        cr[CR_BLUE2] = W_CacheLumpNum(i, PU_STATIC);
+    }
+}
 
 //
 // R_InitData
@@ -701,6 +776,8 @@ void R_InitData (void)
     R_InitSpriteLumps ();
     printf (".");
     R_InitColormaps ();
+    // [crispy] Initialize color translation and color string tables.
+    R_InitHSVColors();
 }
 
 

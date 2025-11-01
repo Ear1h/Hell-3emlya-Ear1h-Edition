@@ -43,8 +43,6 @@
 #include "m_misc.h"
 
 
-
-
 typedef enum
 {
     DI_EAST,
@@ -146,6 +144,15 @@ void P_NoiseAlert(mobj_t *target, mobj_t *emmiter)
     P_RecursiveSound(emmiter->subsector->sector, 0);
 }
 
+static boolean P_CheckRange(mobj_t *actor, fixed_t range)
+{
+    mobj_t *pl = actor->target;
+
+    return // killough 7/18/98: friendly monsters don't attack other friends
+        pl &&
+        (P_AproxDistance(pl->x - actor->x, pl->y - actor->y) < range) &&
+        P_CheckSight(actor, actor->target);
+}
 
 //
 // P_CheckMeleeRange
@@ -467,7 +474,8 @@ void P_NewChaseDir(mobj_t *actor)
 // If allaround is false, only look 180 degrees in front.
 // Returns true if a player is targeted.
 //
-boolean P_LookForPlayers(mobj_t *actor, boolean allaround)
+boolean P_LookForPlayers(mobj_t *actor, boolean allaround, angle_t fov,
+                         fixed_t distance, short light)
 {
     int c;
     int stop;
@@ -491,6 +499,9 @@ boolean P_LookForPlayers(mobj_t *actor, boolean allaround)
 
         player = &players[actor->lastlook];
 
+        if (player->cheats & CF_NOTARGET)
+            continue;
+            
         if (player->health <= 0)
             continue; // dead
 
@@ -503,13 +514,63 @@ boolean P_LookForPlayers(mobj_t *actor, boolean allaround)
                                  player->mo->y) -
                  actor->angle;
 
-            if (an > ANG90 && an < ANG270)
+            if (gameversion == exe_doom_2_0)
             {
-                dist = P_AproxDistance(player->mo->x - actor->x,
-                                       player->mo->y - actor->y);
-                // if real close, react anyway
-                if (dist > MELEERANGE)
-                    continue; // behind back
+                if (!fov)
+                {
+                    if (actor->flags & MF_AMBUSH)
+                    {
+                        fov = FixedToAngle(
+                            360 * FRACUNIT); // Default AMBUSH FOV Value
+                    }
+
+                    else
+                    {
+                        fov = FixedToAngle(180 * FRACUNIT); // Default FOV Value
+                    }
+                }
+
+
+                if (!distance)
+                    distance = 0x4000 * FRACUNIT; // Default Dist Value
+
+
+                if (light > 0 &&
+                    !(player->mo->subsector->sector->lightlevel > light))
+                {
+                    dist = P_AproxDistance(player->mo->x - actor->x,
+                                           player->mo->y - actor->y);
+                    // if real close, react anyway
+                    if (dist > MELEERANGE)
+                        continue; // behind back
+                }
+
+                if (distance < P_AproxDistance(player->mo->x - actor->x,
+                                               player->mo->y - actor->y))
+                {
+                    continue;
+                }
+
+                if (fov > 0 && !P_CheckFOV(actor, player->mo, fov))
+                {
+                    dist = P_AproxDistance(player->mo->x - actor->x,
+                                           player->mo->y - actor->y);
+                    // if real close, react anyway
+                    if (dist > MELEERANGE)
+                        continue; // behind back
+                }
+            }
+
+            else
+            {
+                if (an > ANG90 && an < ANG270)
+                {
+                    dist = P_AproxDistance(player->mo->x - actor->x,
+                                           player->mo->y - actor->y);
+                    // if real close, react anyway
+                    if (dist > MELEERANGE)
+                        continue; // behind back
+                }
             }
         }
 
@@ -562,12 +623,23 @@ void A_KeenDie(mobj_t *mo)
 // A_Look
 // Stay in state until a player is sighted.
 //
+// Extended version to EXE_DOOM_2_0
+// Args[0] = FOV
+// Args[1] = Distanse
+// Args[2] = Brightness
+
 void A_Look(mobj_t *actor)
 {
     mobj_t *targ;
+    angle_t fov = FixedToAngle(actor->state->args[0]);
+    int dist = actor->state->args[1];
+    short brightness = (short) actor->state->args[2];
 
     actor->threshold = 0; // any shot will wake up
     targ = actor->subsector->sector->soundtarget;
+
+    if (targ && targ->player && (targ->player->cheats & CF_NOTARGET))
+        return;
 
     if (targ && (targ->flags & MF_SHOOTABLE))
     {
@@ -576,19 +648,28 @@ void A_Look(mobj_t *actor)
         if (actor->flags & MF_AMBUSH)
         {
             if (P_CheckSight(actor, actor->target))
-                goto seeyou;
+            {
+                P_TargetSee(actor);
+                return;
+            }
         }
         else
-            goto seeyou;
+        {
+            P_TargetSee(actor);
+            return;
+        }
     }
 
 
-    if (!P_LookForPlayers(actor, false))
+    if (!P_LookForPlayers(actor, false, fov, dist, brightness))
         return;
 
-    // go into chase state
-seeyou:
+    P_TargetSee(actor);
+}
 
+// go into chase state
+void P_TargetSee(mobj_t *actor)
+{
     if ((actor->subsector->sector->special & SILENT_MOBJ) &&
         gameversion == exe_doom_2_0)
     {
@@ -620,6 +701,7 @@ seeyou:
 
         //Depending on the version, the actor may play a sound across the entire map.
         if (gameversion == exe_doom_2_0)
+        {
             if (actor->info->flags2 & MF2_FULLVOLSOUNDS)
             {
                 S_StartSound(NULL, sound);
@@ -628,7 +710,7 @@ seeyou:
             {
                 S_StartSound(actor, sound);
             }
-               
+        }
 
         else if (gameversion < exe_doom_2_0)
         {
@@ -638,7 +720,9 @@ seeyou:
                 S_StartSound(NULL, sound);
             }
             else
+            {
                 S_StartSound(actor, sound);
+            }
         }
     }
 
@@ -662,8 +746,7 @@ void A_Chase(mobj_t *actor)
     // modify target threshold
     if (actor->threshold)
     {
-        if (gameversion > exe_doom_1_2 &&
-            (!actor->target || actor->target->health <= 0))
+        if (!actor->target || actor->target->health <= 0)
         {
             actor->threshold = 0;
         }
@@ -685,11 +768,11 @@ void A_Chase(mobj_t *actor)
                 actor->angle += ANG90 / 2;
         }
     }
-    
+
     if (!actor->target || !(actor->target->flags & MF_SHOOTABLE))
     {
         // look for a new target
-        if (P_LookForPlayers(actor, true))
+        if (P_LookForPlayers(actor, true,0, 0, 0))
             return; // got a new target
 
         P_SetMobjState(actor, actor->info->spawnstate);
@@ -707,24 +790,15 @@ void A_Chase(mobj_t *actor)
             return;
         }
     }
-        
+
     // check for melee attack
     if (actor->info->meleestate && P_CheckMeleeRange(actor))
     {
-        if (gameversion < exe_doom_2_0)
-        {
+        if (actor->info->attacksound)
             S_StartSound(actor, actor->info->attacksound);
-        }
-            
 
-        else
-        {
-            if ((!(actor->subsector->sector->special & SILENT_MOBJ) &&
-                 actor->info->attacksound))
-                S_StartSound(actor, actor->info->attacksound);
-        }
-	   
         P_SetMobjState(actor, actor->info->meleestate);
+        return;
     }
 
     // check for missile attack
@@ -732,34 +806,27 @@ void A_Chase(mobj_t *actor)
     {
         if (gameskill < sk_nightmare && !fastparm && actor->movecount)
         {
-            P_NoMissile(actor);
-            return;
+            goto nomissile;
         }
 
         if (!P_CheckMissileRange(actor))
-        {
-            P_NoMissile(actor);
-            return;
-        }
-    
+            goto nomissile;
+
         P_SetMobjState(actor, actor->info->missilestate);
         actor->flags |= MF_JUSTATTACKED;
         return;
     }
 
-    P_NoMissile(actor);
-}
-
-void P_NoMissile(mobj_t *actor)
-{
+    // ?
+nomissile:
+    // possibly choose another target
     if (netgame && !actor->threshold && !P_CheckSight(actor, actor->target))
     {
-        if (P_LookForPlayers(actor, true))
+        if (P_LookForPlayers(actor, true, 0, 0, 0))
             return; // got a new target
     }
 
     // chase towards player
-
     if (gameversion < exe_doom_2_0 || !(actor->flags2 & MF2_STAY))
     {
         if (--actor->movecount < 0 || !P_Move(actor))
@@ -769,16 +836,14 @@ void P_NoMissile(mobj_t *actor)
     }
 
     // make active sound
-    if ((actor->subsector->sector->special & SILENT_MOBJ) &&
-        gameversion == exe_doom_2_0)
+    if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
+        gameversion < exe_doom_2_0)
     {
         if (actor->info->activesound && P_Random() < 3)
         {
             S_StartSound(actor, actor->info->activesound);
         }
     }
-    
-    return;
 }
 
 //
@@ -817,7 +882,7 @@ void A_PosAttack(mobj_t *actor)
 
     if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (actor, sfx_pistol);
+        S_StartSound(actor, sfx_pistol);
     angle += P_SubRandom() << 20;
     damage = ((P_Random() % 5) + 1) * 3;
     P_LineAttack(actor, angle, MISSILERANGE, slope, damage);
@@ -836,8 +901,8 @@ void A_SPosAttack(mobj_t *actor)
 
     if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (actor, sfx_shotgn);
-    A_FaceTarget (actor);
+        S_StartSound(actor, sfx_shotgn);
+    A_FaceTarget(actor);
     bangle = actor->angle;
     slope = P_AimLineAttack(actor, bangle, MISSILERANGE);
 
@@ -861,8 +926,8 @@ void A_CPosAttack(mobj_t *actor)
 
     if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (actor, sfx_shotgn);
-    A_FaceTarget (actor);
+        S_StartSound(actor, sfx_shotgn);
+    A_FaceTarget(actor);
     bangle = actor->angle;
     slope = P_AimLineAttack(actor, bangle, MISSILERANGE);
 
@@ -929,10 +994,10 @@ void A_TroopAttack(mobj_t *actor)
     {
         if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
             gameversion < exe_doom_2_0)
-	        S_StartSound (actor, sfx_claw);
-	    damage = (P_Random()%8+1)*3;
-	    P_DamageMobj (actor->target, actor, actor, damage);
-	    return;
+            S_StartSound(actor, sfx_claw);
+        damage = (P_Random() % 8 + 1) * 3;
+        P_DamageMobj(actor->target, actor, actor, damage);
+        return;
     }
 
 
@@ -1003,10 +1068,10 @@ void A_BruisAttack(mobj_t *actor)
     {
         if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
             gameversion < exe_doom_2_0)
-	        S_StartSound (actor, sfx_claw);
-	    damage = (P_Random()%8+1)*10;
-	    P_DamageMobj (actor->target, actor, actor, damage);
-	    return;
+            S_StartSound(actor, sfx_claw);
+        damage = (P_Random() % 8 + 1) * 10;
+        P_DamageMobj(actor->target, actor, actor, damage);
+        return;
     }
 
     // launch a missile
@@ -1044,22 +1109,21 @@ void A_Tracer(mobj_t *actor)
     mobj_t *dest;
     mobj_t *th;
 
-    if (gametic & 3 || !(gameversion == exe_doom_2_0 && actor->type & MT_HOMROCKET))
+    if (gametic & 3)
         return;
 
     // spawn a puff of smoke behind the rocket
     P_SpawnPuff(actor->x, actor->y, actor->z);
 
-    if ((actor->type & MT_DARKIMPBALL) && 
-            gameversion == exe_doom_2_0)
+    if ((actor->type & MT_EXTRA01) && gameversion == exe_doom_2_0)
     {
-        th = P_SpawnMobj(actor->x - actor->momx, actor->y - actor->momy, actor->z,
-                     MT_DARKSMOKE);
+        th = P_SpawnMobj(actor->x - actor->momx, actor->y - actor->momy,
+                         actor->z, MT_EXTRA03);
     }
     else
     {
-        th = P_SpawnMobj(actor->x - actor->momx, actor->y - actor->momy, actor->z,
-                     MT_SMOKE);
+        th = P_SpawnMobj(actor->x - actor->momx, actor->y - actor->momy,
+                         actor->z, MT_SMOKE);
     }
 
     th->momz = FRACUNIT;
@@ -1115,12 +1179,12 @@ void A_Tracer(mobj_t *actor)
 void A_SkelWhoosh(mobj_t *actor)
 {
     if (!actor->target)
-	return;
-    A_FaceTarget (actor);
+        return;
+    A_FaceTarget(actor);
 
     if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (actor,sfx_skeswg);
+        S_StartSound(actor, sfx_skeswg);
 }
 
 void A_SkelFist(mobj_t *actor)
@@ -1134,11 +1198,11 @@ void A_SkelFist(mobj_t *actor)
 
     if (P_CheckMeleeRange(actor))
     {
-	damage = ((P_Random()%10)+1)*6;
+        damage = ((P_Random() % 10) + 1) * 6;
         if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
             gameversion < exe_doom_2_0)
-	        S_StartSound (actor, sfx_skepch);
-	P_DamageMobj (actor->target, actor, actor, damage);
+            S_StartSound(actor, sfx_skepch);
+        P_DamageMobj(actor->target, actor, actor, damage);
     }
 }
 
@@ -1208,38 +1272,38 @@ void A_VileChase(mobj_t *actor)
         viletryx = actor->x + actor->info->speed * xspeed[actor->movedir];
         viletryy = actor->y + actor->info->speed * yspeed[actor->movedir];
 
-	xl = (viletryx - bmaporgx - MAXRADIUS*2)>>MAPBLOCKSHIFT;
-	xh = (viletryx - bmaporgx + MAXRADIUS*2)>>MAPBLOCKSHIFT;
-	yl = (viletryy - bmaporgy - MAXRADIUS*2)>>MAPBLOCKSHIFT;
-	yh = (viletryy - bmaporgy + MAXRADIUS*2)>>MAPBLOCKSHIFT;
-	
-	vileobj = actor;
-	for (bx=xl ; bx<=xh ; bx++)
-	{
-	    for (by=yl ; by<=yh ; by++)
-	    {
-		// Call PIT_VileCheck to check
-		// whether object is a corpse
-		// that canbe raised.
-		if (!P_BlockThingsIterator(bx,by,PIT_VileCheck))
-		{
-		    // got one!
-		    temp = actor->target;
-		    actor->target = corpsehit;
-		    A_FaceTarget (actor);
-		    actor->target = temp;
-					
-		    P_SetMobjState (actor, S_VILE_HEAL1);
-            if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
-                gameversion < exe_doom_2_0)
-		        S_StartSound (corpsehit, sfx_slop);
-		    info = corpsehit->info;
-		    
-		    P_SetMobjState (corpsehit,info->raisestate);
-		    corpsehit->height <<= 2;
-		    corpsehit->flags = info->flags;
-		    corpsehit->health = info->spawnhealth;
-		    corpsehit->target = NULL;
+        xl = (viletryx - bmaporgx - MAXRADIUS * 2) >> MAPBLOCKSHIFT;
+        xh = (viletryx - bmaporgx + MAXRADIUS * 2) >> MAPBLOCKSHIFT;
+        yl = (viletryy - bmaporgy - MAXRADIUS * 2) >> MAPBLOCKSHIFT;
+        yh = (viletryy - bmaporgy + MAXRADIUS * 2) >> MAPBLOCKSHIFT;
+
+        vileobj = actor;
+        for (bx = xl; bx <= xh; bx++)
+        {
+            for (by = yl; by <= yh; by++)
+            {
+                // Call PIT_VileCheck to check
+                // whether object is a corpse
+                // that canbe raised.
+                if (!P_BlockThingsIterator(bx, by, PIT_VileCheck))
+                {
+                    // got one!
+                    temp = actor->target;
+                    actor->target = corpsehit;
+                    A_FaceTarget(actor);
+                    actor->target = temp;
+
+                    P_SetMobjState(actor, S_VILE_HEAL1);
+                    if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
+                        gameversion < exe_doom_2_0)
+                        S_StartSound(corpsehit, sfx_slop);
+                    info = corpsehit->info;
+
+                    P_SetMobjState(corpsehit, info->raisestate);
+                    corpsehit->height <<= 2;
+                    corpsehit->flags = info->flags;
+                    corpsehit->health = info->spawnhealth;
+                    corpsehit->target = NULL;
 
                     return;
                 }
@@ -1259,7 +1323,7 @@ void A_VileStart(mobj_t *actor)
 {
     if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (actor, sfx_vilatk);
+        S_StartSound(actor, sfx_vilatk);
 }
 
 
@@ -1273,7 +1337,7 @@ void A_StartFire(mobj_t *actor)
 {
     if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound(actor,sfx_flamst);
+        S_StartSound(actor, sfx_flamst);
     A_Fire(actor);
 }
 
@@ -1281,7 +1345,7 @@ void A_FireCrackle(mobj_t *actor)
 {
     if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound(actor,sfx_flame);
+        S_StartSound(actor, sfx_flame);
     A_Fire(actor);
 }
 
@@ -1352,10 +1416,10 @@ void A_VileAttack(mobj_t *actor)
 
     if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (actor, sfx_barexp);
-    P_DamageMobj (actor->target, actor, actor, 20);
-    actor->target->momz = 1000*FRACUNIT/actor->target->info->mass;
-	
+        S_StartSound(actor, sfx_barexp);
+    P_DamageMobj(actor->target, actor, actor, 20);
+    actor->target->momz = 1000 * FRACUNIT / actor->target->info->mass;
+
     an = actor->angle >> ANGLETOFINESHIFT;
 
     fire = actor->tracer;
@@ -1380,10 +1444,10 @@ void A_VileAttack(mobj_t *actor)
 
 void A_FatRaise(mobj_t *actor)
 {
-    A_FaceTarget (actor);
+    A_FaceTarget(actor);
     if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (actor, sfx_manatk);
+        S_StartSound(actor, sfx_manatk);
 }
 
 
@@ -1470,8 +1534,8 @@ void A_SkullAttack(mobj_t *actor)
 
     if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (actor, actor->info->attacksound);
-    A_FaceTarget (actor);
+        S_StartSound(actor, actor->info->attacksound);
+    A_FaceTarget(actor);
     an = actor->angle >> ANGLETOFINESHIFT;
     actor->momx = FixedMul(SKULLSPEED, finecosine[an]);
     actor->momy = FixedMul(SKULLSPEED, finesine[an]);
@@ -1568,8 +1632,8 @@ void A_PainDie(mobj_t *actor)
 
 void A_Scream(mobj_t *actor)
 {
-    int		sound;
-	
+    int sound;
+
     if ((actor->subsector->sector->special & SILENT_MOBJ) &&
         gameversion == exe_doom_2_0)
         return;
@@ -1621,7 +1685,7 @@ void A_XScream(mobj_t *actor)
     if ((actor->subsector->sector->special & SILENT_MOBJ) &&
         gameversion == exe_doom_2_0)
         return;
-    S_StartSound (actor, sfx_slop);	
+    S_StartSound(actor, sfx_slop);
 }
 
 void A_Pain(mobj_t *actor)
@@ -1811,24 +1875,24 @@ void A_Hoof(mobj_t *mo)
 {
     if (!(mo->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (mo, sfx_hoof);
-    A_Chase (mo);
+        S_StartSound(mo, sfx_hoof);
+    A_Chase(mo);
 }
 
 void A_Metal(mobj_t *mo)
 {
     if (!(mo->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (mo, sfx_metal);
-    A_Chase (mo);
+        S_StartSound(mo, sfx_metal);
+    A_Chase(mo);
 }
 
 void A_BabyMetal(mobj_t *mo)
 {
     if (!(mo->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (mo, sfx_bspwlk);
-    A_Chase (mo);
+        S_StartSound(mo, sfx_bspwlk);
+    A_Chase(mo);
 }
 
 void A_OpenShotgun2(player_t *player, pspdef_t *psp)
@@ -1836,7 +1900,7 @@ void A_OpenShotgun2(player_t *player, pspdef_t *psp)
     if ((player->mo->subsector->sector->special & SILENT_MOBJ) &&
         gameversion == exe_doom_2_0)
         return;
-    S_StartSound (player->mo, sfx_dbopn);
+    S_StartSound(player->mo, sfx_dbopn);
 }
 
 void A_LoadShotgun2(player_t *player, pspdef_t *psp)
@@ -1844,7 +1908,7 @@ void A_LoadShotgun2(player_t *player, pspdef_t *psp)
     if ((player->mo->subsector->sector->special & SILENT_MOBJ) &&
         gameversion == exe_doom_2_0)
         return;
-    S_StartSound (player->mo, sfx_dbload);
+    S_StartSound(player->mo, sfx_dbload);
 }
 
 void A_ReFire(player_t *player, pspdef_t *psp);
@@ -1853,8 +1917,8 @@ void A_CloseShotgun2(player_t *player, pspdef_t *psp)
 {
     if (!(player->mo->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (player->mo, sfx_dbcls);
-    A_ReFire(player,psp);
+        S_StartSound(player->mo, sfx_dbcls);
+    A_ReFire(player, psp);
 }
 
 
@@ -1885,11 +1949,11 @@ void A_BrainAwake(mobj_t *mo)
             numbraintargets++;
         }
     }
-	
+
     if ((mo->subsector->sector->special & SILENT_MOBJ) &&
         gameversion == exe_doom_2_0)
         return;
-    S_StartSound (NULL,sfx_bossit);
+    S_StartSound(NULL, sfx_bossit);
 }
 
 
@@ -1898,7 +1962,7 @@ void A_BrainPain(mobj_t *mo)
     if ((mo->subsector->sector->special & SILENT_MOBJ) &&
         gameversion == exe_doom_2_0)
         return;
-    S_StartSound (NULL,sfx_bospn);
+    S_StartSound(NULL, sfx_bospn);
 }
 
 
@@ -1923,11 +1987,11 @@ void A_BrainScream(mobj_t *mo)
         if (th->tics < 1)
             th->tics = 1;
     }
-	
+
     if ((mo->subsector->sector->special & SILENT_MOBJ) &&
         gameversion == exe_doom_2_0)
         return;
-    S_StartSound (NULL,sfx_bosdth);
+    S_StartSound(NULL, sfx_bosdth);
 }
 
 
@@ -1996,7 +2060,7 @@ void A_SpawnSound(mobj_t *mo)
 {
     if (!(mo->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (mo,sfx_boscub);
+        S_StartSound(mo, sfx_boscub);
     A_SpawnFly(mo);
 }
 
@@ -2014,10 +2078,10 @@ void A_SpawnFly(mobj_t *mo)
     targ = P_SubstNullMobj(mo->target);
 
     // First spawn teleport fog.
-    fog = P_SpawnMobj (targ->x, targ->y, targ->z, MT_SPAWNFIRE);
+    fog = P_SpawnMobj(targ->x, targ->y, targ->z, MT_SPAWNFIRE);
     if (!(mo->subsector->sector->special & SILENT_MOBJ) ||
         gameversion < exe_doom_2_0)
-        S_StartSound (fog, sfx_telept);
+        S_StartSound(fog, sfx_telept);
 
     // Randomly select monster to spawn.
     r = P_Random();
@@ -2048,7 +2112,7 @@ void A_SpawnFly(mobj_t *mo)
         type = MT_BRUISER;
 
     newmobj = P_SpawnMobj(targ->x, targ->y, targ->z, type);
-    if (P_LookForPlayers(newmobj, true))
+    if (P_LookForPlayers(newmobj, true, 0, 0, 0))
         P_SetMobjState(newmobj, newmobj->info->seestate);
 
     // telefrag anything in this spot
@@ -2077,9 +2141,9 @@ void A_PlayerScream(mobj_t *mo)
     S_StartSound(mo, sound);
 }
 
-void A_NightmareAttack(mobj_t *actor)
+void A_DarkImpAttack(mobj_t *actor)
 {
-    int damage;
+    mobj_t *mo;
 
     if (gameversion < exe_doom_2_0)
         return;
@@ -2088,33 +2152,7 @@ void A_NightmareAttack(mobj_t *actor)
         return;
 
     A_FaceTarget(actor);
-    if (P_CheckMeleeRange(actor))
-    {
-        if (!(actor->subsector->sector->special & SILENT_MOBJ) ||
-            gameversion < exe_doom_2_0)
-            S_StartSound(actor, sfx_claw);
-        damage = (P_Random() % 8 + 1) * 3;
-        P_DamageMobj(actor->target, actor, actor, damage);
-        return;
-    }
-
-
-    // launch a missile
-    P_SpawnMissile(actor, actor->target, MT_NIGHTMAREBALL);
-}
-
-void A_DarkImpAttack(mobj_t *actor)
-{
-    mobj_t *mo;
-
-     if (gameversion < exe_doom_2_0)
-        return;
-
-    if (!actor->target)
-        return;
-
-    A_FaceTarget(actor);
-    mo = P_SpawnMissile(actor, actor->target, MT_DARKIMPBALL);
+    mo = P_SpawnMissile(actor, actor->target, MT_EXTRA01);
 
     mo->x += mo->momx;
     mo->y += mo->momy;
@@ -2126,17 +2164,16 @@ void A_LineEffect2(mobj_t *mo)
 {
     if (gameversion < exe_doom_2_0)
         return;
-
+    
     if (!(mo->intflags & MF3_LINEDONE))
     {
         line_t junk = *lines;
         if ((junk.special = (short) mo->state->args[0]))
         {
-            static player_t player;
             player_t *oldplayer = mo->player;
-            mo->player = &player;
+            mo->player = &players[consoleplayer];
 
-            junk.tag = (short)mo->state->args[1];
+            junk.tag = (short) mo->state->args[1];
 
             if (!P_UseSpecialLine(mo, &junk, 0))
                 P_CrossSpecialLine(&junk, 0, mo);
@@ -2149,7 +2186,7 @@ void A_LineEffect2(mobj_t *mo)
     }
 }
 
-void A_PlaySound2(mobj_t* thing)
+void A_PlaySound2(mobj_t *thing)
 {
     if (gameversion < exe_doom_2_0 ||
         thing->subsector->sector->special & SILENT_MOBJ)
@@ -2158,12 +2195,13 @@ void A_PlaySound2(mobj_t* thing)
     S_StartSound(thing, thing->state->args[0]);
 }
 
-void A_RadiusDamage2(mobj_t* thing)
+void A_RadiusDamage2(mobj_t *thing)
 {
     if (gameversion < exe_doom_2_0)
         return;
 
-    P_RadiusAttack(thing, thing->target, thing->state->args[0], thing->state->args[1]);
+    P_RadiusAttack(thing, thing->target, thing->state->args[0],
+                   thing->state->args[1]);
 }
 
 /*
@@ -2173,7 +2211,7 @@ void A_RadiusDamage2(mobj_t* thing)
     Args[2] = Frame id
 */
 
-void A_JumpIfCounterEqual(mobj_t* thing)
+void A_JumpIfCounterEqual(mobj_t *thing)
 {
     if (gameversion < exe_doom_2_0)
         return;
@@ -2202,13 +2240,13 @@ void A_JumpIfCounterEqual(mobj_t* thing)
     Args[1] = Counter Inc       (0-255)
 */
 
-void A_DecreaseCounter(mobj_t* thing)
+void A_DecreaseCounter(mobj_t *thing)
 {
     if (gameversion < exe_doom_2_0)
         return;
-    
-    int variable_type   = thing->state->args[0];
-    int variable_inc    = thing->state->args[1];
+
+    int variable_type = thing->state->args[0];
+    int variable_inc = thing->state->args[1];
 
     if (variable_type < 1 || variable_type > 4)
         variable_type = 1; //Counter 1
@@ -2264,14 +2302,14 @@ void A_IncreaseCounter(mobj_t *thing)
     Args[4] = Goto to State 4 (0 - 32768)
 */
 
-void A_Jump(mobj_t* thing)
+void A_Jump(mobj_t *thing)
 {
     if (gameversion < exe_doom_2_0)
         return;
 
     int i, Random;
 
-    Random =  thing->state->args[0];
+    Random = thing->state->args[0];
 
     int Gotos[4] = {
         thing->state->args[1],
@@ -2285,7 +2323,7 @@ void A_Jump(mobj_t* thing)
         if (Gotos[i] < 1)
             Gotos[i] = Gotos[0];
     }
-    
+
     if (P_Random() < Random)
     {
         int RandomIndex = P_Random() % 4;
@@ -2293,7 +2331,7 @@ void A_Jump(mobj_t* thing)
     }
 }
 
-void A_ResetHealth(mobj_t* mo)
+void A_ResetHealth(mobj_t *mo)
 {
     if (gameversion < exe_doom_2_0 || mo->health < 0)
         return;
@@ -2301,7 +2339,7 @@ void A_ResetHealth(mobj_t* mo)
     mo->health = mo->info->spawnhealth;
 }
 
-void A_SetSelfHealth(mobj_t* mo)
+void A_SetSelfHealth(mobj_t *mo)
 {
     if (gameversion < exe_doom_2_0 || mo->health < 0)
         return;
@@ -2309,7 +2347,7 @@ void A_SetSelfHealth(mobj_t* mo)
     mo->health = mo->health + mo->state->args[0];
 }
 
-void A_JumpIfSetFlags(mobj_t* mo)
+void A_JumpIfSetFlags(mobj_t *mo)
 {
     unsigned int flags, flags2, genericflags;
     int states;
@@ -2317,31 +2355,31 @@ void A_JumpIfSetFlags(mobj_t* mo)
     if (gameversion < exe_doom_2_0)
         return;
 
-    flags =         mo->state->args[0];
-    flags2 =        mo->state->args[1];
-    genericflags =  mo->state->args[2];
-    states =        mo->state->args[3];
+    flags = mo->state->args[0];
+    flags2 = mo->state->args[1];
+    genericflags = mo->state->args[2];
+    states = mo->state->args[3];
 
     if ((flags & mo->flags) == flags && (flags2 & mo->flags2) == flags2 &&
         (genericflags & mo->genericflags) == genericflags)
         P_SetMobjState(mo, states);
 }
 
-void A_Die(mobj_t* mo)
+void A_Die(mobj_t *mo)
 {
     if (gameversion < exe_doom_2_0)
         return;
 
-    P_DamageMobj(mo, NULL, NULL, mo->health);  
+    P_DamageMobj(mo, NULL, NULL, mo->health);
 }
 
-void A_SetSpeed(mobj_t* mo)
+void A_SetSpeed(mobj_t *mo)
 {
     int speed;
     int an;
 
     fixed_t dist;
-    
+
     mobj_t *dest;
 
     if (gameversion < exe_doom_2_0 || !mo)
@@ -2354,7 +2392,7 @@ void A_SetSpeed(mobj_t* mo)
         mo->momx = mo->momy = mo->momz = 0;
         return;
     }
-        
+
 
     dest = mo->tracer;
     an = mo->angle >> ANGLETOFINESHIFT;
@@ -2363,36 +2401,239 @@ void A_SetSpeed(mobj_t* mo)
 
     // change slope
     dist = P_AproxDistance(dest->x - mo->x, dest->y - mo->y);
-    
+
     dist = dist / speed;
 
     if (dist < 1)
         dist = 1;
-    
+
     mo->momz = ((dest->z + (dest->height >> 1)) - mo->z) / dist;
 }
 
-void A_NoiseAlert(mobj_t* actor)
+void A_NoiseAlert(mobj_t *actor)
 {
+
     if (gameversion < exe_doom_2_0 || !actor->target)
         return;
 
     P_NoiseAlert(actor->target, actor);
 }
 
-void A_JumpIfSkill(mobj_t* actor)
+void A_JumpIfSkill(mobj_t *actor)
 {
-    if (gameversion < exe_doom_2_0 || gameskill < 1)
+    if (gameversion < exe_doom_2_0 || gameskill < 0)
         return;
 
-    int skill, state;
-    int isHigher;
+    skill_t skill; 
+    int state;
+    int isHigher, fast;
 
-    skill =     actor->state->args[0];
-    state =     actor->state->args[1];
-    isHigher =  actor->state->args[2];
+    skill = actor->state->args[0];
+    state = actor->state->args[1];
+    isHigher = actor->state->args[2];
+    fast = actor->state->args[3];
 
-    if (((skill == (int) gameskill) && !isHigher) ||
-        ((skill > (int) gameskill) && isHigher))
+    if (skill > 4)
+        skill = 4;
+
+    if (fast && fastparm)
+    {
         P_SetMobjState(actor, state);
+        return;
+    }
+        
+
+    //I_Error("Actor Skill %d, Player skill %d", skill, gameskill);
+    if (((skill == gameskill) && !isHigher) ||
+        ((skill > gameskill) && isHigher))
+        P_SetMobjState(actor, state);
+}
+
+void A_MonsterProjectile2(mobj_t* mo)
+{
+    int type, angle;
+    mobj_t *actor;
+    int an;
+
+    if (gameversion < exe_doom_2_0 || !mo->target || !mo->state->args[0])
+        return;
+
+    type = mo->state->args[0] - 1;
+    angle = mo->state->args[1];
+
+    A_FaceTarget(mo);
+    actor = P_SpawnMissile(mo, mo->target, type);
+
+    if (!mo)
+        return;
+
+    actor->angle += (angle_t) (((int64_t) angle << 16) / 360);
+    an = actor->angle >> ANGLETOFINESHIFT;
+
+    actor->momx = FixedMul(actor->info->speed, finecosine[an]);
+    actor->momy = FixedMul(actor->info->speed, finesine[an]);
+
+    actor->tracer = mo->target;
+}
+
+void A_MonsterMeleeAttack(mobj_t* mo)
+{
+    int damagebase, damagemod, hitsound, range;
+    int damage;
+
+    if (gameversion < exe_doom_2_0 || !mo->target)
+        return;
+
+    damagebase = mo->state->args[0];
+    damagemod = mo->state->args[1];
+    hitsound = mo->state->args[2];
+    range = mo->state->args[3];
+
+    if (!range)
+        range = MELEERANGE;
+
+    range += mo->target->info->radius - 20 * FRACUNIT;
+
+    A_FaceTarget(mo);
+
+    if (!P_CheckRange(mo, range))
+        return;
+
+    S_StartSound(mo, hitsound);
+
+    damage = (P_Random() % damagemod + 1) * damagebase;
+
+    P_DamageMobj(mo->target, mo, mo, damage);
+}
+
+void A_MonsterBulletAttack2(mobj_t* mo)
+{
+    int hspread, vspread, numbullets, damagebase, damagemod;
+
+    int i, damage, angle, slope, aimslope;
+
+    if (gameversion < exe_doom_2_0 || !mo->state)
+        return;
+
+    hspread = mo->state->args[0];
+    vspread = mo->state->args[1];
+    numbullets = mo->state->args[2];
+    damagebase = mo->state->args[3];
+    damagemod = mo->state->args[4];
+
+    A_FaceTarget(mo);
+    
+    if (!(mo->subsector->sector->special & SILENT_MOBJ))
+        S_StartSound(mo, mo->info->attacksound);
+
+    aimslope = P_AimLineAttack(mo, mo->angle, MISSILERANGE);
+    for (i = 0; i < numbullets; i++)
+    {
+        damage = (P_Random() % damagemod + 1) * damagebase;
+        angle = (int) mo->angle + P_RandomHitscanAngle(hspread);
+        slope = aimslope + P_RandomHitscanSlope(vspread);
+
+        P_LineAttack(mo, angle, MISSILERANGE, slope, damage);
+    }
+}
+
+void A_Thrust(mobj_t* mo)
+{
+    int angle, force; 
+
+    force = mo->state->args[0];
+    
+    A_FaceTarget(mo);
+    angle = mo->angle;
+    if (gameversion < exe_doom_2_0 || force <= 0)
+        return;
+
+    P_ThrustThing(mo, angle, force);
+}
+
+void A_ThrustZ(mobj_t *mo)
+{
+    int force;
+
+    force = mo->state->args[0];
+
+    if (gameversion < exe_doom_2_0 || force <= 0)
+        return;
+
+    P_ThrustThingZ(mo, force);
+}
+
+//
+// A_AddFlags
+// Adds the specified thing flags to the caller.
+//   args[0]: Standard Flag(s) to add
+//   args[1]: ID27 Flag(s) to remove
+//
+void A_AddFlags(mobj_t *actor)
+{
+    unsigned int flags, flags2;
+    boolean update_blockmap;
+
+    if (gameversion < exe_doom_2_0 || !actor)
+        return;
+
+    flags = actor->state->args[0];
+    flags2 = actor->state->args[1];
+
+    // unlink/relink the thing from the blockmap if
+    // the NOBLOCKMAP or NOSECTOR flags are added
+    update_blockmap =
+        ((flags & MF_NOBLOCKMAP) && !(actor->flags & MF_NOBLOCKMAP)) ||
+        ((flags & MF_NOSECTOR) && !(actor->flags & MF_NOSECTOR));
+
+    if (update_blockmap)
+        P_UnsetThingPosition(actor);
+
+    actor->flags |= flags;
+    actor->flags2 |= flags2;
+
+    if (update_blockmap)
+        P_SetThingPosition(actor);
+}
+
+//
+// A_RemoveFlags
+// Removes the specified thing flags from the caller.
+//   args[0]: Flag(s) to remove
+//   args[1]: ID27 Flag(s) to remove
+//
+void A_RemoveFlags(mobj_t *actor)
+{
+    unsigned int flags, flags2;
+    boolean update_blockmap;
+
+    if (gameversion < exe_doom_2_0 || !actor)
+        return;
+
+    flags = actor->state->args[0];
+    flags2 = actor->state->args[1];
+
+    // unlink/relink the thing from the blockmap if
+    // the NOBLOCKMAP or NOSECTOR flags are removed
+    update_blockmap =
+        ((flags & MF_NOBLOCKMAP) && (actor->flags & MF_NOBLOCKMAP)) ||
+        ((flags & MF_NOSECTOR) && (actor->flags & MF_NOSECTOR));
+
+    if (update_blockmap)
+        P_UnsetThingPosition(actor);
+
+    actor->flags &= ~flags;
+    actor->flags2 &= ~flags2;
+
+    if (update_blockmap)
+        P_SetThingPosition(actor);
+}
+
+void A_Spawn2(mobj_t* mo)
+{
+    if (gameversion < exe_doom_2_0 || !mo->state->args[0])
+        return;
+
+    P_SpawnMobj(mo->x, mo->y, (mo->state->args[1] << FRACBITS) + mo->z,
+                mo->state->args[0] - 1);
 }

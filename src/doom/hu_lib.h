@@ -20,6 +20,7 @@
 
 // We are referring to patches.
 #include "r_defs.h"
+#include "r_local.h"
 
 // font stuff
 #define HU_CHARERASE	KEY_BACKSPACE

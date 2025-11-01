@@ -26,6 +26,8 @@
 #include "z_zone.h"
 #include "p_local.h"
 #include "p_saveg.h"
+#include "s_sound.h"
+#include "w_wad.h"
 
 // State.
 #include "doomstat.h"
@@ -36,6 +38,10 @@
 FILE *save_stream;
 int savegamelength;
 boolean savegame_error;
+
+#define MAX_LINE_LEN   260
+#define MAX_STRING_LEN 80
+
 
 // Get the filename of a temporary file to write the savegame to.  After
 // the file has been successfully saved, it will be renamed to the 
@@ -378,6 +384,8 @@ static void saveg_read_mobj_t(mobj_t *str)
 
     str->intflags = saveg_read32();
 
+    str->genericflags = saveg_read32();
+
     // int health;
     str->health = saveg_read32();
 
@@ -506,6 +514,9 @@ static void saveg_write_mobj_t(mobj_t *str)
 
     // int flags;
     saveg_write32(str->intflags);
+
+    // int flags;
+    saveg_write32(str->genericflags);
 
     // int health;
     saveg_write32(str->health);
@@ -773,6 +784,9 @@ static void saveg_read_player_t(player_t *str)
     // char* message;
     str->secretmessage = saveg_readp();
 
+    // char* message;
+    str->printmessage = saveg_readp();
+
     // int damagecount;
     str->damagecount = saveg_read32();
 
@@ -911,6 +925,9 @@ static void saveg_write_player_t(player_t *str)
 
     // char* secret message;
     saveg_writep(str->secretmessage);
+
+    // char* print message;
+    saveg_writep(str->printmessage);
 
     // int damagecount;
     saveg_write32(str->damagecount);
@@ -1984,4 +2001,3 @@ void P_UnArchiveSpecials (void)
     }
 
 }
-

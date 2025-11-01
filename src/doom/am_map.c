@@ -135,6 +135,10 @@ typedef struct
     fixed_t slp, islp;
 } islope_t;
 
+typedef struct
+{
+    fixed_t x, y;
+}mkeys_t;
 
 
 //
@@ -191,7 +195,29 @@ mline_t thintriangle_guy[] = {
 };
 #undef R
 
+#define R (FRACUNIT)
+mline_t penta_guy[] = {
+    { {(fixed_t)(-.7 * R), (fixed_t)(-.3*R)} , { (fixed_t)(.4 * R), (fixed_t)(.5*R) }},
+    { {(fixed_t)(.4*R), (fixed_t)(.5*R)} , { (fixed_t)(0), (fixed_t)(- 0.8 * R) }},
+    { {(fixed_t)(0), (fixed_t)(-0.8 * R)} , { (fixed_t)(-.4 * R), (fixed_t)(.5*R) }},
+    { {(fixed_t)(-.4*R), (fixed_t)(.5*R)} , { (fixed_t)(.7 * R), (fixed_t)(-.3*R) }},
+    { {(fixed_t)(.7*R), (fixed_t)(-.3*R)} , { (fixed_t)(-.7 * R), (fixed_t)(-.3*R) }},
+};
+#undef R
 
+#define R (FRACUNIT)
+mline_t keycard[] = {
+    { {(fixed_t)(-.3 * R), (fixed_t)(0)} , { (fixed_t)(0), (fixed_t)(.2 * R) }},
+    { {(fixed_t)(0), (fixed_t)(.2 * R)} , { (fixed_t)(.9 * R), (fixed_t)(.2 * R) }},
+    { {(fixed_t)(.9 * R), (fixed_t)(.2 * R)} , { (fixed_t)(.9 * R), (fixed_t)(-.2 * R) }},
+    { {(fixed_t)(.9 * R), (fixed_t)(-.2 * R)} , { (fixed_t)(0), (fixed_t)(-.2*R) }},
+    { {(fixed_t)(0), (fixed_t)(-.2*R)} , { (fixed_t)(-.3 * R), (fixed_t)(0) }},
+
+    {{(fixed_t)(.3 * R), (fixed_t)(0)} , { (fixed_t)(.3 * R), (fixed_t)(0) }},
+    {{(fixed_t) (.5 * R), (fixed_t) (0)}, {(fixed_t) (.5 * R), (fixed_t) (0)}},
+    {{(fixed_t) (.7 * R), (fixed_t) (0)}, {(fixed_t) (.7 * R), (fixed_t) (0)}},
+};
+#undef R
 
 
 static int 	cheating = 0;
@@ -484,10 +510,9 @@ void AM_loadPics(void)
   
     for (i=0;i<10;i++)
     {
-	DEH_snprintf(namebuf, 9, "AMMNUM%d", i);
-	marknums[i] = W_CacheLumpName(namebuf, PU_STATIC);
+	    DEH_snprintf(namebuf, 9, "AMMNUM%d", i);
+	    marknums[i] = W_CacheLumpName(namebuf, PU_STATIC);
     }
-
 }
 
 void AM_unloadPics(void)
@@ -840,10 +865,6 @@ void AM_Ticker (void)
     // Change x,y location
     if (m_paninc.x || m_paninc.y)
 	AM_changeWindowLoc();
-
-    // Update light level
-    // AM_updateLightLev();
-
 }
 
 
@@ -1143,49 +1164,78 @@ void AM_drawWalls(void)
 {
     int i;
     static mline_t l;
+  
+    const boolean flash = (leveltime & 16);
 
     for (i=0;i<numlines;i++)
     {
-	l.a.x = lines[i].v1->x;
-	l.a.y = lines[i].v1->y;
-	l.b.x = lines[i].v2->x;
-	l.b.y = lines[i].v2->y;
-	if (cheating || (lines[i].flags & ML_MAPPED))
-	{
-	    if ((lines[i].flags & LINE_NEVERSEE) && !cheating)
-		continue;
-	    if (!lines[i].backsector)
+	    l.a.x = lines[i].v1->x;
+	    l.a.y = lines[i].v1->y;
+	    l.b.x = lines[i].v2->x;
+	    l.b.y = lines[i].v2->y;
+	    if (cheating || (lines[i].flags & ML_MAPPED))
 	    {
-		AM_drawMline(&l, WALLCOLORS+lightlev);
+	        if ((lines[i].flags & LINE_NEVERSEE) && !cheating)
+                    continue;
+
+            const int DoorType = AM_DoorColor(lines[i].special);
+            if (!(lines[i].flags & ML_SECRET) && (DoorType != -1))
+            {
+                if (flash)
+                {
+                    AM_drawMline(&l, GRAYS);
+                }
+                else
+                {
+                    switch (DoorType)
+                    {
+                        case 1:
+                            AM_drawMline(&l, BLUES);
+                            break;
+                        case 2:
+                            AM_drawMline(&l, YELLOWS);
+                            break;
+                        case 3:
+                            AM_drawMline(&l, REDS);
+                            break;
+                    }
+                }
+                
+                continue;
+            }
+	        if (!lines[i].backsector)
+	        {
+		        AM_drawMline(&l, WALLCOLORS);
+	        }
+	        else
+	        {
+		        if (lines[i].special == 39)
+		        { // teleporters
+		            AM_drawMline(&l, WALLCOLORS+WALLRANGE/2);
+		        }
+
+		        else if (lines[i].flags & ML_SECRET) // secret door
+		        {
+		            if (cheating) AM_drawMline(&l, SECRETWALLCOLORS);
+		            else AM_drawMline(&l, WALLCOLORS);
+		        }
+		        else if (lines[i].backsector->floorheight
+			           != lines[i].frontsector->floorheight) {
+		            AM_drawMline(&l, FDWALLCOLORS); // floor level change
+		        }
+		        else if (lines[i].backsector->ceilingheight
+			           != lines[i].frontsector->ceilingheight) {
+		            AM_drawMline(&l, CDWALLCOLORS); // ceiling level change
+		        }
+		        else if (cheating) {
+		            AM_drawMline(&l, TSWALLCOLORS);
+		        }
+	        }
 	    }
-	    else
+	    else if (plr->powers[pw_allmap])
 	    {
-		if (lines[i].special == 39)
-		{ // teleporters
-		    AM_drawMline(&l, WALLCOLORS+WALLRANGE/2);
-		}
-		else if (lines[i].flags & ML_SECRET) // secret door
-		{
-		    if (cheating) AM_drawMline(&l, SECRETWALLCOLORS + lightlev);
-		    else AM_drawMline(&l, WALLCOLORS+lightlev);
-		}
-		else if (lines[i].backsector->floorheight
-			   != lines[i].frontsector->floorheight) {
-		    AM_drawMline(&l, FDWALLCOLORS + lightlev); // floor level change
-		}
-		else if (lines[i].backsector->ceilingheight
-			   != lines[i].frontsector->ceilingheight) {
-		    AM_drawMline(&l, CDWALLCOLORS+lightlev); // ceiling level change
-		}
-		else if (cheating) {
-		    AM_drawMline(&l, TSWALLCOLORS+lightlev);
-		}
+	        if (!(lines[i].flags & LINE_NEVERSEE)) AM_drawMline(&l, GRAYS+3);
 	    }
-	}
-	else if (plr->powers[pw_allmap])
-	{
-	    if (!(lines[i].flags & LINE_NEVERSEE)) AM_drawMline(&l, GRAYS+3);
-	}
     }
 }
 
@@ -1314,16 +1364,16 @@ AM_drawThings
     int		i;
     mobj_t*	t;
 
-    for (i=0;i<numsectors;i++)
+    for (i = 0; i < numsectors; i++)
     {
-	t = sectors[i].thinglist;
-	while (t)
-	{
-	    AM_drawLineCharacter
-		(thintriangle_guy, arrlen(thintriangle_guy),
-		 16<<FRACBITS, t->angle, colors+lightlev, t->x, t->y);
-	    t = t->snext;
-	}
+        t = sectors[i].thinglist;
+        while (t)
+        {
+            AM_drawLineCharacter(thintriangle_guy, arrlen(thintriangle_guy),
+                                 16 << FRACBITS, t->angle, colors,
+                                 t->x, t->y);
+            t = t->snext;
+        }
     }
 }
 
@@ -1354,6 +1404,119 @@ void AM_drawCrosshair(int color)
 
 }
 
+void AM_drawKeys(void)
+{
+    int i, fx, fy, w, h;
+    mobj_t *t;
+
+    const boolean flash = (leveltime & 16);
+
+    for (i = 0; i < numsectors; i++)
+    {
+        t = sectors[i].thinglist;
+        while (t)
+        {
+            w = 9; // because something's wrong with the wad, i guess
+            h = 8; // because something's wrong with the wad, i guess
+
+            fx = CXMTOF(t->x);
+            fy = CYMTOF(t->y);
+
+            if (fx >= f_x && fx <= f_w - w && fy >= f_y && fy <= f_h - h)
+            {
+                if (flash && (t->type == MT_MISC4 || t->type == MT_MISC5 ||
+                              t->type == MT_MISC6))
+                {
+                    AM_drawLineCharacter(keycard, arrlen(keycard),
+                                         64 << FRACBITS, t->angle, GRAYS, t->x,
+                                         t->y);
+                }
+
+                else if (flash && (t->type == MT_MISC7 || t->type == MT_MISC8 || t->type == MT_MISC9))
+                {
+                    AM_drawLineCharacter(penta_guy, arrlen(penta_guy),
+                                         64 << FRACBITS, t->angle, GRAYS, t->x,
+                                         t->y);
+                }
+
+                else
+                {
+                    switch (t->type)
+                    {
+                        case MT_MISC4:
+                            AM_drawLineCharacter(
+                                keycard, arrlen(keycard), 64 << FRACBITS,
+                                t->angle, BLUES, t->x, t->y);
+                            break;
+
+                        case MT_MISC5:
+                            AM_drawLineCharacter(
+                                keycard, arrlen(keycard), 64 << FRACBITS,
+                                t->angle, REDS, t->x, t->y);
+                            break;
+
+                        case MT_MISC6:
+                            AM_drawLineCharacter(
+                                keycard, arrlen(keycard), 64 << FRACBITS,
+                                t->angle, YELLOWS, t->x, t->y);
+                            break;
+
+                        case MT_MISC7:
+                            AM_drawLineCharacter(
+                                penta_guy, arrlen(penta_guy), 64 << FRACBITS,
+                                t->angle, YELLOWS, t->x, t->y);
+                            break;
+
+                        case MT_MISC8:
+                            AM_drawLineCharacter(penta_guy, arrlen(penta_guy),
+                                                 64 << FRACBITS, t->angle,
+                                                 REDS, t->x, t->y);
+                            break;
+
+                        case MT_MISC9:
+                            AM_drawLineCharacter(penta_guy, arrlen(penta_guy),
+                                                 64 << FRACBITS, t->angle,
+                                                 BLUES, t->x, t->y);
+                            break;
+                    }
+                }
+                
+            }
+            
+            t = t->snext;
+        }
+    }
+
+}
+
+static int AM_DoorColor(int special)
+{
+    switch (special) // closed keyed door
+    {
+        case 26:
+        case 32:
+        case 99:
+        case 133:
+            /*bluekey*/
+            return 1;
+        case 27:
+        case 34:
+        case 136:
+        case 137:
+            /*yellowkey*/
+            return 2;
+        case 28:
+        case 33:
+        case 134:
+        case 135:
+            /*redkey*/
+            return 3;
+        default:
+            return -1; //not a keyed door
+    }
+    return -1; //not a keyed door
+}
+
 void AM_Drawer (void)
 {
     if (!automapactive) return;
@@ -1363,9 +1526,15 @@ void AM_Drawer (void)
 	AM_drawGrid(GRIDCOLORS);
     AM_drawWalls();
     AM_drawPlayers();
-    if (cheating==2)
-	AM_drawThings(THINGCOLORS, THINGRANGE);
+    
+    if (cheating == 2)
+    {
+        AM_drawThings(THINGCOLORS, THINGRANGE);
+        AM_drawKeys();
+    }
+	
     AM_drawCrosshair(XHAIRCOLORS);
+    
 
     AM_drawMarks();
 

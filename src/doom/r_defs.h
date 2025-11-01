@@ -49,7 +49,7 @@
 #define SIL_BOTH		3
 
 #define MAXDRAWSEGS		256
-
+#define PL_SKYFLAT 0x80000000
 
 
 
@@ -124,6 +124,8 @@ typedef	struct
 
     // thinker_t for reversable actions
     void*	specialdata;
+
+    int sky;
 
     int			linecount;
     struct line_s**	lines;	// [linecount] size
@@ -420,8 +422,9 @@ typedef struct
 //
 // Now what is a visplane, anyway?
 // 
-typedef struct
+typedef struct visplane
 {
+  struct visplane *next;
   fixed_t		height;
   int			picnum;
   int			lightlevel;

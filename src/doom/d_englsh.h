@@ -358,6 +358,9 @@
 #define STSTR_CHOPPERS	"... doesn't suck - GM"
 #define STSTR_CLEV		"Changing Level..."
 
+#define STSTR_TARGET	"No Target Mode On"
+#define STSTR_OFTARGET  "No Target Mode Off"
+
 //
 //	F_Finale.C
 //

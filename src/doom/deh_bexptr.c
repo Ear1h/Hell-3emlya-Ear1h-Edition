@@ -118,6 +118,14 @@ extern void A_Die();
 extern void A_SetSpeed();
 extern void A_NoiseAlert();
 extern void A_JumpIfSkill();
+extern void A_MonsterProjectile2();
+extern void A_MonsterMeleeAttack();
+extern void A_MonsterBulletAttack2();
+extern void A_Thrust();
+extern void A_ThrustZ();
+extern void A_AddFlags();
+extern void A_RemoveFlags();
+extern void A_Spawn2();
 
 typedef struct
 {
@@ -219,6 +227,14 @@ static const bex_codeptr_t bex_codeptrtable[] = {
     {"SetSpeed", {A_SetSpeed}},
     {"NoiseAlert", {A_NoiseAlert}},
     {"JumpifSkill", {A_JumpIfSkill}},
+    {"MonsterProjectile2", {A_MonsterProjectile2}},
+    {"MonsterMeleeAttack", {A_MonsterMeleeAttack}},
+    {"MonsterBulletAttack2", {A_MonsterBulletAttack2}},
+    {"Thrust", {A_Thrust}},
+    {"ThrustZ", {A_ThrustZ}},
+    {"AddFlags", {A_AddFlags}},
+    {"RemoveFlags", {A_RemoveFlags}},
+    {"Spawn2", {A_Spawn2}},
     {"NULL", {NULL}},
 };
 

@@ -278,6 +278,8 @@ static const bex_string_t bex_stringtable[] = {
     {"STSTR_BEHOLDX", STSTR_BEHOLDX},
     {"STSTR_CHOPPERS", STSTR_CHOPPERS},
     {"STSTR_CLEV", STSTR_CLEV},
+    {"STSTR_TARGET", STSTR_TARGET},
+    {"STSTR_OFTARGET", STSTR_OFTARGET},
     // part 7 - episode intermission texts
     {"E1TEXT", E1TEXT},
     {"E2TEXT", E2TEXT},

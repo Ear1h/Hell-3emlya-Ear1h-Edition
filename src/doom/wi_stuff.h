@@ -25,6 +25,7 @@
 
 // States for the intermission
 
+extern int acceleratestage;
 typedef enum
 {
     NoState = -1,
@@ -44,5 +45,7 @@ void WI_Start(wbstartstruct_t*	 wbstartstruct);
 
 // Shut down the intermission screen
 void WI_End(void);
+
+void WI_checkForAccelerate(void);
 
 #endif

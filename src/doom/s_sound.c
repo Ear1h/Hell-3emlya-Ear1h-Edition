@@ -36,6 +36,8 @@
 #include "p_local.h"
 #include "w_wad.h"
 #include "z_zone.h"
+#include "g_game.h"
+#include "g_umapinfo.h"
 
 // when to clip out sounds
 // Does not fit the large outdoor areas.
@@ -110,6 +112,8 @@ int snd_channels = 8;
 // Sets channels, SFX and music volume,
 //  allocates channel buffer, sets S_sfx lookup.
 //
+
+static void S_ChangeMusInfoMusic(int lumpnum, int looping);
 
 void S_Init(int sfxVolume, int musicVolume)
 {
@@ -237,6 +241,18 @@ void S_Start(void)
 
     // start new music for the level
     mus_paused = 0;
+
+    if (gamemapinfo && gamemapinfo->music[0])
+    {
+        int muslump = W_CheckNumForName(gamemapinfo->music);
+        if (muslump >= 0)
+        {
+            S_ChangeMusInfoMusic(muslump, true);
+            return;
+        }
+        // If the mapinfo defined music cannot be found, try the default for the
+        // given map.
+    }
 
     if (gamemode == commercial)
     {
@@ -459,7 +475,7 @@ void S_StartSound(void *origin_p, int sfx_id)
     // check for bogus sound #
     if (sfx_id < 1 || sfx_id > NUMSFX)
     {
-        I_Error("Bad sfx #: %d", sfx_id);
+        return;
     }
 
     sfx = &S_sfx[sfx_id];
@@ -716,6 +732,32 @@ void S_ChangeMusic(int musicnum, int looping)
 
     mus_playing = music;
 }
+
+static void S_ChangeMusInfoMusic(int lumpnum, int looping)
+{
+    musicinfo_t *music;
+
+    if (mus_playing && mus_playing->lumpnum == lumpnum)
+    {
+        return;
+    }
+
+    music = &S_music[lumpnum];
+
+    S_StopMusic();
+
+    music->lumpnum = lumpnum;
+
+    music->data = W_CacheLumpNum(music->lumpnum, PU_STATIC);
+    music->handle = I_RegisterSong(music->data, W_LumpLength(music->lumpnum));
+
+    I_PlaySong((void *) music->handle, looping);
+
+    music->lumpnum = lumpnum;
+
+    mus_playing = music;
+}
+
 
 boolean S_MusicPlaying(void)
 {

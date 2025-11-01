@@ -25,6 +25,7 @@ add_library(doom STATIC
             f_finale.c      f_finale.h
             f_wipe.c        f_wipe.h
             g_game.c        g_game.h
+            g_umapinfo.c    g_umapinfo.h
             hu_lib.c        hu_lib.h
             hu_stuff.c      hu_stuff.h
             info.c          info.h
@@ -68,7 +69,7 @@ add_library(doom STATIC
             st_lib.c        st_lib.h
             st_stuff.c      st_stuff.h
             wi_stuff.c      wi_stuff.h
-            )
+             "g_umapinfo.h" "g_umapinfo.c")
 
 target_include_directories(doom PRIVATE "../" "${CMAKE_CURRENT_BINARY_DIR}/../../")
 

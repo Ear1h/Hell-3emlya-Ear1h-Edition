@@ -32,6 +32,7 @@
 #include "r_local.h"
 #include "r_sky.h"
 
+#include "g_game.h"
 
 // OPTIMIZE: closed two sided lines as single sided
 
@@ -380,9 +381,31 @@ R_StoreWallRange
     int			lightnum;
 
     // don't overflow and crash
-    if (ds_p == &drawsegs[MAXDRAWSEGS])
-	return;		
+	if (ds_p == &drawsegs[numdrawsegs])
+	{
+		int numdrawsegs_old = numdrawsegs;
 		
+		numdrawsegs = numdrawsegs ? 2 * numdrawsegs : MAXDRAWSEGS;
+		drawsegs = I_Realloc(drawsegs, numdrawsegs * sizeof(*drawsegs));
+
+		memset(drawsegs + numdrawsegs_old, 0,
+                       (numdrawsegs - numdrawsegs_old) * sizeof(*drawsegs));
+
+		ds_p = drawsegs + numdrawsegs_old;
+
+                if (numdrawsegs_old)
+                    fprintf(stderr,
+                            "R_StoreWallRange: Hit MAXDRAWSEGS limit at %d, "
+                            "raised to %d.\n",
+                            numdrawsegs_old, numdrawsegs);
+	}
+
+	if (!debug_mode && ds_p == &drawsegs[MAXDRAWSEGS])
+    {
+        return;
+    }
+
+
 #ifdef RANGECHECK
     if (start >=viewwidth || start > stop)
 	I_Error ("Bad R_RenderWallRange: %i to %i", start , stop);

@@ -799,8 +799,10 @@ P_KillMobj
 	
     target->flags &= ~(MF_SHOOTABLE|MF_FLOAT|MF_SKULLFLY);
 
-    if (target->type != (MT_SKULL | MT_TURRET))
-	target->flags &= ~MF_NOGRAVITY;
+    if (target->type != MT_SKULL && !(target->flags2 & MF2_DONTFALL))
+		target->flags &= ~MF_NOGRAVITY;
+
+	
 
     target->flags |= MF_CORPSE|MF_DROPOFF;
     target->height >>= 2;
@@ -881,7 +883,16 @@ P_KillMobj
 	break;
 	
       default:
-	return;
+		  if (target->info->droppeditem)
+		  {
+			  item = target->info->droppeditem - 1;
+		  }
+
+		  else
+		  {
+			  return;
+		  }
+		
     }
 
     mo = P_SpawnMobj (target->x,target->y,ONFLOORZ, item);
@@ -913,7 +924,6 @@ P_DamageMobj
     int		saved;
     player_t*	player;
     fixed_t	thrust;
-    int		temp;
 	
     if ( !(target->flags & MF_SHOOTABLE) )
 	return;	// shouldn't happen...
@@ -968,73 +978,70 @@ P_DamageMobj
     // player specific
     if (player)
     {
-	// end of game hell hack
-	if (target->subsector->sector->special == 11
-	    && damage >= target->health)
-	{
-	    damage = target->health - 1;
-	}
-	
-
-	// Below certain threshold,
-	// ignore damage in GOD mode, or with INVUL power.
-	if ( damage < 1000
-	     && ( (player->cheats&CF_GODMODE)
-		  || player->powers[pw_invulnerability] ) )
-	{
-	    return;
-	}
-	
-	if (player->armortype)
-	{
-		if (player->armortype == 1)
+		// end of game hell hack
+		if (target->subsector->sector->special == 11
+			&& damage >= target->health)
 		{
-			saved = damage / 3;
+			damage = target->health - 1;
 		}
+	
+
+		// Below certain threshold,
+		// ignore damage in GOD mode, or with INVUL power.
+		if ( damage < 1000
+			 && ( (player->cheats&CF_GODMODE)
+			  || player->powers[pw_invulnerability] ) )
+		{
+			return;
+		}
+	
+		if (player->armortype)
+		{
+			if (player->armortype == 1)
+			{
+				saved = damage / 3;
+			}
 		
-		else if (player->armortype == 2)
-        {
-            saved = damage / 2;
-        }
-        else
-        {
-            if (gameversion < exe_doom_2_0)
-				return;
-            saved = damage * 4 / 5;
-        }
+			else if (player->armortype == 2)
+			{
+				saved = damage / 2;
+			}
+			else
+			{
+				if (gameversion < exe_doom_2_0)
+					return;
+				saved = damage * 4 / 5;
+			}
 		
-	    if (player->armorpoints <= saved)
-	    {
-		// armor is used up
-		saved = player->armorpoints;
-		player->armortype = 0;
-	    }
-	    player->armorpoints -= saved;
-	    damage -= saved;
+			if (player->armorpoints <= saved)
+			{
+			// armor is used up
+			saved = player->armorpoints;
+			player->armortype = 0;
+			}
+			player->armorpoints -= saved;
+			damage -= saved;
+		}
+
+		player->health -= damage; 	// mirror mobj health here for Dave
+		if (player->health < 0)
+			player->health = 0;
+	
+		player->attacker = source;
+		player->damagecount += damage;	// add damage after armor / invuln
+
+		if (player->damagecount > 100)
+			player->damagecount = 100;	// teleport stomp does 10k points...
+	
 	}
-	player->health -= damage; 	// mirror mobj health here for Dave
-	if (player->health < 0)
-	    player->health = 0;
-	
-	player->attacker = source;
-	player->damagecount += damage;	// add damage after armor / invuln
-
-	if (player->damagecount > 100)
-	    player->damagecount = 100;	// teleport stomp does 10k points...
-	
-	temp = damage < 100 ? damage : 100;
-
-	if (player == &players[consoleplayer])
-	    I_Tactile (40,10,40+temp*2);
-    }
     
-    // do the damage	
-    target->health -= damage;	
-    if (target->health <= 0)
-    {
-	P_KillMobj (source, target);
-	return;
-    }
+		// do the damage	
+		target->health -= damage;	
+		if (target->health <= 0)
+		{
+			P_KillMobj (source, target);
+			return;
+		}
 
     if ( (P_Random () < target->info->painchance)
 	 && !(target->flags&MF_SKULLFLY) )
@@ -1046,8 +1053,9 @@ P_DamageMobj
 			
     target->reactiontime = 0;		// we're awake now...	
 
-    if ( (!target->threshold || target->type == MT_VILE)
-	 && source && (source != target || gameversion < exe_doom_1_5)
+    if ( (!target->threshold || target->type == MT_VILE) && source &&
+        (source != target || gameversion < exe_doom_1_5) &&
+        !(source->flags2 & MF2_DMGIGNORED)
 	 && source->type != MT_VILE)
     {
 	// if not intent on another player,

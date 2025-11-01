@@ -29,6 +29,9 @@
 #include "v_video.h"
 #include "w_wad.h"
 #include "s_sound.h"
+#include "g_umapinfo.h"
+#include "g_game.h"
+#include "m_misc.h" // [FG] M_StringDuplicate()
 
 // Data.
 #include "d_main.h"
@@ -37,6 +40,8 @@
 
 #include "doomstat.h"
 #include "r_state.h"
+
+#include "wi_stuff.h"
 
 typedef enum
 {
@@ -57,6 +62,8 @@ unsigned int finalecount;
 
 #define	TEXTSPEED	3
 #define	TEXTWAIT	250
+#define NEWTEXTSPEED    0.01f // new value                         // phares
+#define NEWTEXTWAIT     1000  // new value                         // phares
 
 typedef struct
 {
@@ -98,62 +105,302 @@ static textscreen_t textscreens[] =
 const char *finaletext;
 const char *finaleflat;
 
-void	F_StartCast (void);
-void	F_CastTicker (void);
-boolean F_CastResponder (event_t *ev);
-void	F_CastDrawer (void);
+static void F_StartCast(void);
+static void F_CastTicker(void);
+static boolean F_CastResponder(event_t *ev);
+static void F_CastDrawer(void);
+static void F_TextWrite(void);
+static void F_BunnyScroll(void);
+static void F_BunnyScroll(void);
+static float Get_TextSpeed(void);
 
-//
+static boolean mapinfo_finale;
+static int midstage; // whether we're in "mid-stage"
+
+static boolean MapInfo_StartFinale(void)
+{
+    mapinfo_finale = false;
+
+    if (!gamemapinfo)
+    {
+        return false;
+    }
+
+    if (secretexit)
+    {
+        if (gamemapinfo->flags & MapInfo_InterTextSecretClear)
+        {
+            finaletext = NULL;
+        }
+        else if (gamemapinfo->intertextsecret)
+        {
+            finaletext = gamemapinfo->intertextsecret;
+        }
+    }
+    else
+    {
+        if (gamemapinfo->flags & MapInfo_InterTextClear)
+        {
+            finaletext = NULL;
+        }
+        else if (gamemapinfo->intertext)
+        {
+            finaletext = gamemapinfo->intertext;
+        }
+    }
+
+    if (gamemapinfo->interbackdrop[0])
+    {
+        finaleflat = gamemapinfo->interbackdrop;
+    }
+
+    if (!finaleflat)
+    {
+        finaleflat = "FLOOR4_8"; // use a single fallback for all maps.
+    }
+
+    int lumpnum = W_CheckNumForName(gamemapinfo->intermusic);
+    if (lumpnum >= 0)
+    {
+        S_ChangeMusic(lumpnum, true);
+    }
+
+    mapinfo_finale = true;
+
+    return lumpnum >= 0;
+}
+
+static boolean MapInfo_Ticker()
+{
+    if (!mapinfo_finale)
+    {
+        return false;
+    }
+
+    boolean next_level = false;
+
+    WI_checkForAccelerate();
+
+    if (!next_level)
+    {
+        // advance animation
+        finalecount++;
+
+        if (finalestage == F_STAGE_CAST)
+        {
+            F_CastTicker();
+            return true;
+        }
+
+         if (finalestage == F_STAGE_TEXT)
+        {
+            int textcount = 0;
+            if (finaletext)
+            {
+                float speed =
+                    gameversion < exe_doom_2_0 ? TEXTSPEED : Get_TextSpeed();
+                textcount = strlen(finaletext) * speed +
+                            (midstage ? NEWTEXTWAIT : TEXTWAIT);
+            }
+
+            if (!textcount || finalecount > textcount ||
+                (midstage && acceleratestage))
+            {
+                next_level = true;
+            }
+        }
+    }
+
+    if (next_level)
+    {
+        if (!secretexit && gamemapinfo->flags & MapInfo_EndGame)
+        {
+            if (gamemapinfo->flags & MapInfo_EndGameCast)
+            {
+                F_StartCast();
+            }
+            else
+            {
+                finalecount = 0;
+                finalestage = F_STAGE_ARTSCREEN;
+                wipegamestate = -1; // force a wipe
+                if (gamemapinfo->flags & MapInfo_EndGameBunny)
+                {
+                    S_StartMusic(mus_bunny);
+                }
+                else if (gamemapinfo->flags & MapInfo_EndGameStandard)
+                {
+                    mapinfo_finale = false;
+                }
+            }
+        }
+        else
+        {
+            gameaction = ga_worlddone; // next level, e.g. MAP07
+        }
+    }
+
+    return true;
+}
+
+static boolean MapInfo_Drawer(void)
+{
+    if (!mapinfo_finale)
+    {
+        return false;
+    }
+
+    switch (finalestage)
+    {
+        case F_STAGE_TEXT:
+            if (finaletext)
+            {
+                F_TextWrite();
+            }
+            break;
+        case F_STAGE_ARTSCREEN:
+            if (gamemapinfo->flags & MapInfo_EndGameBunny)
+            {
+                F_BunnyScroll();
+            }
+            else if (gamemapinfo->endpic[0])
+            {
+                V_DrawPatch(0, 0,
+                    W_CacheLumpName((const char *) gamemapinfo->endpic[0],
+                                    PU_STATIC));
+            }
+            break;
+        case F_STAGE_CAST:
+            F_CastDrawer();
+            break;
+    }
+
+    return true;
+}
+    //
 // F_StartFinale
 //
 void F_StartFinale (void)
 {
-    size_t i;
+    musicenum_t music_id = mus_None;
 
     gameaction = ga_nothing;
     gamestate = GS_FINALE;
     viewactive = false;
     automapactive = false;
 
-    if (logical_gamemission == doom)
-    {
-        S_ChangeMusic(mus_victor, true);
-    }
-    else
-    {
-        S_ChangeMusic(mus_read_m, true);
-    }
-
-    // Find the right screen and set the text and background
-
-    for (i=0; i<arrlen(textscreens); ++i)
-    {
-        textscreen_t *screen = &textscreens[i];
-
-        // Hack for Chex Quest
-
-        if (gameversion == exe_chex && screen->mission == doom)
-        {
-            screen->level = 5;
-        }
-
-        if (logical_gamemission == screen->mission
-         && (logical_gamemission != doom || gameepisode == screen->episode)
-         && gamemap == screen->level)
-        {
-            finaletext = screen->text;
-            finaleflat = screen->background;
-        }
-    }
-
-    // Do dehacked substitutions of strings
-  
-    finaletext = DEH_String(finaletext);
-    finaleflat = DEH_String(finaleflat);
+    acceleratestage = midstage = 0;
+    finaletext = NULL;
+    finaleflat = NULL;
     
+    switch (gamemode)
+    {
+        // DOOM 1 - E1, E3 or E4, but each nine missions
+        case shareware:
+        case registered:
+        case retail: {
+            music_id = mus_victor;
+
+            switch (gameepisode)
+            {
+                case 1:
+                    finaleflat = "FLOOR4_8";
+                        ; // Ty 03/30/98 - new externalized bg flats
+                    finaletext = E1TEXT; // Ty 03/23/98 - Was e1text variable.
+                    break;
+                case 2:
+                    finaleflat = "FLOOR4_8";
+                    finaletext = E2TEXT; // Ty 03/23/98 - Same stuff for each
+                    break;
+                case 3:
+                    finaleflat = "FLOOR4_8";
+                    finaletext = E3TEXT;
+                    break;
+                case 4:
+                    finaleflat = "FLOOR4_8";
+                    finaletext = E4TEXT;
+                    break;
+                default:
+                    // Ouch.
+                    break;
+            }
+            break;
+        }
+
+        // DOOM II and missions packs with E1, M34
+        case commercial: {
+            music_id = mus_read_m;
+
+            // Ty 08/27/98 - added the gamemission logic
+
+            switch (gamemap) /* This is regular Doom II */
+            {
+                case 6:
+                    finaleflat = "FLOOR4_8";
+                    finaletext =
+                        gamemission == pack_tnt    ? C4TEXT
+                        : gamemission == pack_plut ? C4TEXT
+                                                            : C1TEXT;
+                    break;
+                case 11:
+                    finaleflat = "FLOOR4_8";
+                    finaletext =
+                        gamemission == pack_tnt    ? C4TEXT
+                        : gamemission == pack_plut ? C4TEXT
+                                                            : C2TEXT;
+                    break;
+                case 20:
+                    finaleflat = "FLOOR4_8";
+                    finaletext =
+                        gamemission == pack_tnt    ? C4TEXT
+                        : gamemission == pack_plut ? C4TEXT
+                                                            : C3TEXT;
+                    break;
+                case 30:
+                    finaleflat = "FLOOR4_8";
+                    finaletext =
+                        gamemission == pack_tnt    ? C4TEXT
+                        : gamemission == pack_plut ? C4TEXT
+                                                            : C4TEXT;
+                    break;
+                case 15:
+                    finaleflat = "FLOOR4_8";
+                    finaletext =
+                        gamemission == pack_tnt    ? C4TEXT
+                        : gamemission == pack_plut ? C4TEXT
+                                                            : C5TEXT;
+                    break;
+                case 31:
+                    finaleflat = "FLOOR4_8";
+                    finaletext =
+                        gamemission == pack_tnt    ? C4TEXT
+                        : gamemission == pack_plut ? C4TEXT
+                                                            : C6TEXT;
+                    break;
+                default:
+                    // Ouch.
+                    break;
+            }
+            // Ty 08/27/98 - end gamemission logic
+
+            break;
+        }
+
+        // Indeterminate.
+        default: // Ty 03/30/98 - not externalized
+            music_id = mus_read_m;
+            finaleflat = "F_SKY1"; // Not used anywhere else.
+            finaletext = C1TEXT; // FIXME - other text, music?
+            break;
+    }
+
+    if (!MapInfo_StartFinale())
+    {
+        S_ChangeMusic(music_id, true);
+    }
+
     finalestage = F_STAGE_TEXT;
     finalecount = 0;
-	
 }
 
 
@@ -166,55 +413,78 @@ boolean F_Responder (event_t *event)
     return false;
 }
 
+// Get_TextSpeed() returns the value of the text display speed  // phares
+// Rewritten to allow user-directed acceleration -- killough 3/28/98
 
+static float Get_TextSpeed(void)
+{
+    return midstage ? NEWTEXTSPEED
+                    : (midstage = acceleratestage)
+               ? acceleratestage = 0,
+                 NEWTEXTSPEED : TEXTSPEED;
+}
 //
 // F_Ticker
 //
-void F_Ticker (void)
+void F_Ticker(void)
 {
-    size_t		i;
-    
-    // check for skipping
-    if ( (gamemode == commercial)
-      && ( finalecount > 50) )
+    if (MapInfo_Ticker())
     {
-      // go on to the next level
-      for (i=0 ; i<MAXPLAYERS ; i++)
-	if (players[i].cmd.buttons)
-	  break;
-				
-      if (i < MAXPLAYERS)
-      {	
-	if (gamemap == 30)
-	  F_StartCast ();
-	else
-	  gameaction = ga_worlddone;
-      }
+        return;
     }
-    
+
+    int i;
+
+    if (gameversion == exe_doom_2_0)
+    {
+        WI_checkForAccelerate(); // killough 3/28/98: check for acceleration
+    }
+    else if (gamemode == commercial && finalecount > 50) // check for skipping
+    {
+        for (i = 0; i < MAXPLAYERS; i++)
+            if (players[i].cmd.buttons)
+                goto next_level; // go on to the next level
+    }
+
     // advance animation
     finalecount++;
-	
+
     if (finalestage == F_STAGE_CAST)
     {
-	F_CastTicker ();
-	return;
+        F_CastTicker();
+        return;
     }
-	
-    if ( gamemode == commercial)
-	return;
-		
-    if (finalestage == F_STAGE_TEXT
-     && finalecount>strlen (finaletext)*TEXTSPEED + TEXTWAIT)
+
+    if (finalestage == F_STAGE_TEXT)
     {
-	finalecount = 0;
-	finalestage = F_STAGE_ARTSCREEN;
-	wipegamestate = -1;		// force a wipe
-	if (gameepisode == 3)
-	    S_StartMusic (mus_bunny);
+        float speed = gameversion < exe_doom_2_0 ? TEXTSPEED : Get_TextSpeed();
+        if (finalecount >
+                strlen(finaletext) * speed +               // phares
+                    (midstage ? NEWTEXTWAIT : TEXTWAIT) || // killough 2/28/98:
+            (midstage && acceleratestage)) // changed to allow acceleration
+        {
+            if (gamemode != commercial)
+            {
+                finalecount = 0;
+                finalestage = F_STAGE_ARTSCREEN;
+                wipegamestate = -1; // force a wipe
+                if (gameepisode == 3)
+                    S_StartMusic(mus_bunny);
+            }
+        }
+        else // you must press a button to continue in Doom 2
+        {
+            if (gameversion == exe_doom_2_0 || midstage)
+            {
+            next_level:
+                if (gamemap == 30)
+                    F_StartCast(); // cast of Doom 2 characters
+                else
+                    gameaction = ga_worlddone; // next level, e.g. MAP07
+            }
+        }    
     }
 }
-
 
 
 //
@@ -224,7 +494,7 @@ void F_Ticker (void)
 #include "hu_stuff.h"
 
 
-void F_TextWrite (void)
+static void F_TextWrite (void)
 {
     byte*	src;
     pixel_t*	dest;
@@ -355,7 +625,7 @@ void F_StartCast (void)
 //
 // F_CastTicker
 //
-void F_CastTicker (void)
+static void F_CastTicker(void)
 {
     int		st;
     int		sfx;
@@ -462,7 +732,7 @@ void F_CastTicker (void)
 // F_CastResponder
 //
 
-boolean F_CastResponder (event_t* ev)
+static boolean F_CastResponder(event_t *ev)
 {
     if (ev->type != ev_keydown)
 	return false;
@@ -483,7 +753,7 @@ boolean F_CastResponder (event_t* ev)
 }
 
 
-void F_CastPrint (const char *text)
+static void F_CastPrint(const char *text)
 {
     const char *ch;
     int		c;
@@ -538,7 +808,7 @@ void F_CastPrint (const char *text)
 // F_CastDrawer
 //
 
-void F_CastDrawer (void)
+static void F_CastDrawer(void)
 {
     spritedef_t*	sprdef;
     spriteframe_t*	sprframe;
@@ -701,6 +971,10 @@ static void F_ArtScreenDrawer(void)
 //
 void F_Drawer (void)
 {
+    if (MapInfo_Drawer())
+    {
+        return;
+    }
     switch (finalestage)
     {
         case F_STAGE_CAST:

@@ -43,8 +43,10 @@ line_t*		linedef;
 sector_t*	frontsector;
 sector_t*	backsector;
 
-drawseg_t	drawsegs[MAXDRAWSEGS];
+drawseg_t*	drawsegs = NULL;
 drawseg_t*	ds_p;
+int numdrawsegs = 0;
+
 
 
 void
@@ -514,9 +516,12 @@ void R_Subsector (int num)
 
     if (frontsector->floorheight < viewz)
     {
-	floorplane = R_FindPlane (frontsector->floorheight,
+	floorplane = R_FindPlane(frontsector->floorheight,
+				  // [crispy] add support for MBF sky tranfers
+				  frontsector->floorpic == skyflatnum &&
+				  frontsector->sky & PL_SKYFLAT ? frontsector->sky :
 				  frontsector->floorpic,
-				  frontsector->lightlevel);
+                  frontsector->lightlevel); // [crispy] A11Y
     }
     else
 	floorplane = NULL;
@@ -524,9 +529,13 @@ void R_Subsector (int num)
     if (frontsector->ceilingheight > viewz 
 	|| frontsector->ceilingpic == skyflatnum)
     {
-	ceilingplane = R_FindPlane (frontsector->ceilingheight,
-				    frontsector->ceilingpic,
-				    frontsector->lightlevel);
+        ceilingplane = R_FindPlane(frontsector->ceilingheight,
+                                   // [crispy] add support for MBF sky tranfers
+                                   frontsector->ceilingpic == skyflatnum &&
+                                           frontsector->sky & PL_SKYFLAT
+                                       ? frontsector->sky
+                                       : frontsector->ceilingpic,
+                                   frontsector->lightlevel);
     }
     else
 	ceilingplane = NULL;

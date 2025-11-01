@@ -1114,6 +1114,8 @@ static default_t extra_defaults_list[] =
 
     CONFIG_VARIABLE_INT(vanilla_demo_limit),
 
+
+     CONFIG_VARIABLE_INT(debug_mode),
     //!
     // If non-zero, the game behaves like Vanilla Doom, always assuming
     // an American keyboard mapping.  If this has a value of zero, the

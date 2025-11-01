@@ -121,6 +121,25 @@ void P_ExplodeMissile (mobj_t* mo)
    
 }
 
+//
+// P_Thrust
+//
+
+void P_ThrustThing(mobj_t *mo, angle_t angle, fixed_t force)
+{
+    angle_t an = angle >> ANGLETOFINESHIFT;
+    mo->momx += FixedMul(finecosine[an], force);
+    mo->momy += FixedMul(finesine[an], force);
+}
+
+// P_ThrustZ 
+
+void P_ThrustThingZ(mobj_t* mo, int force)
+{
+    fixed_t speed = force << (FRACBITS - 2);
+    
+    mo->momz += speed;
+}
 
 //
 // P_XYMovement  
@@ -149,6 +168,26 @@ void P_XYMovement (mobj_t* mo)
 	return;
     }
 	
+    int special = mo->subsector->sector->special;
+    if (gameversion == exe_doom_2_0)
+    {
+        switch (special)
+        {
+            case 18: // Wind_East
+                P_ThrustThing(mo, 0, 2 * FRACUNIT);
+                break;
+            case 19: // Wind_North
+                P_ThrustThing(mo, ANG90, 2 * FRACUNIT);
+                break;
+            case 20: // Wind_South
+                P_ThrustThing(mo, ANG270, 2 * FRACUNIT);
+                break;
+            case 21: // Wind_West
+                P_ThrustThing(mo, ANG180, 2 * FRACUNIT);
+                break;
+        }
+    }
+
     player = mo->player;
 		
     if (mo->momx > MAXMOVE)
@@ -361,10 +400,15 @@ void P_ZMovement (mobj_t* mo)
 
 	if ( (mo->flags & MF_MISSILE)
 	     && !(mo->flags & MF_NOCLIP) )
-	{
-	    P_ExplodeMissile (mo);
-	    return;
-	}
+	    {
+            if (!(mo->flags2 & MF2_FLOORHUGGER))
+            {
+                P_ExplodeMissile(mo);
+                return;
+            }
+	       
+            return;
+	    }
     }
     else if (! (mo->flags & MF_NOGRAVITY) )
     {
@@ -551,8 +595,7 @@ void P_MobjThinker (mobj_t* mobj)
     else
     {
 	// check for nightmare respawn
-        if (!(mobj->flags & MF_COUNTKILL) && (mobj->type != MT_NIGHTIMP &&
-            mobj->type != MT_NIGHTDEMON))
+        if (!(mobj->flags & MF_COUNTKILL) && (gameversion < exe_doom_2_0 || !(mobj->flags2 & MF2_NIGHTMAREMOBJ)))
         {
             return;
         }
@@ -959,6 +1002,9 @@ void P_SpawnMapThing (mapthing_t* mthing)
     
     mobj = P_SpawnMobj (x,y,z, i);
     mobj->spawnpoint = *mthing;
+    
+    if (mthing->options & MTF_COUNTKILL)
+       mobj->flags &= ~MF_COUNTKILL;
 
     if (mobj->tics > 0)
 	mobj->tics = 1 + (P_Random () % mobj->tics);

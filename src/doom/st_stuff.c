@@ -58,7 +58,7 @@
 // Data.
 #include "dstrings.h"
 #include "sounds.h"
-
+#include "v_trans.h"
 //
 // STATUS BAR DATA
 //
@@ -336,7 +336,10 @@ cheatseq_t	cheat_powerup[7] =
 cheatseq_t cheat_choppers = CHEAT("idchoppers", 0);
 cheatseq_t cheat_clev = CHEAT("idclev", 2);
 cheatseq_t cheat_mypos = CHEAT("idmypos", 0);
+cheatseq_t cheat_notarget = CHEAT("idtarget", 0);
+cheatseq_t cheat_kill = CHEAT("idkill", 0);
 
+static char msg[ST_MSGWIDTH];
 
 //
 // STATUS BAR CODE
@@ -398,83 +401,192 @@ ST_Responder (event_t* ev)
       // 'dqd' cheat for toggleable god mode
       if (cht_CheckCheat(&cheat_god, ev->data2))
       {
-	plyr->cheats ^= CF_GODMODE;
-	if (plyr->cheats & CF_GODMODE)
-	{
-	  if (plyr->mo)
-	    plyr->mo->health = deh_god_mode_health;
+	    plyr->cheats ^= CF_GODMODE;
+	    if (plyr->cheats & CF_GODMODE)
+	    {
+	          if (plyr->mo)
+	            plyr->mo->health = deh_god_mode_health;
 	  
-	  plyr->health = deh_god_mode_health;
-	  plyr->message = DEH_String(STSTR_DQDON);
-	}
-	else 
-	  plyr->message = DEH_String(STSTR_DQDOFF);
+	          plyr->health = deh_god_mode_health;
+	          plyr->message = DEH_String(STSTR_DQDON);
+	    }
+	    else 
+	        plyr->message = DEH_String(STSTR_DQDOFF);
       }
+
+       // 'notarget' cheat
+
+      else if (cht_CheckCheat(&cheat_notarget, ev->data2))
+      {
+          plyr->cheats ^= CF_NOTARGET;
+          if (plyr->cheats & CF_NOTARGET)
+          {
+              int i;
+              thinker_t *th;
+
+              for (th = thinkercap.next; th != &thinkercap; th = th->next)
+              {
+                  if (th->function.acp1 == (actionf_p1) P_MobjThinker)
+                  {
+                      mobj_t *const mo = (mobj_t *) th;
+                      if (mo->target && mo->target->player)
+                      {
+                          mo->target = NULL;
+                      }
+                          
+
+                      if (mo->tracer && mo->tracer->player)
+                      {
+                          mo->tracer = NULL;
+                      }
+                  }
+              }
+
+              for (i = 0; i < numsectors; i++)
+              {
+                  sector_t *const sector = &sectors[i];
+
+                  sector->soundtarget = NULL;
+              }
+          }
+          
+          
+          M_snprintf(msg, sizeof(msg), "Notarget Mode %s",
+                     plyr->cheats & CF_NOTARGET ? "ON" : "OFF");
+
+          plyr->message = msg;
+
+      }
+
+      // Kill all fuckers (exclude players and other non-monster actors)
+
+      else if (cht_CheckCheat(&cheat_kill, ev->data2))
+      {
+          int countkill_cheat = 0;
+          extern int numbraintargets;
+          extern void A_PainDie(mobj_t *);
+          thinker_t *th;
+          for (th = thinkercap.next; th != &thinkercap; th = th->next)
+          {
+              if (th->function.acp1 == (actionf_p1)P_MobjThinker)
+              {
+                  mobj_t *const mo = (mobj_t *) th;
+                  if (!mo->player && 
+                      ((mo->flags & MF_COUNTKILL) || 
+                      mo->type == MT_SKULL || (mo->flags2 & MF2_NIGHTMAREMOBJ)))
+                  {
+                      if (mo->health > 0)
+                      {
+                          P_DamageMobj(mo, NULL, NULL, 10000);
+                          countkill_cheat++;
+                      }
+
+                      if (mo->type == MT_PAIN)
+                      {
+                          A_PainDie(mo);
+                          P_SetMobjState(mo, S_PAIN_DIE6);
+                      }
+                       
+                      
+                  }
+                  
+              }
+          }
+
+          numbraintargets = -1;
+          M_snprintf(msg, sizeof(msg), "Kill monsters: %d", countkill_cheat);
+          plyr->message = msg;
+      }
+
       // 'fa' cheat for killer fucking arsenal
       else if (cht_CheckCheat(&cheat_ammonokey, ev->data2))
       {
-	plyr->armorpoints = deh_idfa_armor;
-	plyr->armortype = deh_idfa_armor_class;
+	    plyr->armorpoints = deh_idfa_armor;
+	    plyr->armortype = deh_idfa_armor_class;
 	
-	for (i=0;i<NUMWEAPONS;i++)
-	  plyr->weaponowned[i] = true;
+         if (!plyr->backpack)
+            {
+                for (i = 0; i < NUMAMMO; i++)
+                {
+                    plyr->maxammo[i] *= 2;
+                }
+                plyr->backpack = true;
+            }
+        
+	    for (i=0;i<NUMWEAPONS;i++)
+	      plyr->weaponowned[i] = true;
 	
-	for (i=0;i<NUMAMMO;i++)
-	  plyr->ammo[i] = plyr->maxammo[i];
+	    for (i=0;i<NUMAMMO;i++)
+	      plyr->ammo[i] = plyr->maxammo[i];
+        
+        
+       
 	
-	plyr->message = DEH_String(STSTR_FAADDED);
+	    
       }
       // 'kfa' cheat for key full ammo
       else if (cht_CheckCheat(&cheat_ammo, ev->data2))
       {
-	plyr->armorpoints = deh_idkfa_armor;
-	plyr->armortype = deh_idkfa_armor_class;
+	    plyr->armorpoints = deh_idkfa_armor;
+	    plyr->armortype = deh_idkfa_armor_class;
 	
-	for (i=0;i<NUMWEAPONS;i++)
-	  plyr->weaponowned[i] = true;
+        if (!plyr->backpack)
+            {
+                for (i = 0; i < NUMAMMO; i++)
+                {
+                    plyr->maxammo[i] *= 2;
+                }
+                plyr->backpack = true;
+            }
+        
+
+	    for (i=0;i<NUMWEAPONS;i++)
+	      plyr->weaponowned[i] = true;
 	
-	for (i=0;i<NUMAMMO;i++)
-	  plyr->ammo[i] = plyr->maxammo[i];
+	    for (i=0;i<NUMAMMO;i++)
+	      plyr->ammo[i] = plyr->maxammo[i];
 	
-	for (i=0;i<NUMCARDS;i++)
-	  plyr->cards[i] = true;
+	    for (i=0;i<NUMCARDS;i++)
+	      plyr->cards[i] = true;
+
+        
 	
-	plyr->message = DEH_String(STSTR_KFAADDED);
+	    plyr->message = DEH_String(STSTR_KFAADDED);
       }
       // 'mus' cheat for changing music
       else if (cht_CheckCheat(&cheat_mus, ev->data2))
       {
 	
-	char	buf[3];
-	int		musnum;
+	        char	buf[3];
+	        int		musnum;
 	
-	plyr->message = DEH_String(STSTR_MUS);
-	cht_GetParam(&cheat_mus, buf);
+	        plyr->message = DEH_String(STSTR_MUS);
+	        cht_GetParam(&cheat_mus, buf);
 
-        // Note: The original v1.9 had a bug that tried to play back
-        // the Doom II music regardless of gamemode.  This was fixed
-        // in the Ultimate Doom executable so that it would work for
-        // the Doom 1 music as well.
+            // Note: The original v1.9 had a bug that tried to play back
+            // the Doom II music regardless of gamemode.  This was fixed
+            // in the Ultimate Doom executable so that it would work for
+            // the Doom 1 music as well.
 
-	if (gamemode == commercial || gameversion < exe_ultimate)
-	{
-	  musnum = mus_runnin + (buf[0]-'0')*10 + buf[1]-'0' - 1;
+	        if (gamemode == commercial || gameversion < exe_ultimate)
+	        {
+	          musnum = mus_runnin + (buf[0]-'0')*10 + buf[1]-'0' - 1;
 	  
-	  if (((buf[0]-'0')*10 + buf[1]-'0') > 35
-       && gameversion >= exe_doom_1_8)
-	    plyr->message = DEH_String(STSTR_NOMUS);
-	  else
-	    S_ChangeMusic(musnum, 1);
-	}
-	else
-	{
-	  musnum = mus_e1m1 + (buf[0]-'1')*9 + (buf[1]-'1');
+	          if (((buf[0]-'0')*10 + buf[1]-'0') > 35
+               && gameversion >= exe_doom_1_8)
+	            plyr->message = DEH_String(STSTR_NOMUS);
+	          else
+	            S_ChangeMusic(musnum, 1);
+	        }
+	        else
+	        {
+	          musnum = mus_e1m1 + (buf[0]-'1')*9 + (buf[1]-'1');
 	  
-	  if (((buf[0]-'1')*9 + buf[1]-'1') > 31)
-	    plyr->message = DEH_String(STSTR_NOMUS);
-	  else
-	    S_ChangeMusic(musnum, 1);
-	}
+	          if (((buf[0]-'1')*9 + buf[1]-'1') > 31)
+	            plyr->message = DEH_String(STSTR_NOMUS);
+	          else
+	            S_ChangeMusic(musnum, 1);
+	        }
       }
       else if ( (logical_gamemission == doom 
                  && cht_CheckCheat(&cheat_noclip, ev->data2))
@@ -508,6 +620,7 @@ ST_Responder (event_t* ev)
 	}
       }
       
+     
       // 'behold' power-up menu
       if (cht_CheckCheat(&cheat_powerup[6], ev->data2))
       {
@@ -946,7 +1059,7 @@ void ST_doPaletteStuff(void)
     if (palette != st_palette)
     {
 	st_palette = palette;
-	pal = (byte *) W_CacheLumpNum (lu_palette, PU_CACHE)+palette*768;
+	pal = (byte *) W_CacheLumpName ("PLAYPAL", PU_CACHE)+palette*768;
 	I_SetPalette (pal);
     }
 

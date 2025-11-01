@@ -97,6 +97,7 @@ set(GAME_SOURCE_FILES
     m_controls.c        m_controls.h
     m_fixed.c           m_fixed.h
     m_json.c            m_json.h
+    m_scanner.c         m_scanner.h
     net_client.c        net_client.h
     net_common.c        net_common.h
     net_dedicated.c     net_dedicated.h
@@ -115,6 +116,7 @@ set(GAME_SOURCE_FILES
     tables.c            tables.h
     v_diskicon.c        v_diskicon.h
     v_video.c           v_video.h
+    v_trans.c           v_trans.h
                         v_patch.h
     w_checksum.c        w_checksum.h
     w_main.c            w_main.h

@@ -42,6 +42,7 @@ DEH_BEGIN_MAPPING(state_mapping, state_t)
   DEH_MAPPING("Args6",           args[5])
   DEH_MAPPING("Args7",           args[6])
   DEH_MAPPING("Args8",           args[7])
+  DEH_MAPPING("MBF21 Bits",           flags)
   DEH_UNSUPPORTED_MAPPING("Codep frame")
 DEH_END_MAPPING
 
