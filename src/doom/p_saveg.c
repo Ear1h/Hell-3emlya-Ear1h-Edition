@@ -787,6 +787,8 @@ static void saveg_read_player_t(player_t *str)
     // char* message;
     str->printmessage = saveg_readp();
 
+    str->printdelay = saveg_read32();
+
     // int damagecount;
     str->damagecount = saveg_read32();
 
@@ -928,6 +930,9 @@ static void saveg_write_player_t(player_t *str)
 
     // char* print message;
     saveg_writep(str->printmessage);
+
+    // int delay message;
+    saveg_writep(str->printdelay);
 
     // int damagecount;
     saveg_write32(str->damagecount);
