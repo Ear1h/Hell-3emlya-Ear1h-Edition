@@ -145,6 +145,7 @@ typedef struct player_s
     const char		*message;
     const char      *secretmessage;
     const char      *printmessage;
+    int             printdelay;
     
     // For screen flashing (red or bright).
     int			damagecount;

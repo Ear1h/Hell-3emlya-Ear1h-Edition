@@ -276,7 +276,7 @@ void HU_Start(void)
     // dehacked substitution to get modified level name
 
     s = G_GetLevelTitle();
-    s = DEH_String(s); // если у тебя используется DEH_String()
+    s = DEH_String(s);
 
     M_StringConcat(string, s, sizeof(string));
     const char *p = string;
@@ -307,7 +307,7 @@ void HU_Drawer(void)
     HUlib_drawSText(&w_custom);
     HUlib_drawTextLine(&w_visplanes, false);
     HUlib_drawTextLine(&w_segs, false);
-    if (!automapactive)
+    if (!automapactive && (viewheight != SCREENHEIGHT))
     HUlib_drawTextLine(&w_kills, false);
     if (automapactive)
 	HUlib_drawTextLine(&w_title, false);
@@ -353,7 +353,7 @@ void HU_Ticker(void)
     }
 
     // KIS Statistics
-
+   
         M_snprintf(w_buffer, sizeof(w_buffer), "K %d/%d ", plr->killcount,
                    totalkills);
         HUlib_clearTextLine(&w_kills);
@@ -414,7 +414,7 @@ void HU_Ticker(void)
         HUlib_addMessageToSText(&w_custom, 0, plr->printmessage);
         plr->printmessage = 0;
         print_on = true;
-        print_counter = 20 * TICRATE / 2; // [crispy] 2.5 seconds
+        print_counter = plr->printdelay * TICRATE;
     }
 
     if (showMessages || message_dontfuckwithme)
