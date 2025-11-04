@@ -22,7 +22,12 @@
 
 #include "doomdef.h"
 
-
+enum wepflags_e
+{
+    WPF_NOFLAG = 0x00000000,     // no flag
+    WPF_NOTHRUST = 0x00000001,   // doesn't thrust Mobj's
+    WPF_SILENT = 0x00000002,     // weapon is silent
+};
 
 // Weapon info: sprite frames, ammunition use.
 typedef struct
@@ -35,6 +40,7 @@ typedef struct
     int		flashstate;
     int     altstate;
     int     altflashstate;
+    int     weaponflag;
 } weaponinfo_t;
 
 extern  weaponinfo_t    weaponinfo[NUMWEAPONS];
