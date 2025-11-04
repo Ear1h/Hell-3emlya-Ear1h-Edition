@@ -69,6 +69,7 @@ static void DEH_PointerInit(void)
         states[i].args[5] = 0;
         states[i].args[6] = 0;
         states[i].args[7] = 0;
+        codeptrs[i] = states[i].action;
     }
 }
 
