@@ -266,7 +266,7 @@ static boolean MapInfo_Drawer(void)
             else if (gamemapinfo->endpic[0])
             {
                 V_DrawPatch(0, 0,
-                    W_CacheLumpName((const char *) gamemapinfo->endpic[0],
+                    W_CacheLumpName((const char *) gamemapinfo->endpic,
                                     PU_STATIC));
             }
             break;
