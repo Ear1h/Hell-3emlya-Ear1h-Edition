@@ -701,17 +701,21 @@ P_UseSpecialLine
 
 		case 321: //Teleport S1
 			EV_Teleport( line, side, thing );
+			P_ChangeSwitchTexture(line, 0);
 			line->special = 0;
 			break;
 		case 322: //Teleport SR
 			EV_Teleport( line, side, thing );
+			P_ChangeSwitchTexture(line, 0);
 			break;
 		case 323: //Floor_LowerToLowerst_ChangesTexture S1
 			EV_DoFloor(line,lowerAndChange);
+			P_ChangeSwitchTexture(line, 0);
 			line->special = 0;
 			break;
 		case 324: //Floor_LowerToLowerst_ChangesTexture SR
 			EV_DoFloor(line,lowerAndChange);
+			P_ChangeSwitchTexture(line, 0);
 			break;
     }	
 	

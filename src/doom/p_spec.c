@@ -1605,6 +1605,7 @@ void EV_DoText(line_t *line, mobj_t *mo)
         if (message->messageid == line->tag)
         {
             player->printmessage = message->messages;
+            player->printdelay = message->delay;
         }
     }
 }
