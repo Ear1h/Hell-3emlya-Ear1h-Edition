@@ -36,6 +36,7 @@ DEH_BEGIN_MAPPING(weapon_mapping, weaponinfo_t)
   DEH_MAPPING("Firing frame",     flashstate)
   DEH_MAPPING("AltShooting frame",altstate)
   DEH_MAPPING("AltFiring frame",  altflashstate)
+  DEH_MAPPING("Weapon flags",     weaponflag)
 DEH_END_MAPPING
 
 static void *DEH_WeaponStart(deh_context_t *context, char *line)

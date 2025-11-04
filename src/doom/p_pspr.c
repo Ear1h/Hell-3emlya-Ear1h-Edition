@@ -251,7 +251,10 @@ void P_FireWeapon (player_t* player)
     P_SetMobjState (player->mo, S_PLAY_ATK1);
     newstate = weaponinfo[player->readyweapon].atkstate;
     P_SetPsprite (player, ps_weapon, newstate);
-    P_NoiseAlert (player->mo, player->mo);
+    if (!(weaponinfo[player->readyweapon].weaponflag & WPF_SILENT))
+    {
+        P_NoiseAlert(player->mo, player->mo);
+    }
 }
 
 void P_AltFireWeapon(player_t *player)
@@ -264,7 +267,10 @@ void P_AltFireWeapon(player_t *player)
     P_SetMobjState(player->mo, S_PLAY_ATK1);
     newstate = weaponinfo[player->readyweapon].altstate;
     P_SetPsprite(player, ps_weapon, newstate);
-    P_NoiseAlert(player->mo, player->mo);
+    if (!(weaponinfo[player->readyweapon].weaponflag & WPF_SILENT))
+    {
+        P_NoiseAlert(player->mo, player->mo);
+    }
 }
 
 //
@@ -966,22 +972,10 @@ void P_MovePsprites (player_t* player)
     pspdef_t*	psp;
 	
     psp = &player->psprites[0];
-    for (i=0 ; i<NUMPSPRITES ; i++, psp++)
-    {
-	// a null state means not active
-	if (psp->state)
-	{
-	    // drop tic count and possibly change state
 
-	    // a -1 tic count never changes
-	    if (psp->tics != -1)	
-	    {
-		psp->tics--;
-		if (!psp->tics)
-		    P_SetPsprite (player, i, psp->state->nextstate);
-	    }				
-	}
-    }
+    for (i = 0; i < NUMPSPRITES; i++, psp++)
+        if (psp->state && psp->tics != -1 && !--psp->tics)
+            P_SetPsprite(player, i, psp->state->nextstate);
     
     player->psprites[ps_flash].sx = player->psprites[ps_weapon].sx;
     player->psprites[ps_flash].sy = player->psprites[ps_weapon].sy;
