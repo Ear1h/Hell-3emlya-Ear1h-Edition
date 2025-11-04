@@ -33,6 +33,7 @@ typedef struct
 {
     int messageid;
     const char *messages;
+    int delay;
 } spec_message_t;
 
 /* BASE */

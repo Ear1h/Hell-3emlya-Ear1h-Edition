@@ -80,6 +80,13 @@ static boolean ParseMessage(json_t *json, spec_message_t *message)
         return false;
         
     message->messages = M_StringDuplicate(text);
+
+    json_t *delay = JS_GetObject(json, "delay");
+    if (!JS_IsNumber(delay))
+        return false;
+
+    message->delay = JS_GetInteger(delay);
+
     return true;
 }
 
