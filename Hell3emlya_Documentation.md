@@ -12,7 +12,7 @@ In the future, everything will be brought in line with the common standards of B
 | 256| Scrool Left (Fast)| After map starting| The wall scrolls to the left at triple speed|
 | 257| Scrool Right| After map starting| The wall scrolls to the right|
 | 258| Scrool Right (Fast)| After map starting| The wall scrolls to the right at triple speed|
-| 259| Scrool Down| After Start Map| The wall scrolls to the down|
+| 259| Scrool Down| After map starting| The wall scrolls to the down|
 | 260| Scrool Down (Fast)| After map starting| The wall scrolls to the down at triple speed|
 | 261| Scrool Up| After map starting| The wall scrolls to the up|
 | 262| Scrool Up (Fast)| After map starting| The wall scrolls to the up at triple speed|
