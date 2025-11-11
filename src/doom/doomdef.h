@@ -89,7 +89,7 @@ typedef enum
 #define MTF_GENERIC3    0x400
 #define MTF_GENERIC4    0x800
 
-#define MTF_COUNTKILL   0x1600
+#define MTF_COUNTKILL   0x1000
 
 
 

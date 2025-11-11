@@ -395,6 +395,8 @@ static patch_t**	lnames;
 // Buffer storing the backdrop
 static patch_t *background;
 
+static const char *exitpic, *enterpic;
+
 //
 // CODE
 //
@@ -402,7 +404,30 @@ static patch_t *background;
 // slam background
 void WI_slamBackground(void)
 {
-    V_DrawPatch(0, 0, background);
+    const char *name;
+
+    char lump[9] = {0};
+
+    if (state != StatCount && enterpic)
+    {
+        name = enterpic;
+    }
+    else if (exitpic)
+    {
+        name = exitpic;
+    }
+    // with UMAPINFO it is possible that wbs->epsd > 3
+    else if (gamemode == commercial || wbs->epsd >= 3)
+    {
+        name = "INTERPIC";
+    }
+    else
+    {
+        M_snprintf(lump, sizeof(lump), "WIMAP%d", wbs->epsd);
+        name = lump;
+    }
+
+    V_DrawPatch(0, 0, W_CacheLumpName(name, PU_CACHE));
 }
 
 // The ticker is used to detect keys
@@ -523,6 +548,15 @@ void WI_initAnimatedBack(void)
     int		i;
     anim_t*	a;
 
+    if (exitpic)
+    {
+        return;
+    }
+    if (enterpic && state != StatCount)
+    {
+        return;
+    }
+
     if (gamemode == commercial)
 	return;
 
@@ -551,6 +585,15 @@ void WI_updateAnimatedBack(void)
 {
     int		i;
     anim_t*	a;
+
+    if (exitpic)
+    {
+        return;
+    }
+    if (enterpic && state != StatCount)
+    {
+        return;
+    }
 
     if (gamemode == commercial)
 	return;
@@ -602,6 +645,15 @@ void WI_drawAnimatedBack(void)
 {
     int			i;
     anim_t*		a;
+
+    if (exitpic)
+    {
+        return;
+    }
+    if (enterpic && state != StatCount)
+    {
+        return;
+    }
 
     if (gamemode == commercial)
 	return;
@@ -823,6 +875,12 @@ void WI_drawShowNextLoc(void)
 
     // draw animated background
     WI_drawAnimatedBack(); 
+
+    if (exitpic || (enterpic && state != StatCount))
+    {
+        WI_drawEL();
+        return;
+    }
 
     if ( gamemode != commercial)
     {
@@ -1856,6 +1914,25 @@ void WI_initVariables(wbstartstruct_t* wbstartstruct)
 void WI_Start(wbstartstruct_t* wbstartstruct)
 {
     WI_initVariables(wbstartstruct);
+    exitpic = NULL;
+    enterpic = NULL;
+
+	if (wbs->lastmapinfo)
+    {
+        if (wbs->lastmapinfo->exitpic[0])
+        {
+            exitpic = wbs->lastmapinfo->exitpic;
+        }
+    }
+
+    if (wbs->nextmapinfo)
+    {
+        if (wbs->nextmapinfo->enterpic[0])
+        {
+            enterpic = wbs->nextmapinfo->enterpic;
+        }
+    }
+
     WI_loadData();
 
     if (deathmatch)

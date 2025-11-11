@@ -662,13 +662,13 @@ P_UseSpecialLine
 		  line->special = 0;
 		  break;
       case 281:
-              // Turn lights off in sector(tag)
+      // Turn lights off in sector(tag)
               EV_TurnTagLightsOff(line);
               line->special = 0;
               break;
 	  case 304:
           EV_DoMacro(line, thing);
-		  P_ChangeSwitchTexture(line,0);
+		  P_ChangeSwitchTexture(line, 0);
           line->special = 0;
           break;
 
@@ -706,7 +706,7 @@ P_UseSpecialLine
 			break;
 		case 322: //Teleport SR
 			EV_Teleport( line, side, thing );
-			P_ChangeSwitchTexture(line, 0);
+			P_ChangeSwitchTexture(line, 1);
 			break;
 		case 323: //Floor_LowerToLowerst_ChangesTexture S1
 			EV_DoFloor(line,lowerAndChange);
@@ -715,7 +715,7 @@ P_UseSpecialLine
 			break;
 		case 324: //Floor_LowerToLowerst_ChangesTexture SR
 			EV_DoFloor(line,lowerAndChange);
-			P_ChangeSwitchTexture(line, 0);
+			P_ChangeSwitchTexture(line, 1);
 			break;
     }	
 	
