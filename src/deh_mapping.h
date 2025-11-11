@@ -51,7 +51,7 @@
 
 
 
-#define MAX_MAPPING_ENTRIES 32
+#define MAX_MAPPING_ENTRIES 64
 
 typedef struct deh_mapping_s deh_mapping_t;
 typedef struct deh_mapping_entry_s deh_mapping_entry_t;
