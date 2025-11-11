@@ -655,7 +655,15 @@ P_SpawnMobj
     mobj->counter4 = info->counter4;
 
     if (gameskill != sk_nightmare)
-	mobj->reactiontime = info->reactiontime;
+    {
+        mobj->reactiontime = info->reactiontime;
+    }
+	
+    else if (gameskill == sk_nightmare)
+    {
+        if (gameversion == exe_doom_2_0)
+            mobj->reactiontime = info->nightmarereaction;
+    }
     
     mobj->lastlook = P_Random () % MAXPLAYERS;
     // do not set the state with P_SetMobjState,
