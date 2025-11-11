@@ -1566,6 +1566,7 @@ typedef struct
     int fastspeed;
     int tempspeed;
     int droppeditem;
+    int nightmarereaction;
 } mobjinfo_t;
 
 extern mobjinfo_t mobjinfo[NUMMOBJTYPES];
