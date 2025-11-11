@@ -2141,24 +2141,6 @@ void A_PlayerScream(mobj_t *mo)
     S_StartSound(mo, sound);
 }
 
-void A_DarkImpAttack(mobj_t *actor)
-{
-    mobj_t *mo;
-
-    if (gameversion < exe_doom_2_0)
-        return;
-
-    if (!actor->target)
-        return;
-
-    A_FaceTarget(actor);
-    mo = P_SpawnMissile(actor, actor->target, MT_EXTRA01);
-
-    mo->x += mo->momx;
-    mo->y += mo->momy;
-    mo->tracer = actor->target;
-}
-
 //Code pointer from MBF
 void A_LineEffect2(mobj_t *mo)
 {
