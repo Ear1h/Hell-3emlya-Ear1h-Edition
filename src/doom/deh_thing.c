@@ -58,6 +58,7 @@ DEH_BEGIN_MAPPING(thing_mapping, mobjinfo_t)
   DEH_MAPPING("Generic Flags",       genericflags)
   DEH_MAPPING("Fast Speed",          fastspeed)
   DEH_MAPPING("DroppedItem",         droppeditem)
+  DEH_MAPPING("Nightmare Reaction",  nightmarereaction)
 DEH_END_MAPPING
 
 static void *DEH_ThingStart(deh_context_t *context, char *line)
